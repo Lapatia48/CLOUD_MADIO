@@ -1,0 +1,64 @@
+services:
+  # Base de données
+  db:
+    image: postgres:15-alpine
+    container_name: postgres_db
+    restart: always
+    environment:
+      POSTGRES_USER: user_cloud
+      POSTGRES_PASSWORD: password_cloud
+      POSTGRES_DB: cloud_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  # Backend API (Java)
+  backend:
+    build: ./backend
+    container_name: java_backend
+    depends_on:
+      - db
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/cloud_db
+      SPRING_DATASOURCE_USERNAME: user_cloud
+      SPRING_DATASOURCE_PASSWORD: password_cloud
+    ports:
+      - "8080:8080"
+    dns:
+      - 8.8.8.8
+      - 8.8.4.4
+
+  # Web App (React)
+  frontend:
+    build: ./frontend
+    container_name: react_web
+    ports:
+      - "3000:80"
+    depends_on:
+      - backend
+
+  # Mobile App Preview (Ionic/Vue)
+  mobile-ionic:
+    build: ./mobile-ionic
+    container_name: ionic_mobile
+    ports:
+      - "8100:8100"
+    volumes:
+      - ./mobile-ionic:/app
+      - /app/node_modules
+
+  # Serveur de cartes Offline (OpenStreetMap)
+  map-server:
+    image: overv/openstreetmap-tile-server
+    container_name: map_server
+    ports:
+      - "8081:80"
+    volumes:
+      - osm_data:/var/lib/postgresql/12/main
+    # Note: Il faudra importer les données d'Antananarivo (.pbf) 
+    # dans ce conteneur pour que ce soit réellement offline.
+
+volumes:
+  postgres_data:
+  osm_data:

@@ -1,0 +1,235 @@
+================================================================================
+              ROADWORKS AUTH API - GUIDE DE TEST POSTMAN
+================================================================================
+
+Base URL: http://localhost:8080
+
+================================================================================
+1. REGISTER - Inscription d'un nouvel utilisateur (PUBLIC)
+================================================================================
+Method: POST
+URL: http://localhost:8080/api/auth/register
+
+Headers:
+  Content-Type: application/json
+
+Body (JSON):
+{
+    "email": "user@example.com",
+    "password": "Password123",
+    "nom": "Dupont",
+    "prenom": "Jean"
+}
+
+Response (200 OK):
+{
+    "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+    "user": {
+        "id": 1,
+        "email": "user@example.com",
+        "nom": "Dupont",
+        "prenom": "Jean",
+        "role": "USER",
+        "blocked": false
+    }
+}
+
+Note: Copier le token pour les requêtes suivantes nécessitant l'authentification.
+
+================================================================================
+2. LOGIN - Connexion utilisateur (PUBLIC)
+================================================================================
+Method: POST
+URL: http://localhost:8080/api/auth/login
+
+Headers:
+  Content-Type: application/json
+
+Body (JSON):
+{
+    "email": "user@example.com",
+    "password": "Password123"
+}
+
+Response (200 OK):
+{
+    "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+    "user": {
+        "id": 1,
+        "email": "user@example.com",
+        "nom": "Dupont",
+        "prenom": "Jean",
+        "role": "USER",
+        "blocked": false
+    }
+}
+
+Erreurs possibles:
+- 403 Forbidden: Compte bloqué après 3 tentatives échouées
+- 401 Unauthorized: Email ou mot de passe incorrect
+
+================================================================================
+3. GET USER - Récupérer un utilisateur par ID (AUTHENTIFIÉ)
+================================================================================
+Method: GET
+URL: http://localhost:8080/api/auth/users/{id}
+
+Exemple: http://localhost:8080/api/auth/users/1
+
+Headers:
+  Content-Type: application/json
+  Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+
+Body: Aucun
+
+Response (200 OK):
+{
+    "id": 1,
+    "email": "user@example.com",
+    "nom": "Dupont",
+    "prenom": "Jean",
+    "role": "USER",
+    "blocked": false
+}
+
+================================================================================
+4. UPDATE USER - Mettre à jour un utilisateur (AUTHENTIFIÉ)
+================================================================================
+Method: PUT
+URL: http://localhost:8080/api/auth/users/{id}
+
+Exemple: http://localhost:8080/api/auth/users/1
+
+Headers:
+  Content-Type: application/json
+  Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+
+Body (JSON):
+{
+    "nom": "Martin",
+    "prenom": "Pierre"
+}
+
+Response (200 OK):
+{
+    "id": 1,
+    "email": "user@example.com",
+    "nom": "Martin",
+    "prenom": "Pierre",
+    "role": "USER",
+    "blocked": false
+}
+
+================================================================================
+5. LOGOUT - Déconnexion (AUTHENTIFIÉ)
+================================================================================
+Method: POST
+URL: http://localhost:8080/api/auth/logout
+
+Headers:
+  Content-Type: application/json
+  Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+
+Body: Aucun
+
+Response (200 OK): Corps vide
+
+Note: Après logout, le token devient invalide.
+
+================================================================================
+6. UNBLOCK USER - Débloquer un utilisateur (MANAGER UNIQUEMENT)
+================================================================================
+Method: POST
+URL: http://localhost:8080/api/auth/users/{email}/unblock
+
+Exemple: http://localhost:8080/api/auth/users/blocked_user@example.com/unblock
+
+Headers:
+  Content-Type: application/json
+  Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+
+Body: Aucun
+
+Response (200 OK): Corps vide
+
+Prérequis: L'utilisateur qui fait la requête doit avoir le role "MANAGER"
+
+================================================================================
+7. BLOCK USER - Bloquer un utilisateur (MANAGER UNIQUEMENT)
+================================================================================
+Method: POST
+URL: http://localhost:8080/api/auth/users/{email}/block
+
+Exemple: http://localhost:8080/api/auth/users/user@example.com/block
+
+Headers:
+  Content-Type: application/json
+  Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+
+Body: Aucun
+
+Response (200 OK): Corps vide
+
+Prérequis: L'utilisateur qui fait la requête doit avoir le role "MANAGER"
+
+================================================================================
+                           CONFIGURATION POSTMAN
+================================================================================
+
+1. Créer un Environment "RoadWorks API" avec les variables:
+   - base_url: http://localhost:8080
+   - token: (vide, sera rempli automatiquement)
+
+2. Dans l'onglet "Tests" de la requête Login/Register, ajouter:
+
+   var jsonData = pm.response.json();
+   pm.environment.set("token", jsonData.token);
+
+3. Pour les requêtes authentifiées, dans Authorization:
+   - Type: Bearer Token
+   - Token: {{token}}
+
+================================================================================
+                         TEST DE BLOCAGE AUTOMATIQUE
+================================================================================
+
+Scénario de test du blocage après 3 échecs:
+
+1. Créer un utilisateur avec REGISTER
+
+2. Faire 3 requêtes LOGIN avec mauvais mot de passe:
+   {
+       "email": "user@example.com",
+       "password": "mauvais_mot_de_passe"
+   }
+
+3. Après 3 échecs, faire LOGIN avec le BON mot de passe:
+   → Résultat attendu: 403 Forbidden (compte bloqué)
+
+4. Demander à un MANAGER de débloquer:
+   POST http://localhost:8080/api/auth/users/user@example.com/unblock
+   (avec token MANAGER)
+
+5. Réessayer LOGIN → Doit fonctionner
+
+================================================================================
+                           SWAGGER UI (OPTIONNEL)
+================================================================================
+
+URL: http://localhost:8080/swagger-ui.html
+
+Interface graphique pour tester toutes les APIs directement depuis le navigateur.
+
+================================================================================
+                              CODES D'ERREUR
+================================================================================
+
+200 OK          - Requête réussie
+201 Created     - Ressource créée (register)
+400 Bad Request - Données invalides (validation)
+401 Unauthorized- Non authentifié ou token invalide
+403 Forbidden   - Accès refusé (compte bloqué ou rôle insuffisant)
+404 Not Found   - Ressource non trouvée
+500 Server Error- Erreur serveur
+
+================================================================================
