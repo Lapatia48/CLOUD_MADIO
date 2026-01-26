@@ -28,6 +28,15 @@ export default function UserHome() {
 
       <div style={{ marginTop: 16, display: 'flex', gap: 12 }}>
         <Link to="/">Accueil public</Link>
+        <Link to="/map" style={{ 
+          padding: '8px 16px', 
+          background: '#667eea', 
+          color: 'white', 
+          textDecoration: 'none',
+          borderRadius: '4px'
+        }}>
+          🗺️ Voir la carte
+        </Link>
         <button
           onClick={async () => {
             await logout()

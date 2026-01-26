@@ -48,17 +48,15 @@ services:
       - ./mobile-ionic:/app
       - /app/node_modules
 
-  # Serveur de cartes Offline (OpenStreetMap)
-  map-server:
-    image: overv/openstreetmap-tile-server
-    container_name: map_server
+  # Serveur de cartes Offline (TileServer GL)
+  tileserver:
+    image: maptiler/tileserver-gl:latest
+    container_name: tileserver_gl
     ports:
-      - "8081:80"
+      - "8081:8080"
     volumes:
-      - osm_data:/var/lib/postgresql/12/main
-    # Note: Il faudra importer les données d'Antananarivo (.pbf) 
-    # dans ce conteneur pour que ce soit réellement offline.
+      - ./map-data:/data
+    command: --verbose
 
 volumes:
   postgres_data:
-  osm_data:

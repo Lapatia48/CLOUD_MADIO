@@ -2,6 +2,7 @@ import { Navigate, Route, Routes } from 'react-router-dom'
 import ProtectedRoute from './auth/ProtectedRoute'
 import AdminHome from './pages/AdminHome'
 import LoginPage from './pages/LoginPage'
+import MapPage from './pages/MapPage'
 import PublicHome from './pages/PublicHome'
 import RegisterPage from './pages/RegisterPage'
 import UserHome from './pages/UserHome'
@@ -15,6 +16,7 @@ function App() {
 
       <Route element={<ProtectedRoute />}>
         <Route path="/user" element={<UserHome />} />
+        <Route path="/map" element={<MapPage />} />
       </Route>
 
       <Route element={<ProtectedRoute allowedRoles={['MANAGER']} />}>
