@@ -24,6 +24,14 @@ CREATE TABLE sessions (
 );
 
 
+create table entreprises (
+    id SERIAL PRIMARY KEY,
+    nom VARCHAR(255) NOT NULL,
+    adresse VARCHAR(255),
+    telephone VARCHAR(20),
+    email VARCHAR(255)
+);
+
 -- Table des signalements
 CREATE TABLE signalements (
     id SERIAL PRIMARY KEY,
@@ -33,7 +41,7 @@ CREATE TABLE signalements (
     status VARCHAR(20) DEFAULT 'NOUVEAU', -- 'NOUVEAU', 'EN_COURS', 'TERMINE'
     surface_m2 DECIMAL(10,2),
     budget DECIMAL(15,2),
-    entreprise VARCHAR(255),
+    id_entreprise INT REFERENCES entreprises(id),
     date_signalement TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     user_id INT REFERENCES users(id) -- Qui a signalé ?
 );
