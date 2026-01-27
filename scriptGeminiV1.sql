@@ -45,3 +45,10 @@ CREATE TABLE signalements (
     date_signalement TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     user_id INT REFERENCES users(id) -- Qui a signalé ?
 );
+
+outes=# select * from entreprises;
+ id | adresse | email | nom | telephone
+----+---------+-------+-----+-----------
+(0 ligne)
+insert into entreprises(adresse, email, nom, telephone) values ('Analakely',
+'Antananarivo','contact@entreprise.mg','Entreprise Colas',0331499704);
