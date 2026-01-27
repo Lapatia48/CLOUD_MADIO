@@ -1,0 +1,4 @@
+Module Cartes
+• Installer un serveur de carte Offline sur Docker
+• Télécharger la ville d'Antananarivo avec les rues
+• Utiliser leaflet pour afficher/manipuler la carte dans l'application web
