@@ -1,0 +1,4 @@
+apres le accueil la quand la personne se log et apres accueil il ya un boutton ajouter  signalement 
+liste des signalement de cette personne qui s est conneceter tu comprends lerci regarge dans back dans le backend il ya des api 
+pour le signalement utilise ca stp 
+ 

@@ -5,6 +5,7 @@ import LoginPage from './pages/LoginPage'
 import MapPage from './pages/MapPage'
 import PublicHome from './pages/PublicHome'
 import RegisterPage from './pages/RegisterPage'
+import SignalementCreatePage from './pages/SignalementCreatePage'
 import UserHome from './pages/UserHome'
 
 function App() {
@@ -16,6 +17,7 @@ function App() {
 
       <Route element={<ProtectedRoute />}>
         <Route path="/user" element={<UserHome />} />
+        <Route path="/user/signalements/new" element={<SignalementCreatePage />} />
         <Route path="/map" element={<MapPage />} />
       </Route>
 
