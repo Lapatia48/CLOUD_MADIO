@@ -27,7 +27,7 @@ curl -O https://download.geofabrik.de/africa/madagascar-latest.osm.pbf
 ### Convertir en MBTiles avec tilemaker
 ```bash
 docker run -v $(pwd):/data ghcr.io/systemed/tilemaker:master \
-  --input /data/madagascar-latest.osm.pbf \
+  --input /data/madagascar-260125.osm.pbf \
   --output /data/map-data/antananarivo.mbtiles \
   --bbox 47.4,-19.0,47.6,-18.8
 ```

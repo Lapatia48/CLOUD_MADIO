@@ -19,8 +19,8 @@ L.Icon.Default.mergeOptions({
 const ANTANANARIVO_CENTER: LatLngExpression = [-18.8792, 47.5079];
 const DEFAULT_ZOOM = 13;
 
-// URL du serveur de tuiles local (tileserver-gl)
-const LOCAL_TILE_SERVER = 'http://localhost:8081/styles/osm-bright/{z}/{x}/{y}.png';
+// URL du serveur de tuiles local (tileserver-gl) - tuiles raster PNG
+const LOCAL_TILE_SERVER = 'http://localhost:8081/styles/basic/{z}/{x}/{y}.png';
 // Fallback vers OpenStreetMap en ligne si le serveur local n'est pas disponible
 const OSM_TILE_SERVER = 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png';
 

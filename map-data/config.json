@@ -9,8 +9,8 @@
     }
   },
   "styles": {
-    "osm-bright": {
-      "style": "osm-bright-style.json",
+    "basic": {
+      "style": "basic.json",
       "tilejson": {
         "bounds": [47.4, -19.0, 47.6, -18.8]
       }
