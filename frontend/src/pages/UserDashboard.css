@@ -1,0 +1,202 @@
+.dashboard-container {
+  display: flex;
+  height: 100vh;
+  width: 100vw;
+  overflow: hidden;
+}
+
+/* Carte - 70% de l'écran */
+.map-section {
+  flex: 7;
+  height: 100%;
+}
+
+.map-container {
+  width: 100%;
+  height: 100%;
+}
+
+/* Panneau latéral - 30% */
+.sidebar {
+  flex: 3;
+  background: #f8f9fa;
+  padding: 20px;
+  overflow-y: auto;
+  border-left: 2px solid #dee2e6;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+/* Infos utilisateur */
+.user-info {
+  background: white;
+  padding: 15px;
+  border-radius: 10px;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+
+.user-info h2 {
+  margin: 0 0 15px 0;
+  font-size: 1.2rem;
+  color: #333;
+}
+
+.user-details p {
+  margin: 5px 0;
+  font-size: 0.9rem;
+}
+
+/* Boutons */
+.actions {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.btn {
+  padding: 12px 20px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 1rem;
+  transition: all 0.3s;
+}
+
+.btn-primary {
+  background: #3498db;
+  color: white;
+}
+
+.btn-primary:hover, .btn-primary.active {
+  background: #2980b9;
+}
+
+.btn-secondary {
+  background: #95a5a6;
+  color: white;
+}
+
+.btn-secondary:hover {
+  background: #7f8c8d;
+}
+
+.btn-danger {
+  background: #e74c3c;
+  color: white;
+}
+
+.btn-danger:hover {
+  background: #c0392b;
+}
+
+.btn-success {
+  background: #27ae60;
+  color: white;
+  width: 100%;
+}
+
+.btn-success:hover {
+  background: #219a52;
+}
+
+/* Formulaire d'ajout */
+.add-form {
+  background: white;
+  padding: 15px;
+  border-radius: 10px;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+
+.add-form h3 {
+  margin: 0 0 10px 0;
+}
+
+.add-form .hint {
+  color: #7f8c8d;
+  font-size: 0.85rem;
+  margin-bottom: 10px;
+}
+
+.add-form textarea {
+  width: 100%;
+  min-height: 80px;
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  resize: vertical;
+  margin-bottom: 10px;
+}
+
+.add-form .coords {
+  background: #ecf0f1;
+  padding: 8px;
+  border-radius: 5px;
+  font-size: 0.85rem;
+  margin-bottom: 10px;
+}
+
+/* Liste des signalements */
+.signalements-list {
+  background: white;
+  padding: 15px;
+  border-radius: 10px;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+  flex: 1;
+  overflow-y: auto;
+}
+
+.signalements-list h3 {
+  margin: 0 0 15px 0;
+}
+
+.signalements-list .empty {
+  color: #95a5a6;
+  text-align: center;
+  padding: 20px;
+}
+
+.signalements-list ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.signalements-list li {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px;
+  border-bottom: 1px solid #eee;
+}
+
+.signalements-list li:last-child {
+  border-bottom: none;
+}
+
+.status-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.signalements-list li div {
+  display: flex;
+  flex-direction: column;
+}
+
+.signalements-list li strong {
+  font-size: 0.9rem;
+}
+
+.signalements-list li small {
+  color: #95a5a6;
+  font-size: 0.75rem;
+}
+
+/* Custom marker */
+.custom-marker {
+  background: transparent;
+  border: none;
+}
