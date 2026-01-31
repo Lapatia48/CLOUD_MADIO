@@ -1,0 +1,40 @@
+.admin-content {
+  --background: #f0f2f5;
+}
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+  padding: 10px;
+}
+
+.stat-card {
+  margin: 0;
+  border-radius: 12px;
+}
+
+.stat-card ion-card-content {
+  text-align: center;
+  padding: 15px;
+}
+
+.stat-num {
+  font-size: 2rem;
+  font-weight: bold;
+}
+
+.stat-label {
+  font-size: 0.85rem;
+  color: #7f8c8d;
+  margin-top: 5px;
+}
+
+.stat-card.total { border-top: 4px solid #3498db; }
+.stat-card.total .stat-num { color: #3498db; }
+.stat-card.nouveau { border-top: 4px solid #e74c3c; }
+.stat-card.nouveau .stat-num { color: #e74c3c; }
+.stat-card.en-cours { border-top: 4px solid #f39c12; }
+.stat-card.en-cours .stat-num { color: #f39c12; }
+.stat-card.termine { border-top: 4px solid #27ae60; }
+.stat-card.termine .stat-num { color: #27ae60; }

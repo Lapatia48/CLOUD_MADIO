@@ -1,28 +1,34 @@
 import { Navigate, Route, Routes } from 'react-router-dom'
 import ProtectedRoute from './auth/ProtectedRoute'
-import AdminHome from './pages/AdminHome'
+import AdminDashboard from './pages/AdminDashboard'
+import BlockedUsersPage from './pages/BlockedUsersPage'
 import LoginPage from './pages/LoginPage'
-import MapPage from './pages/MapPage'
-import PublicHome from './pages/PublicHome'
 import RegisterPage from './pages/RegisterPage'
 import SignalementCreatePage from './pages/SignalementCreatePage'
-import UserHome from './pages/UserHome'
+import SignalementDetailPage from './pages/SignalementDetailPage'
+import MainDashboard from './pages/MainDashboard'
 
 function App() {
   return (
     <Routes>
-      <Route path="/" element={<PublicHome />} />
+      {/* Page principale avec carte - accessible à tous */}
+      <Route path="/" element={<MainDashboard />} />
+      <Route path="/map" element={<MainDashboard />} />
+      
+      {/* Auth */}
       <Route path="/login" element={<LoginPage />} />
       <Route path="/register" element={<RegisterPage />} />
 
+      {/* Routes protégées - User */}
       <Route element={<ProtectedRoute />}>
-        <Route path="/user" element={<UserHome />} />
-        <Route path="/user/signalements/new" element={<SignalementCreatePage />} />
-        <Route path="/map" element={<MapPage />} />
+        <Route path="/signalement/new" element={<SignalementCreatePage />} />
+        <Route path="/signalement/:id" element={<SignalementDetailPage />} />
       </Route>
 
-      <Route element={<ProtectedRoute allowedRoles={['MANAGER']} />}>
-        <Route path="/admin" element={<AdminHome />} />
+      {/* Routes Admin */}
+      <Route element={<ProtectedRoute allowedRoles={['ADMIN', 'MANAGER']} />}>
+        <Route path="/admin" element={<AdminDashboard />} />
+        <Route path="/admin/blocked-users" element={<BlockedUsersPage />} />
       </Route>
 
       <Route path="*" element={<Navigate to="/" replace />} />

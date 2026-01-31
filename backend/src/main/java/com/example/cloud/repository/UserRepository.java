@@ -8,6 +8,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Optional;
 
 @Repository
@@ -32,4 +33,6 @@ public interface UserRepository extends JpaRepository<User, Long> {
     @Modifying(clearAutomatically = true)
     @Query("UPDATE User u SET u.isBlocked = false, u.failedAttempts = 0 WHERE u.email = ?1")
     void unblockUser(String email);
+    
+    List<User> findByIsBlockedTrue();
 }

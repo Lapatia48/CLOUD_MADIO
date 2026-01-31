@@ -1,9 +1,17 @@
-import type { CapacitorConfig } from '@capacitor/cli';
+import { CapacitorConfig } from '@capacitor/cli';
 
 const config: CapacitorConfig = {
-  appId: 'io.ionic.starter',
-  appName: 'mobile-ionic',
-  webDir: 'dist'
+  appId: 'com.cloudmadio.app',
+  appName: 'Cloud Madio',
+  webDir: 'dist',
+  server: {
+    androidScheme: 'https'
+  },
+  plugins: {
+    Camera: {
+      permissions: ['camera', 'photos']
+    }
+  }
 };
 
 export default config;

@@ -45,6 +45,10 @@ public class SecurityConfig {
                 .requestMatchers(org.springframework.http.HttpMethod.GET, "/api/signalements/**").permitAll()
                 .requestMatchers(org.springframework.http.HttpMethod.GET, "/api/entreprises/**").permitAll()
                 .requestMatchers("/swagger-ui/**", "/swagger-ui.html", "/api-docs/**", "/v3/api-docs/**", "/swagger-resources/**", "/webjars/**").permitAll()
+                .requestMatchers("/api/signalements/**").permitAll() // Autoriser signalements
+                .requestMatchers("/api/entreprises/**").permitAll() // Autoriser entreprises
+                .requestMatchers("/api/users/**").permitAll()
+                .requestMatchers("/api/sync/**").permitAll()
                 .anyRequest().authenticated())
             .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
         

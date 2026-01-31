@@ -1,0 +1,3 @@
+firebase
+synchronisation firebase 
+regler le pb de users bloques
