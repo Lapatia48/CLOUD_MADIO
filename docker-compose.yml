@@ -37,17 +37,17 @@ services:
     depends_on:
       - backend
 
+  # Mobile App Preview (Ionic/Vue)
   mobile-ionic:
     build: ./mobile-ionic
     container_name: ionic_mobile
     ports:
-      - "8100:3000"
+      - "8100:8100"
     environment:
-      - CI=true
-      - BROWSER=none
       - CHOKIDAR_USEPOLLING=true
-    stdin_open: true
-    tty: true
+    volumes:
+      - ./mobile-ionic:/app
+      - /app/node_modules
 
   tileserver:
     image: maptiler/tileserver-gl:latest

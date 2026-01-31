@@ -2,22 +2,23 @@
 <template>
   <ion-page>
     <ion-header>
-      <ion-toolbar color="primary">
+      <ion-toolbar>
         <ion-buttons slot="start"><ion-back-button default-href="/login"></ion-back-button></ion-buttons>
         <ion-title>Inscription</ion-title>
       </ion-toolbar>
     </ion-header>
     <ion-content class="ion-padding">
       <ion-list>
-        <ion-item><ion-label position="floating">Nom</ion-label><ion-input v-model="name" type="text"></ion-input></ion-item>
-        <ion-item><ion-label position="floating">Email</ion-label><ion-input v-model="email" type="email"></ion-input></ion-item>
-        <ion-item><ion-label position="floating">Mot de passe</ion-label><ion-input v-model="password" type="password"></ion-input></ion-item>
-        <ion-item><ion-label position="floating">Confirmer</ion-label><ion-input v-model="confirmPassword" type="password"></ion-input></ion-item>
+        <ion-item><ion-input v-model="nom" label="Nom" label-placement="floating"></ion-input></ion-item>
+        <ion-item><ion-input v-model="prenom" label="Prénom" label-placement="floating"></ion-input></ion-item>
+        <ion-item><ion-input v-model="email" type="email" label="Email" label-placement="floating"></ion-input></ion-item>
+        <ion-item><ion-input v-model="password" type="password" label="Mot de passe" label-placement="floating"></ion-input></ion-item>
       </ion-list>
-      <ion-button expand="block" @click="handleRegister" :disabled="loading">
-        <ion-spinner v-if="loading" name="crescent"></ion-spinner>
-        <span v-else>S'inscrire</span>
+      <ion-button expand="block" @click="handleRegister" :disabled="loading" class="ion-margin-top">
+        {{ loading ? 'Inscription...' : "S'inscrire" }}
       </ion-button>
+      <ion-text color="danger" v-if="error"><p class="ion-text-center">{{ error }}</p></ion-text>
+      <ion-button expand="block" fill="clear" router-link="/login">Déjà un compte ?</ion-button>
     </ion-content>
   </ion-page>
 </template>
@@ -25,26 +26,30 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
-import { IonPage, IonHeader, IonToolbar, IonTitle, IonContent, IonList, IonItem, IonLabel, IonInput, IonButton, IonSpinner, IonButtons, IonBackButton, toastController } from '@ionic/vue'
-import { useAuthStore } from '@/stores/auth'
+import { IonPage, IonHeader, IonToolbar, IonTitle, IonContent, IonList, IonItem, IonInput, IonButton, IonText, IonButtons, IonBackButton } from '@ionic/vue'
+import { useAuthStore } from '../stores/auth'
+import { getApiErrorMessage } from '../api/http'
 
 const router = useRouter()
 const authStore = useAuthStore()
-const name = ref(''), email = ref(''), password = ref(''), confirmPassword = ref(''), loading = ref(false)
+const nom = ref('')
+const prenom = ref('')
+const email = ref('')
+const password = ref('')
+const loading = ref(false)
+const error = ref<string | null>(null)
 
 async function handleRegister() {
-  if (password.value !== confirmPassword.value) {
-    const toast = await toastController.create({ message: 'Mots de passe différents', duration: 3000, color: 'danger' })
-    return toast.present()
-  }
+  error.value = null
   loading.value = true
   try {
-    await authStore.register(email.value, password.value, name.value)
-    router.push('/tabs/files')
-  } catch (error: any) {
-    const toast = await toastController.create({ message: error.response?.data?.message || 'Erreur', duration: 3000, color: 'danger' })
-    toast.present()
-  } finally { loading.value = false }
+    await authStore.register(email.value, password.value, nom.value, prenom.value)
+    router.replace('/map')
+  } catch (err) {
+    error.value = getApiErrorMessage(err)
+  } finally {
+    loading.value = false
+  }
 }
 </script>
 

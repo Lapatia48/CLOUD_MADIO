@@ -1,0 +1,6 @@
+todo : 
+regler pb liste signalement dans mobile 
+change css mobile 
+firebase
+bouton synchroniser 
+affichage liste des users bloques (mobile affichage + access et web access denied )

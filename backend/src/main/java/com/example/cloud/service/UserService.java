@@ -1,179 +1,174 @@
 package com.example.cloud.service;
 
 import com.example.cloud.dto.*;
-import com.example.cloud.entity.Session;
+import com.example.cloud.entity.Role;
 import com.example.cloud.entity.User;
-import com.example.cloud.repository.SessionRepository;
+import com.example.cloud.entity.Session;
+import com.example.cloud.repository.RoleRepository;
 import com.example.cloud.repository.UserRepository;
+import com.example.cloud.repository.SessionRepository;
 import com.example.cloud.util.JwtUtil;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
 public class UserService {
-    
+
     private final UserRepository userRepository;
+    private final RoleRepository roleRepository;
     private final SessionRepository sessionRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtUtil jwtUtil;
-    private final LoginAttemptService loginAttemptService;
-    
-    @Value("${jwt.expiration}")
-    private Long jwtExpiration;
-    
-    @Transactional
+    private final AuthenticationManager authenticationManager;
+
     public AuthResponse register(RegisterRequest request) {
-        if (userRepository.existsByEmail(request.getEmail())) {
-            throw new RuntimeException("Email already exists");
-        }
-        
-        User user = User.builder()
-                .email(request.getEmail())
-                .password(passwordEncoder.encode(request.getPassword()))
-                .nom(request.getNom())
-                .prenom(request.getPrenom())
-                .role("USER")
-                .build();
-        
-        User savedUser = userRepository.save(user);
-        
-        // Generate token and create session
-        String token = jwtUtil.generateToken(user.getEmail());
-        createSession(savedUser, token);
-        
+        long userCount = userRepository.count();
+        String roleLibelle = (userCount == 0) ? "ADMIN" : "USER";
+
+        Role role = roleRepository.findByLibelle(roleLibelle)
+                .orElseThrow(() -> new RuntimeException("Role " + roleLibelle + " non trouvé"));
+
+        User user = new User();
+        user.setEmail(request.getEmail());
+        user.setPassword(passwordEncoder.encode(request.getPassword()));
+        user.setNom(request.getNom());
+        user.setPrenom(request.getPrenom());
+        user.setRole(role);
+        user.setBlocked(false);
+        user.setFailedAttempts(0);
+
+        user = userRepository.saveAndFlush(user);
+
+        String roleName = getRoleName(user);
+        String token = jwtUtil.generateToken(user.getEmail(), roleName);
+        saveSession(user, token);
+
         return AuthResponse.builder()
                 .token(token)
-                .user(mapToUserResponse(savedUser))
+                .email(user.getEmail())
+                .role(roleName)
                 .build();
     }
-    
+
     public AuthResponse login(LoginRequest request) {
-        Optional<User> userOptional = userRepository.findByEmail(request.getEmail());
-        
-        if (userOptional.isEmpty()) {
-            throw new RuntimeException("Invalid credentials");
-        }
-        
-        User user = userOptional.get();
-        
-        // Check if user is blocked
+        User user = userRepository.findByEmail(request.getEmail())
+                .orElseThrow(() -> new RuntimeException("Utilisateur non trouvé"));
+
         if (user.isBlocked()) {
-            throw new RuntimeException("Account is blocked. Please contact administrator");
+            throw new RuntimeException("Compte bloqué. Contactez un administrateur.");
         }
-        
-        // Check password
-        if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
-            // Call separate service to ensure new transaction commits
-            loginAttemptService.handleFailedLogin(user.getEmail());
-            throw new RuntimeException("Invalid credentials");
+
+        try {
+            authenticationManager.authenticate(
+                    new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword())
+            );
+            resetFailedAttempts(user);
+        } catch (Exception e) {
+            incrementFailedAttempts(user);
+            throw new RuntimeException("Accès refusé. Veuillez vérifier vos identifiants.");
         }
-        
-        // Reset failed attempts on successful login
-        loginAttemptService.resetFailedAttempts(user.getEmail());
-        
-        // Generate token and create session
-        return createLoginSession(user);
-    }
-    
-    @Transactional
-    public AuthResponse createLoginSession(User user) {
-        String token = jwtUtil.generateToken(user.getEmail());
-        createSession(user, token);
-        
+
+        String roleName = getRoleName(user);
+        String token = jwtUtil.generateToken(user.getEmail(), roleName);
+        saveSession(user, token);
+
         return AuthResponse.builder()
                 .token(token)
-                .user(mapToUserResponse(user))
+                .email(user.getEmail())
+                .role(roleName)
                 .build();
     }
-    
-    @Transactional
-    public UserResponse updateUser(Long userId, UserUpdateRequest request) {
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new RuntimeException("User not found"));
-        
-        if (request.getNom() != null) {
-            user.setNom(request.getNom());
-        }
-        if (request.getPrenom() != null) {
-            user.setPrenom(request.getPrenom());
-        }
-        if (request.getEmail() != null && !request.getEmail().equals(user.getEmail())) {
-            if (userRepository.existsByEmail(request.getEmail())) {
-                throw new RuntimeException("Email already exists");
-            }
-            user.setEmail(request.getEmail());
-        }
-        
-        User updatedUser = userRepository.save(user);
-        return mapToUserResponse(updatedUser);
-    }
-    
-    @Transactional
-    public void resetPassword(Long userId, String newPassword) {
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new RuntimeException("User not found"));
-        
-        user.setPassword(passwordEncoder.encode(newPassword));
-        userRepository.save(user);
-    }
-    
-    @Transactional
+
     public void logout(String token) {
-        sessionRepository.invalidateSession(token);
+        sessionRepository.deleteByToken(token);
     }
-    
-    @Transactional
-    public void unblockUser(String email) {
-        userRepository.unblockUser(email);
-    }
-    
-    @Transactional
-    public void blockUser(String email) {
-        userRepository.blockUser(email);
-    }
-    
-    public UserResponse getUserById(Long id) {
+
+    public UserResponse updateUser(Long id, UserUpdateRequest request) {
         User user = userRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new RuntimeException("Utilisateur non trouvé"));
+
+        if (request.getNom() != null) user.setNom(request.getNom());
+        if (request.getPrenom() != null) user.setPrenom(request.getPrenom());
+        if (request.getEmail() != null) user.setEmail(request.getEmail());
+
+        userRepository.save(user);
         return mapToUserResponse(user);
     }
-    
+
+    public UserResponse getUserById(Long id) {
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Utilisateur non trouvé"));
+        return mapToUserResponse(user);
+    }
+
     public List<UserResponse> getAllUsers() {
         return userRepository.findAll().stream()
                 .map(this::mapToUserResponse)
-                .toList();
+                .collect(Collectors.toList());
     }
-    
-    private void createSession(User user, String token) {
-        LocalDateTime expiresAt = LocalDateTime.now().plusSeconds(jwtExpiration / 1000);
-        
+
+    public void unblockUser(String email) {
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("Utilisateur non trouvé"));
+        user.setBlocked(false);
+        user.setFailedAttempts(0);
+        userRepository.save(user);
+    }
+
+    public void blockUser(String email) {
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("Utilisateur non trouvé"));
+        user.setBlocked(true);
+        userRepository.save(user);
+    }
+
+    private void incrementFailedAttempts(User user) {
+        user.setFailedAttempts(user.getFailedAttempts() + 1);
+        if (user.getFailedAttempts() >= 3) {
+            user.setBlocked(true);
+        }
+        userRepository.save(user);
+    }
+
+    private void resetFailedAttempts(User user) {
+        user.setFailedAttempts(0);
+        userRepository.save(user);
+    }
+
+    private void saveSession(User user, String token) {
         Session session = Session.builder()
                 .user(user)
                 .token(token)
-                .expiresAt(expiresAt)
+                .createdAt(LocalDateTime.now())
+                .expiresAt(LocalDateTime.now().plusHours(24))
                 .isValid(true)
                 .build();
-        
         sessionRepository.save(session);
     }
-    
+
+    private String getRoleName(User user) {
+        if (user.getRole() != null && user.getRole().getLibelle() != null) {
+            return user.getRole().getLibelle();
+        }
+        return "USER";
+    }
+
     private UserResponse mapToUserResponse(User user) {
         return UserResponse.builder()
                 .id(user.getId())
                 .email(user.getEmail())
                 .nom(user.getNom())
                 .prenom(user.getPrenom())
-                .role(user.getRole())
+                .role(getRoleName(user))
                 .isBlocked(user.isBlocked())
-                .createdAt(user.getCreatedAt())
                 .build();
     }
 }

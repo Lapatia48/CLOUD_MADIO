@@ -31,20 +31,18 @@ public class User {
     
     private String prenom;
     
-    @Column(length = 20)
-    @Builder.Default
-    private String role = "USER";
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "id_role", referencedColumnName = "id")
+    private Role role;
     
+    @Column(name = "is_blocked")
     @Builder.Default
     private boolean isBlocked = false;
     
+    @Column(name = "failed_attempts")
     @Builder.Default
     private int failedAttempts = 0;
     
+    @Column(name = "firebase_uid")
     private String firebaseUid;
-    
-    @Column(name = "created_at", updatable = false)
-    @Temporal(TemporalType.TIMESTAMP)
-    @Builder.Default
-    private java.time.LocalDateTime createdAt = java.time.LocalDateTime.now();
 }

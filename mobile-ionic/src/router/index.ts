@@ -1,10 +1,22 @@
 import { createRouter, createWebHistory } from '@ionic/vue-router';
-import { useAuthStore } from '../stores/auth';
 
 const routes = [
-  { path: '/', redirect: '/login' },
-  { path: '/login', component: () => import('../views/LoginPage.vue') },
-  { path: '/register', component: () => import('../views/RegisterPage.vue') },
+  { 
+    path: '/', 
+    redirect: '/home' 
+  },
+  { 
+    path: '/home', 
+    component: () => import('../views/HomePage.vue') 
+  },
+  { 
+    path: '/login', 
+    component: () => import('../views/LoginPage.vue') 
+  },
+  { 
+    path: '/register', 
+    component: () => import('../views/RegisterPage.vue') 
+  },
   { 
     path: '/map', 
     component: () => import('../views/MapPage.vue'),
@@ -15,6 +27,15 @@ const routes = [
     component: () => import('../views/CreateSignalementPage.vue'),
     meta: { requiresAuth: true }
   },
+  // Rediriger les anciennes routes vers /map
+  {
+    path: '/tabs/:pathMatch(.*)*',
+    redirect: '/map'
+  },
+  {
+    path: '/:pathMatch(.*)*',
+    redirect: '/home'
+  }
 ];
 
 const router = createRouter({
@@ -26,11 +47,13 @@ router.beforeEach((to, _from, next) => {
   const token = localStorage.getItem('token')
   const isAuthenticated = !!token
   
+  console.log('Router guard:', { path: to.path, isAuthenticated, requiresAuth: to.meta.requiresAuth })
+  
   if (to.meta.requiresAuth && !isAuthenticated) {
+    console.log('Not authenticated, redirecting to /login')
     next('/login')
-  } else if ((to.path === '/login' || to.path === '/register') && isAuthenticated) {
-    next('/map')
   } else {
+    console.log('Proceeding to', to.path)
     next()
   }
 })
