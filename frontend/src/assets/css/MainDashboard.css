@@ -1,0 +1,195 @@
+.main-dashboard {
+  display: flex;
+  height: 100vh;
+  width: 100vw;
+  overflow: hidden;
+}
+
+.map-section {
+  flex: 7;
+  position: relative;
+}
+
+.map-container {
+  width: 100%;
+  height: 100%;
+}
+
+.connection-badge {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  padding: 8px 16px;
+  border-radius: 20px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  z-index: 1000;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+}
+
+.connection-badge.online { background: #d4edda; color: #155724; }
+.connection-badge.offline { background: #f8d7da; color: #721c24; }
+
+/* Tooltip sur marqueur */
+.marker-tooltip {
+  min-width: 180px;
+  padding: 5px;
+}
+
+.marker-tooltip strong {
+  display: block;
+  margin-bottom: 8px;
+  color: #2c3e50;
+  font-size: 0.95rem;
+  border-bottom: 2px solid #3498db;
+  padding-bottom: 5px;
+}
+
+.marker-tooltip .tooltip-row {
+  margin: 4px 0;
+  font-size: 0.85rem;
+  color: #34495e;
+}
+
+/* Sidebar */
+.sidebar {
+  flex: 3;
+  min-width: 320px;
+  max-width: 380px;
+  background: linear-gradient(180deg, #2c3e50 0%, #34495e 100%);
+  color: white;
+  padding: 20px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.sidebar-header {
+  text-align: center;
+  padding-bottom: 15px;
+  border-bottom: 2px solid rgba(255,255,255,0.1);
+}
+
+.sidebar-header h1 { margin: 0; font-size: 1.8rem; }
+.sidebar-header p { margin: 5px 0 0; opacity: 0.7; font-size: 0.9rem; }
+
+.user-card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: rgba(255,255,255,0.1);
+  padding: 15px;
+  border-radius: 12px;
+}
+
+.user-avatar {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #3498db, #9b59b6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.4rem;
+  font-weight: bold;
+  text-transform: uppercase;
+}
+
+.user-info { display: flex; flex-direction: column; gap: 3px; }
+.user-info strong { font-size: 1.1rem; }
+
+.role-badge {
+  display: inline-block;
+  padding: 3px 10px;
+  border-radius: 12px;
+  font-size: 0.75rem;
+  width: fit-content;
+  font-weight: 600;
+}
+
+.role-badge.user { background: #3498db; }
+.role-badge.admin { background: #e74c3c; }
+.role-badge.manager { background: #9b59b6; }
+
+.guest-card {
+  background: rgba(255,255,255,0.1);
+  padding: 25px 15px;
+  border-radius: 12px;
+  text-align: center;
+}
+
+.guest-card .guest-icon { font-size: 3rem; margin-bottom: 10px; }
+.guest-card p { margin: 0; font-size: 1.2rem; font-weight: 600; }
+.guest-card small { opacity: 0.7; font-size: 0.9rem; }
+
+.actions {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.btn {
+  padding: 14px 16px;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  font-size: 1rem;
+  font-weight: 600;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.btn:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.2); }
+.btn:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+
+.btn-primary { background: linear-gradient(135deg, #3498db, #2980b9); color: white; }
+.btn-secondary { background: rgba(255,255,255,0.15); color: white; }
+.btn-sync { background: linear-gradient(135deg, #1abc9c, #16a085); color: white; }
+.btn-admin { background: linear-gradient(135deg, #9b59b6, #8e44ad); color: white; }
+.btn-warning { background: linear-gradient(135deg, #f39c12, #d68910); color: white; }
+.btn-danger { background: linear-gradient(135deg, #e74c3c, #c0392b); color: white; }
+.btn-outline { background: transparent; border: 2px solid rgba(255,255,255,0.5); color: white; }
+
+.signalements-list {
+  flex: 1;
+  background: rgba(255,255,255,0.05);
+  border-radius: 12px;
+  padding: 15px;
+  overflow-y: auto;
+}
+
+.signalements-list h3 { margin: 0 0 15px; font-size: 1rem; }
+.signalements-list .empty { text-align: center; opacity: 0.6; padding: 20px; }
+
+.signalements-list ul { list-style: none; padding: 0; margin: 0; }
+
+.signalements-list li {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px;
+  border-bottom: 1px solid rgba(255,255,255,0.1);
+  cursor: pointer;
+  border-radius: 8px;
+  transition: background 0.2s;
+}
+
+.signalements-list li:hover { background: rgba(255,255,255,0.1); }
+.signalements-list li:last-child { border-bottom: none; }
+
+.status-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.signalements-list li div { display: flex; flex-direction: column; }
+.signalements-list li strong { font-size: 0.9rem; }
+.signalements-list li small { font-size: 0.8rem; opacity: 0.6; }
+
+.custom-marker { background: transparent; border: none; }

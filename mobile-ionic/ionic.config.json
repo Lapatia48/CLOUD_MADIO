@@ -1,7 +1,7 @@
 {
-  "name": "mobile-ionic",
+  "name": "madio-mobile",
   "integrations": {
     "capacitor": {}
   },
-  "type": "vue-vite"
+  "type": "react"
 }

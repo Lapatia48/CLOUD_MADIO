@@ -41,10 +41,13 @@ services:
     build: ./mobile-ionic
     container_name: ionic_mobile
     ports:
-      - "8100:8100"
-    volumes:
-      - ./mobile-ionic:/app
-      - /app/node_modules
+      - "8100:3000"
+    environment:
+      - CI=true
+      - BROWSER=none
+      - CHOKIDAR_USEPOLLING=true
+    stdin_open: true
+    tty: true
 
   tileserver:
     image: maptiler/tileserver-gl:latest

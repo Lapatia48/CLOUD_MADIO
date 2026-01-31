@@ -1,22 +1,32 @@
 import { Navigate, Outlet } from 'react-router-dom'
-import { useAuth } from './AuthContext'
-import type { Role } from '../types/auth'
 
-export default function ProtectedRoute({
-  allowedRoles,
-  redirectTo = '/login',
-}: {
-  allowedRoles?: Role[]
-  redirectTo?: string
-}) {
-  const { isAuthenticated, user } = useAuth()
+type ProtectedRouteProps = {
+  allowedRoles?: string[]
+}
 
-  if (!isAuthenticated || !user) return <Navigate to={redirectTo} replace />
+const ProtectedRoute = ({ allowedRoles }: ProtectedRouteProps) => {
+  const storedUser = localStorage.getItem('user')
 
-  if (allowedRoles && allowedRoles.length > 0 && !allowedRoles.includes(user.role)) {
-    const fallback = user.role === 'MANAGER' ? '/admin' : '/user'
-    return <Navigate to={fallback} replace />
+  if (!storedUser) {
+    // Pas connecté -> rediriger vers login
+    return <Navigate to="/login" replace />
   }
 
-  return <Outlet />
+  try {
+    const user = JSON.parse(storedUser) as { role: string }
+
+    // Si des rôles sont requis, vérifier que l'utilisateur a le bon rôle
+    if (allowedRoles && !allowedRoles.includes(user.role)) {
+      return <Navigate to="/user" replace />
+    }
+
+    // Utilisateur autorisé
+    return <Outlet />
+  } catch {
+    // Erreur parsing -> rediriger vers login
+    localStorage.removeItem('user')
+    return <Navigate to="/login" replace />
+  }
 }
+
+export default ProtectedRoute
