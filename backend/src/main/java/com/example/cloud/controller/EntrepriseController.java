@@ -1,13 +1,8 @@
 package com.example.cloud.controller;
 
-import com.example.cloud.dto.EntrepriseRequest;
-import com.example.cloud.dto.EntrepriseResponse;
-import com.example.cloud.service.EntrepriseService;
-import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.tags.Tag;
-import jakarta.validation.Valid;
+import com.example.cloud.entity.Entreprise;
+import com.example.cloud.repository.EntrepriseRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -16,26 +11,19 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/entreprises")
 @RequiredArgsConstructor
-@Tag(name = "Entreprises", description = "APIs de gestion des entreprises")
 public class EntrepriseController {
-    
-    private final EntrepriseService entrepriseService;
-    
-    @PostMapping
-    @Operation(summary = "Créer une nouvelle entreprise")
-    public ResponseEntity<EntrepriseResponse> create(@Valid @RequestBody EntrepriseRequest request) {
-        return ResponseEntity.status(HttpStatus.CREATED).body(entrepriseService.create(request));
-    }
-    
+
+    private final EntrepriseRepository entrepriseRepository;
+
     @GetMapping
-    @Operation(summary = "Récupérer toutes les entreprises")
-    public ResponseEntity<List<EntrepriseResponse>> getAll() {
-        return ResponseEntity.ok(entrepriseService.getAll());
+    public ResponseEntity<List<Entreprise>> getAllEntreprises() {
+        return ResponseEntity.ok(entrepriseRepository.findAll());
     }
-    
+
     @GetMapping("/{id}")
-    @Operation(summary = "Récupérer une entreprise par son ID")
-    public ResponseEntity<EntrepriseResponse> getById(@PathVariable Long id) {
-        return ResponseEntity.ok(entrepriseService.getById(id));
+    public ResponseEntity<Entreprise> getEntrepriseById(@PathVariable Long id) {
+        return entrepriseRepository.findById(id)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
     }
 }
