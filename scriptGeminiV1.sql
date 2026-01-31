@@ -1,6 +1,18 @@
 create database routes;
 \c routes;
 
+--Table role
+-- 'USER', 'VISITOR', 'USER', 'MANAGER'
+create table roles(
+    id SERIAL PRIMARY KEY,
+    libelle varchar(20)
+);
+
+INSERT INTO roles (libelle) VALUES
+    ('USER'),
+    ('MANAGER'),
+    ('ADMIN');
+
 -- Table des utilisateurs
 CREATE TABLE users (
     id SERIAL PRIMARY KEY,
@@ -8,7 +20,7 @@ CREATE TABLE users (
     password VARCHAR(255) NOT NULL, -- Mot de passe haché
     nom VARCHAR(100),
     prenom VARCHAR(100),
-    role VARCHAR(20) DEFAULT 'USER', -- 'VISITOR', 'USER', 'MANAGER'
+    role_id INTEGER NOT NULL REFERENCES roles(id) ON DELETE RESTRICT,
     is_blocked BOOLEAN DEFAULT FALSE,
     failed_attempts INT DEFAULT 0,
     firebase_uid VARCHAR(255) -- Pour la synchronisation
@@ -50,5 +62,5 @@ outes=# select * from entreprises;
  id | adresse | email | nom | telephone
 ----+---------+-------+-----+-----------
 (0 ligne)
-insert into entreprises(adresse, email, nom, telephone) values ('Analakely',
-'Antananarivo','contact@entreprise.mg','Entreprise Colas',0331499704);
+insert into entreprises(nom, adresse, telephone, email) 
+VALUES ('Entreprise Colas', 'Analakely, Antananarivo', '0331499704', 'contact@entreprise.mg');

@@ -2,18 +2,7 @@
   "options": {
     "paths": {
       "root": "/data",
-      "fonts": "fonts",
-      "sprites": "sprites",
-      "styles": "styles",
-      "mbtiles": ""
-    }
-  },
-  "styles": {
-    "basic": {
-      "style": "basic.json",
-      "tilejson": {
-        "bounds": [47.4, -19.0, 47.6, -18.8]
-      }
+      "mbtiles": "/data"
     }
   },
   "data": {

@@ -1,5 +1,6 @@
+version: '3.8'
+
 services:
-  # Base de données
   db:
     image: postgres:15-alpine
     container_name: postgres_db
@@ -13,7 +14,6 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
 
-  # Backend API (Java)
   backend:
     build: ./backend
     container_name: java_backend
@@ -29,7 +29,6 @@ services:
       - 8.8.8.8
       - 8.8.4.4
 
-  # Web App (React)
   frontend:
     build: ./frontend
     container_name: react_web
@@ -38,7 +37,6 @@ services:
     depends_on:
       - backend
 
-  # Mobile App Preview (Ionic/Vue)
   mobile-ionic:
     build: ./mobile-ionic
     container_name: ionic_mobile
@@ -48,15 +46,15 @@ services:
       - ./mobile-ionic:/app
       - /app/node_modules
 
-  # Serveur de cartes Offline (TileServer GL)
   tileserver:
     image: maptiler/tileserver-gl:latest
-    container_name: tileserver_gl
+    container_name: tileserver
+    restart: unless-stopped
     ports:
-      - "8081:8080"
+      - "8085:8080"
     volumes:
       - ./map-data:/data
-    command: --verbose
+    command: --no-cors --verbose
 
 volumes:
   postgres_data:
