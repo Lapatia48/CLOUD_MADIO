@@ -8,10 +8,12 @@ export default function LoginPage() {
   const [password, setPassword] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [isBlocked, setIsBlocked] = useState(false)
 
   async function onSubmit(e: FormEvent) {
     e.preventDefault()
     setError(null)
+    setIsBlocked(false)
     setLoading(true)
 
     try {
@@ -35,7 +37,12 @@ export default function LoginPage() {
         }))
         navigate('/', { replace: true })
       } else {
-        setError(data.message || 'Email ou mot de passe incorrect')
+        // Check if user is blocked
+        const message = data.message || 'Email ou mot de passe incorrect'
+        if (message.toLowerCase().includes('bloqué') || message.toLowerCase().includes('blocked')) {
+          setIsBlocked(true)
+        }
+        setError(message)
       }
     } catch (err) {
       setError('Erreur de connexion au serveur')
@@ -75,7 +82,18 @@ export default function LoginPage() {
             />
           </div>
 
-          {error && <div className="error-message">{error}</div>}
+          {error && (
+            <div className={`error-message ${isBlocked ? 'blocked-error' : ''}`}>
+              {isBlocked && <span className="blocked-icon">🚫</span>}
+              {error}
+              {isBlocked && (
+                <div className="blocked-hint">
+                  Votre compte a été bloqué suite à plusieurs tentatives de connexion échouées.
+                  <br />Veuillez contacter un administrateur pour le débloquer.
+                </div>
+              )}
+            </div>
+          )}
 
           <button type="submit" className="btn-submit" disabled={loading}>
             {loading ? '⏳ Connexion...' : '🔐 Se connecter'}

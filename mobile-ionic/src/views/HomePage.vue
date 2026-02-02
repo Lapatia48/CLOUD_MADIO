@@ -69,6 +69,13 @@
           <ion-icon :icon="listOutline" slot="start"></ion-icon>
           Mes signalements
         </ion-button>
+        
+        <!-- Admin Only: Blocked Users -->
+        <ion-button v-if="isAdmin" expand="block" color="warning" router-link="/admin/blocked-users">
+          <ion-icon :icon="banOutline" slot="start"></ion-icon>
+          Utilisateurs bloqués
+        </ion-button>
+        
         <ion-button expand="block" color="medium" fill="outline" @click="handleLogout">
           <ion-icon :icon="logOutOutline" slot="start"></ion-icon>
           Déconnexion
@@ -86,7 +93,7 @@ import {
   IonButton, IonIcon, IonCard, IonCardHeader, IonCardTitle, 
   IonCardSubtitle, IonCardContent, IonChip, IonAvatar, IonBadge 
 } from '@ionic/vue'
-import { logInOutline, mapOutline, personAddOutline, addCircleOutline, listOutline, logOutOutline } from 'ionicons/icons'
+import { logInOutline, mapOutline, personAddOutline, addCircleOutline, listOutline, logOutOutline, banOutline } from 'ionicons/icons'
 import L from 'leaflet'
 import { useAuthStore } from '../stores/auth'
 
@@ -114,10 +121,15 @@ const userRole = computed(() => {
   if (user) {
     try {
       const parsed = JSON.parse(user)
-      return parsed.role || 'USER'
-    } catch { return 'USER' }
+      return parsed.role || localStorage.getItem('userRole') || 'USER'
+    } catch { return localStorage.getItem('userRole') || 'USER' }
   }
-  return 'USER'
+  return localStorage.getItem('userRole') || 'USER'
+})
+
+const isAdmin = computed(() => {
+  const role = userRole.value
+  return role === 'ADMIN' || role === 'MANAGER'
 })
 
 let map: L.Map | null = null

@@ -22,10 +22,18 @@ export const useAuthStore = defineStore('auth', () => {
     const res = await http.post('/api/auth/login', { email, password })
     console.log('Login response:', res.data)
     token.value = res.data.token
-    user.value = { id: 0, email: res.data.email, nom: '', prenom: '', role: res.data.role }
+    const userData = {
+      id: res.data.userId || res.data.id || 0,
+      email: res.data.email,
+      nom: res.data.nom || '',
+      prenom: res.data.prenom || '',
+      role: res.data.role
+    }
+    user.value = userData
     localStorage.setItem('token', res.data.token)
     localStorage.setItem('userEmail', res.data.email)
     localStorage.setItem('userRole', res.data.role)
+    localStorage.setItem('user', JSON.stringify(userData))
     http.defaults.headers.common['Authorization'] = `Bearer ${res.data.token}`
     return user.value
   }
@@ -48,6 +56,7 @@ export const useAuthStore = defineStore('auth', () => {
     localStorage.removeItem('token')
     localStorage.removeItem('userEmail')
     localStorage.removeItem('userRole')
+    localStorage.removeItem('user')
     delete http.defaults.headers.common['Authorization']
   }
 

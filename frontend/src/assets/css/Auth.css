@@ -92,6 +92,25 @@
   font-size: 0.95rem;
 }
 
+.error-message.blocked-error {
+  background: linear-gradient(135deg, #fdedee, #fce4e4);
+  border: 2px solid #c0392b;
+  padding: 20px;
+}
+
+.blocked-icon {
+  display: block;
+  font-size: 2rem;
+  margin-bottom: 10px;
+}
+
+.blocked-hint {
+  margin-top: 12px;
+  font-size: 0.85rem;
+  color: #7f8c8d;
+  line-height: 1.5;
+}
+
 .btn-submit {
   padding: 16px;
   background: linear-gradient(135deg, #3498db, #2980b9);

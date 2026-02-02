@@ -9,6 +9,8 @@ C:\Users\VALIMBAVAKA\Documents\GitHub\CLOUD_MADIO\backend\src\main\java\com\exam
 C:\Users\VALIMBAVAKA\Documents\GitHub\CLOUD_MADIO\backend\src\main\java\com\example\cloud\entity\User.java
 C:\Users\VALIMBAVAKA\Documents\GitHub\CLOUD_MADIO\backend\src\main\java\com\example\cloud\config\SecurityConfig.java
 C:\Users\VALIMBAVAKA\Documents\GitHub\CLOUD_MADIO\backend\src\main\java\com\example\cloud\dto\UserResponse.java
+C:\Users\VALIMBAVAKA\Documents\GitHub\CLOUD_MADIO\backend\src\main\java\com\example\cloud\service\CustomUserDetailsService.java
+C:\Users\VALIMBAVAKA\Documents\GitHub\CLOUD_MADIO\backend\src\main\java\com\example\cloud\entity\Role.java
 C:\Users\VALIMBAVAKA\Documents\GitHub\CLOUD_MADIO\backend\src\main\java\com\example\cloud\scheduler\SessionCleanupScheduler.java
 C:\Users\VALIMBAVAKA\Documents\GitHub\CLOUD_MADIO\backend\src\main\java\com\example\cloud\util\JwtUtil.java
 C:\Users\VALIMBAVAKA\Documents\GitHub\CLOUD_MADIO\backend\src\main\java\com\example\cloud\dto\AuthResponse.java
@@ -16,6 +18,7 @@ C:\Users\VALIMBAVAKA\Documents\GitHub\CLOUD_MADIO\backend\src\main\java\com\exam
 C:\Users\VALIMBAVAKA\Documents\GitHub\CLOUD_MADIO\backend\src\main\java\com\example\cloud\service\SignalementService.java
 C:\Users\VALIMBAVAKA\Documents\GitHub\CLOUD_MADIO\backend\src\main\java\com\example\cloud\controller\SignalementController.java
 C:\Users\VALIMBAVAKA\Documents\GitHub\CLOUD_MADIO\backend\src\main\java\com\example\cloud\dto\SignalementResponse.java
+C:\Users\VALIMBAVAKA\Documents\GitHub\CLOUD_MADIO\backend\src\main\java\com\example\cloud\repository\RoleRepository.java
 C:\Users\VALIMBAVAKA\Documents\GitHub\CLOUD_MADIO\backend\src\main\java\com\example\cloud\repository\SignalementRepository.java
 C:\Users\VALIMBAVAKA\Documents\GitHub\CLOUD_MADIO\backend\src\main\java\com\example\cloud\security\JwtAuthenticationFilter.java
 C:\Users\VALIMBAVAKA\Documents\GitHub\CLOUD_MADIO\backend\src\main\java\com\example\cloud\service\UserService.java
@@ -27,5 +30,6 @@ C:\Users\VALIMBAVAKA\Documents\GitHub\CLOUD_MADIO\backend\src\main\java\com\exam
 C:\Users\VALIMBAVAKA\Documents\GitHub\CLOUD_MADIO\backend\src\main\java\com\example\cloud\service\LoginAttemptService.java
 C:\Users\VALIMBAVAKA\Documents\GitHub\CLOUD_MADIO\backend\src\main\java\com\example\cloud\RoadworksAuthApiApplication.java
 C:\Users\VALIMBAVAKA\Documents\GitHub\CLOUD_MADIO\backend\src\main\java\com\example\cloud\dto\SignalementRequest.java
+C:\Users\VALIMBAVAKA\Documents\GitHub\CLOUD_MADIO\backend\src\main\java\com\example\cloud\controller\UserController.java
 C:\Users\VALIMBAVAKA\Documents\GitHub\CLOUD_MADIO\backend\src\main\java\com\example\cloud\dto\StatusUpdateRequest.java
 C:\Users\VALIMBAVAKA\Documents\GitHub\CLOUD_MADIO\backend\src\main\java\com\example\cloud\entity\Session.java

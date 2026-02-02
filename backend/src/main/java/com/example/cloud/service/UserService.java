@@ -53,7 +53,10 @@ public class UserService {
 
         return AuthResponse.builder()
                 .token(token)
+                .userId(user.getId())
                 .email(user.getEmail())
+                .nom(user.getNom())
+                .prenom(user.getPrenom())
                 .role(roleName)
                 .build();
     }
@@ -82,7 +85,10 @@ public class UserService {
 
         return AuthResponse.builder()
                 .token(token)
+                .userId(user.getId())
                 .email(user.getEmail())
+                .nom(user.getNom())
+                .prenom(user.getPrenom())
                 .role(roleName)
                 .build();
     }
