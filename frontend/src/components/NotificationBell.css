@@ -1,0 +1,122 @@
+.notification-bell {
+  position: relative;
+}
+
+.bell-button {
+  background: rgba(255, 255, 255, 0.15);
+  border: none;
+  font-size: 1.4rem;
+  padding: 8px 12px;
+  border-radius: 10px;
+  cursor: pointer;
+  position: relative;
+  transition: all 0.2s;
+}
+
+.bell-button:hover {
+  background: rgba(255, 255, 255, 0.25);
+}
+
+.badge {
+  position: absolute;
+  top: -5px;
+  right: -5px;
+  background: #e74c3c;
+  color: white;
+  font-size: 0.7rem;
+  font-weight: bold;
+  min-width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2px;
+}
+
+.notification-dropdown {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  margin-top: 10px;
+  width: 350px;
+  max-height: 400px;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+  overflow: hidden;
+  z-index: 1000;
+}
+
+.dropdown-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 15px 20px;
+  background: linear-gradient(135deg, #2c3e50, #34495e);
+  color: white;
+}
+
+.dropdown-header h4 {
+  margin: 0;
+  font-size: 1rem;
+}
+
+.mark-all-read {
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  color: white;
+  padding: 5px 10px;
+  border-radius: 5px;
+  font-size: 0.75rem;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.mark-all-read:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.notification-list {
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+.no-notifications {
+  padding: 30px;
+  text-align: center;
+  color: #7f8c8d;
+  font-size: 0.9rem;
+}
+
+.notification-item {
+  padding: 15px 20px;
+  border-bottom: 1px solid #ecf0f1;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.notification-item:hover {
+  background: #f8f9fa;
+}
+
+.notification-item.unread {
+  background: #e8f4fd;
+  border-left: 4px solid #3498db;
+}
+
+.notification-item.unread:hover {
+  background: #d4ecfb;
+}
+
+.notif-description {
+  margin: 0 0 5px;
+  font-size: 0.9rem;
+  color: #2c3e50;
+  line-height: 1.4;
+}
+
+.notif-date {
+  font-size: 0.75rem;
+  color: #7f8c8d;
+}

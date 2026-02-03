@@ -24,6 +24,7 @@ public class SignalementResponse {
     private Long entrepriseId;
     private String entrepriseNom;
     private LocalDateTime dateSignalement;
+    private LocalDateTime dateModification;
     private Long userId;
     private String userEmail;
 }

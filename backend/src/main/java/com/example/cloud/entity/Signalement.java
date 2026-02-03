@@ -48,6 +48,9 @@ public class Signalement {
     @Builder.Default
     private LocalDateTime dateSignalement = LocalDateTime.now();
     
+    @Column(name = "date_modification")
+    private LocalDateTime dateModification;
+    
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
     private User user;

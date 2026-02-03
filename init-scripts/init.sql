@@ -42,16 +42,28 @@ CREATE TABLE IF NOT EXISTS signalements (
     budget DECIMAL(15,2),
     id_entreprise INT REFERENCES entreprises(id),
     date_signalement TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    date_modification TIMESTAMP,
     user_id INT REFERENCES users(id)
 );
 
-create table if not exists notifications (
+-- Table notifications
+CREATE TABLE IF NOT EXISTS notifications (
     id SERIAL PRIMARY KEY,
     description TEXT,
-    id_user int REFERENCES users(id),
-    id_signalement int REFERENCES signalements(id),
-    date_notif TIMESTAMP,
-    is_read BOOLEAN
+    id_user INT REFERENCES users(id),
+    id_signalement INT REFERENCES signalements(id),
+    date_notif TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    is_read BOOLEAN DEFAULT FALSE
+);
+
+-- Table historique status signalement
+CREATE TABLE IF NOT EXISTS historique_modif_signalement (
+    id SERIAL PRIMARY KEY,
+    id_user INT REFERENCES users(id),
+    id_signalement INT REFERENCES signalements(id),
+    date_modif TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    status_ancien VARCHAR(20),
+    status_nouveau VARCHAR(20)
 );
 
 -- Insertion des rôles

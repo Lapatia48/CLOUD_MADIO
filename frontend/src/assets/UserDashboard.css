@@ -31,20 +31,29 @@
   gap: 20px;
 }
 
+/* Header sidebar avec notifications */
+.sidebar-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: linear-gradient(135deg, #2c3e50, #34495e);
+  padding: 15px 20px;
+  border-radius: 12px;
+  margin-bottom: 5px;
+}
+
+.sidebar-header h2 {
+  margin: 0;
+  color: white;
+  font-size: 1.2rem;
+}
+
 /* Infos utilisateur */
 .user-info {
   background: white;
   padding: 20px;
   border-radius: 12px;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-}
-
-.user-info h2 {
-  margin: 0 0 15px 0;
-  font-size: 1.3rem;
-  color: #2c3e50;
-  border-bottom: 2px solid #3498db;
-  padding-bottom: 10px;
 }
 
 .user-details p {

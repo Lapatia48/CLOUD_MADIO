@@ -37,6 +37,11 @@ const routes = [
     component: () => import('../views/BlockedUsersPage.vue'),
     meta: { requiresAuth: true, requiresAdmin: true }
   },
+  { 
+    path: '/admin/signalements', 
+    component: () => import('../views/AdminSignalementsPage.vue'),
+    meta: { requiresAuth: true, requiresAdmin: true }
+  },
   // Rediriger les anciennes routes vers /map
   {
     path: '/tabs/:pathMatch(.*)*',

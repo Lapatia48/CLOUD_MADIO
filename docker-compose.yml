@@ -13,6 +13,7 @@ services:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
+      - ./init-scripts:/docker-entrypoint-initdb.d
 
   backend:
     build: ./backend
@@ -28,6 +29,9 @@ services:
     dns:
       - 8.8.8.8
       - 8.8.4.4
+    extra_hosts:
+        - "repo.maven.apache.org:146.75.124.215"
+        - "repo1.maven.org:146.75.124.215"
 
   frontend:
     build: ./frontend

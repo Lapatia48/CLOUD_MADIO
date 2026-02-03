@@ -34,6 +34,8 @@ type Signalement = {
   budget?: number | null;
   dateSignalement?: string;
   date_signalement?: string;
+  dateModification?: string;
+  date_modification?: string;
   entreprise?: { id: number; nom: string } | null;
   user?: { id: number; email: string; nom?: string; prenom?: string } | null;
 };
@@ -53,7 +55,7 @@ const SignalementDetailPage = () => {
   });
   const [saving, setSaving] = useState(false);
 
-  const isAdmin = currentUser?.role === 'ADMIN' || currentUser?.id_role === 3;
+  const isAdmin = currentUser?.role === 'ADMIN' || currentUser?.id_role === 1;
 
   useEffect(() => {
     const storedUser = localStorage.getItem('user');
@@ -141,6 +143,15 @@ const SignalementDetailPage = () => {
     }
   };
 
+  const getProgressPercent = (status: string) => {
+    switch (status) {
+      case 'NOUVEAU': return 0;
+      case 'EN_COURS': return 50;
+      case 'TERMINE': return 100;
+      default: return 0;
+    }
+  };
+
   const formatDate = (dateStr?: string) => {
     const d = dateStr || signalement?.date_signalement;
     if (!d) return 'N/A';
@@ -206,6 +217,23 @@ const SignalementDetailPage = () => {
             {getStatusLabel(signalement.status)}
           </span>
           <h1>{signalement.description || 'Sans description'}</h1>
+          
+          {/* Barre de progression */}
+          <div className="progress-container">
+            <div className="progress-header">
+              <span className="progress-label">Avancement</span>
+              <span className="progress-percent">{getProgressPercent(signalement.status)}%</span>
+            </div>
+            <div className="progress-bar">
+              <div 
+                className="progress-fill" 
+                style={{ 
+                  width: `${getProgressPercent(signalement.status)}%`,
+                  background: getStatusColor(signalement.status)
+                }}
+              />
+            </div>
+          </div>
         </div>
 
         <div className="detail-info">
@@ -216,6 +244,16 @@ const SignalementDetailPage = () => {
               <strong>{formatDate(signalement.dateSignalement)}</strong>
             </div>
           </div>
+
+          {(signalement.dateModification || signalement.date_modification) && (
+            <div className="info-card">
+              <span className="info-icon">🔄</span>
+              <div>
+                <label>Dernière modification</label>
+                <strong>{formatDate(signalement.dateModification || signalement.date_modification)}</strong>
+              </div>
+            </div>
+          )}
 
           <div className="info-card">
             <span className="info-icon">📐</span>

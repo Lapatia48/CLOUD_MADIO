@@ -1,9 +1,9 @@
 <template>
   <ion-page>
     <ion-header>
-      <ion-toolbar color="primary">
+      <ion-toolbar class="custom-toolbar">
         <ion-buttons slot="start">
-          <ion-back-button default-href="/map" />
+          <ion-back-button default-href="/map" color="light" />
         </ion-buttons>
         <ion-title>Détail Signalement</ion-title>
       </ion-toolbar>
@@ -12,7 +12,7 @@
     <ion-content class="detail-content">
       <!-- Loading -->
       <div v-if="loading" class="loading-state">
-        <ion-spinner name="crescent" color="primary" />
+        <ion-spinner name="crescent" color="light" />
         <p>Chargement...</p>
       </div>
 
@@ -20,7 +20,7 @@
       <div v-else-if="!signalement" class="not-found-state">
         <ion-icon :icon="alertCircleOutline" class="not-found-icon" />
         <h2>Signalement non trouvé</h2>
-        <ion-button @click="router.push('/map')">Retour</ion-button>
+        <button class="btn-back-home" @click="router.push('/map')">Retour à la carte</button>
       </div>
 
       <!-- Detail Content -->
@@ -28,116 +28,153 @@
         <!-- Mini Map -->
         <div class="detail-map" id="detail-map"></div>
 
-        <!-- Info Card -->
-        <ion-card class="info-card">
-          <ion-card-header>
-            <ion-badge :color="getStatusBadgeColor(signalement.status)">
+        <!-- Detail Panel - Style Web -->
+        <div class="detail-panel">
+          <!-- Header avec statut -->
+          <div class="detail-header">
+            <span class="status-badge" :style="{ background: getStatusColor(signalement.status) }">
               {{ getStatusLabel(signalement.status) }}
-            </ion-badge>
-            <ion-card-title>{{ signalement.description || 'Sans description' }}</ion-card-title>
-          </ion-card-header>
+            </span>
+            <h1>{{ signalement.description || 'Sans description' }}</h1>
+            
+            <!-- Barre de progression -->
+            <div class="progress-container">
+              <div class="progress-header">
+                <span class="progress-label">Avancement</span>
+                <span class="progress-percent">{{ getProgressPercent(signalement.status) }}%</span>
+              </div>
+              <div class="progress-bar">
+                <div 
+                  class="progress-fill" 
+                  :style="{ 
+                    width: `${getProgressPercent(signalement.status)}%`,
+                    background: getStatusColor(signalement.status)
+                  }"
+                />
+              </div>
+            </div>
+          </div>
 
-          <ion-card-content>
-            <ion-list lines="none">
-              <ion-item>
-                <ion-icon :icon="calendarOutline" slot="start" color="primary" />
-                <ion-label>
-                  <p>Date</p>
-                  <h3>{{ formatDate(signalement.dateSignalement || signalement.date_signalement) }}</h3>
-                </ion-label>
-              </ion-item>
+          <!-- Info Cards -->
+          <div class="detail-info">
+            <div class="info-card">
+              <span class="info-icon">📅</span>
+              <div>
+                <label>Date de signalement</label>
+                <strong>{{ formatDate(signalement.dateSignalement || signalement.date_signalement) }}</strong>
+              </div>
+            </div>
 
-              <ion-item>
-                <ion-icon :icon="resizeOutline" slot="start" color="success" />
-                <ion-label>
-                  <p>Surface</p>
-                  <h3>{{ signalement.surfaceM2 ? `${signalement.surfaceM2} m²` : 'Non renseignée' }}</h3>
-                </ion-label>
-              </ion-item>
+            <div v-if="signalement.dateModification || signalement.date_modification" class="info-card">
+              <span class="info-icon">🔄</span>
+              <div>
+                <label>Dernière modification</label>
+                <strong>{{ formatDate(signalement.dateModification || signalement.date_modification) }}</strong>
+              </div>
+            </div>
 
-              <ion-item>
-                <ion-icon :icon="cashOutline" slot="start" color="warning" />
-                <ion-label>
-                  <p>Budget</p>
-                  <h3>{{ signalement.budget ? `${signalement.budget.toLocaleString()} Ar` : 'Non renseigné' }}</h3>
-                </ion-label>
-              </ion-item>
+            <div class="info-card">
+              <span class="info-icon">📐</span>
+              <div>
+                <label>Surface</label>
+                <strong>{{ signalement.surfaceM2 ? `${signalement.surfaceM2} m²` : 'Non renseignée' }}</strong>
+              </div>
+            </div>
 
-              <ion-item>
-                <ion-icon :icon="businessOutline" slot="start" color="tertiary" />
-                <ion-label>
-                  <p>Entreprise</p>
-                  <h3>{{ signalement.entreprise?.nom || signalement.entrepriseNom || 'Aucune' }}</h3>
-                </ion-label>
-              </ion-item>
+            <div class="info-card">
+              <span class="info-icon">💰</span>
+              <div>
+                <label>Budget estimé</label>
+                <strong>{{ signalement.budget ? `${signalement.budget.toLocaleString()} Ar` : 'Non renseigné' }}</strong>
+              </div>
+            </div>
 
-              <ion-item>
-                <ion-icon :icon="locationOutline" slot="start" color="danger" />
-                <ion-label>
-                  <p>Coordonnées GPS</p>
-                  <h3>{{ signalement.latitude.toFixed(6) }}, {{ signalement.longitude.toFixed(6) }}</h3>
-                </ion-label>
-              </ion-item>
-            </ion-list>
-          </ion-card-content>
-        </ion-card>
+            <div class="info-card">
+              <span class="info-icon">🏢</span>
+              <div>
+                <label>Entreprise assignée</label>
+                <strong>{{ signalement.entreprise?.nom || signalement.entrepriseNom || 'Aucune' }}</strong>
+              </div>
+            </div>
 
-        <!-- Admin Section -->
-        <ion-card v-if="isAdmin" class="admin-card">
-          <ion-card-header>
-            <ion-card-title>
-              <ion-icon :icon="settingsOutline" /> Administration
-            </ion-card-title>
-          </ion-card-header>
+            <div class="info-card">
+              <span class="info-icon">📍</span>
+              <div>
+                <label>Coordonnées GPS</label>
+                <strong>{{ signalement.latitude.toFixed(6) }}, {{ signalement.longitude.toFixed(6) }}</strong>
+              </div>
+            </div>
 
-          <ion-card-content>
+            <div v-if="signalement.user" class="info-card">
+              <span class="info-icon">👤</span>
+              <div>
+                <label>Signalé par</label>
+                <strong>{{ signalement.user.prenom }} {{ signalement.user.nom }}</strong>
+              </div>
+            </div>
+          </div>
+
+          <!-- Section Admin - Modification -->
+          <div v-if="isAdmin" class="admin-section">
+            <h3>🔧 Administration</h3>
+            
             <template v-if="!isEditing">
-              <ion-button expand="block" color="secondary" @click="startEditing">
-                <ion-icon :icon="createOutline" slot="start" />
-                Modifier le signalement
-              </ion-button>
+              <button class="btn-edit" @click="startEditing">
+                ✏️ Modifier le signalement
+              </button>
             </template>
 
             <template v-else>
               <div class="edit-form">
-                <ion-item>
-                  <ion-label position="stacked">Description</ion-label>
-                  <ion-textarea v-model="editForm.description" :rows="3" />
-                </ion-item>
-
-                <ion-item>
-                  <ion-label position="stacked">Status</ion-label>
-                  <ion-select v-model="editForm.status" interface="popover">
-                    <ion-select-option value="NOUVEAU">🔴 Nouveau</ion-select-option>
-                    <ion-select-option value="EN_COURS">🟠 En cours</ion-select-option>
-                    <ion-select-option value="TERMINE">🟢 Terminé</ion-select-option>
-                  </ion-select>
-                </ion-item>
-
-                <ion-item>
-                  <ion-label position="stacked">Surface (m²)</ion-label>
-                  <ion-input v-model="editForm.surfaceM2" type="number" placeholder="Ex: 150" />
-                </ion-item>
-
-                <ion-item>
-                  <ion-label position="stacked">Budget (Ar)</ion-label>
-                  <ion-input v-model="editForm.budget" type="number" placeholder="Ex: 500000" />
-                </ion-item>
-
+                <div class="form-group">
+                  <label>Description</label>
+                  <textarea 
+                    v-model="editForm.description" 
+                    rows="3"
+                    placeholder="Description du problème..."
+                  />
+                </div>
+                
+                <div class="form-group">
+                  <label>Status</label>
+                  <select v-model="editForm.status">
+                    <option value="NOUVEAU">🔴 Nouveau (0%)</option>
+                    <option value="EN_COURS">🟠 En cours (50%)</option>
+                    <option value="TERMINE">🟢 Terminé (100%)</option>
+                  </select>
+                </div>
+                
+                <div class="form-row">
+                  <div class="form-group">
+                    <label>Surface (m²)</label>
+                    <input 
+                      type="number" 
+                      v-model="editForm.surfaceM2" 
+                      placeholder="Ex: 150"
+                    />
+                  </div>
+                  <div class="form-group">
+                    <label>Budget (Ar)</label>
+                    <input 
+                      type="number" 
+                      v-model="editForm.budget" 
+                      placeholder="Ex: 500000"
+                    />
+                  </div>
+                </div>
+                
                 <div class="edit-actions">
-                  <ion-button expand="block" color="success" @click="saveEdit" :disabled="saving">
-                    <ion-icon :icon="saveOutline" slot="start" />
-                    {{ saving ? 'Enregistrement...' : 'Enregistrer' }}
-                  </ion-button>
-                  <ion-button expand="block" color="medium" @click="cancelEditing">
-                    <ion-icon :icon="closeOutline" slot="start" />
-                    Annuler
-                  </ion-button>
+                  <button class="btn-save" @click="saveEdit" :disabled="saving">
+                    {{ saving ? '⏳ Enregistrement...' : '💾 Enregistrer' }}
+                  </button>
+                  <button class="btn-cancel" @click="cancelEditing">
+                    ❌ Annuler
+                  </button>
                 </div>
               </div>
             </template>
-          </ion-card-content>
-        </ion-card>
+          </div>
+        </div>
       </template>
     </ion-content>
   </ion-page>
@@ -148,14 +185,9 @@ import { ref, onMounted, onUnmounted, computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import {
   IonPage, IonHeader, IonToolbar, IonTitle, IonContent, IonButtons, IonBackButton,
-  IonCard, IonCardHeader, IonCardTitle, IonCardContent, IonList, IonItem, IonLabel,
-  IonIcon, IonBadge, IonSpinner, IonButton, IonTextarea, IonInput, IonSelect, IonSelectOption
+  IonIcon, IonSpinner
 } from '@ionic/vue'
-import {
-  alertCircleOutline, calendarOutline, resizeOutline, cashOutline,
-  businessOutline, locationOutline, settingsOutline, createOutline,
-  saveOutline, closeOutline
-} from 'ionicons/icons'
+import { alertCircleOutline } from 'ionicons/icons'
 import L from 'leaflet'
 import { http } from '../api/http'
 
@@ -169,6 +201,8 @@ interface Signalement {
   budget?: number | null
   dateSignalement?: string
   date_signalement?: string
+  dateModification?: string
+  date_modification?: string
   entreprise?: { id: number; nom: string } | null
   entrepriseNom?: string
   user?: { id: number; email: string; nom?: string; prenom?: string } | null
@@ -202,7 +236,8 @@ const currentUser = computed(() => {
 
 const isAdmin = computed(() => {
   const user = currentUser.value
-  return user?.role === 'ADMIN' || user?.id_role === 3
+  // ADMIN = id_role 1 (selon init.sql), ou role='ADMIN'
+  return user?.role === 'ADMIN' || user?.id_role === 1
 })
 
 function getStatusLabel(status: string) {
@@ -214,12 +249,21 @@ function getStatusLabel(status: string) {
   }
 }
 
-function getStatusBadgeColor(status: string) {
+function getStatusColor(status: string) {
   switch (status) {
-    case 'NOUVEAU': return 'danger'
-    case 'EN_COURS': return 'warning'
-    case 'TERMINE': return 'success'
-    default: return 'primary'
+    case 'NOUVEAU': return '#e74c3c'
+    case 'EN_COURS': return '#f39c12'
+    case 'TERMINE': return '#27ae60'
+    default: return '#3498db'
+  }
+}
+
+function getProgressPercent(status: string) {
+  switch (status) {
+    case 'NOUVEAU': return 0
+    case 'EN_COURS': return 50
+    case 'TERMINE': return 100
+    default: return 0
   }
 }
 
@@ -229,6 +273,8 @@ function formatDate(dateStr?: string) {
     day: '2-digit',
     month: 'long',
     year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
   })
 }
 
@@ -298,6 +344,15 @@ function initMap() {
       attribution: '&copy; OpenStreetMap'
     }).addTo(map)
 
+    // Cercle coloré
+    L.circle([signalement.value!.latitude, signalement.value!.longitude], {
+      radius: 50,
+      color: getStatusColor(signalement.value!.status),
+      fillColor: getStatusColor(signalement.value!.status),
+      fillOpacity: 0.3,
+      weight: 3,
+    }).addTo(map)
+
     L.marker([signalement.value!.latitude, signalement.value!.longitude]).addTo(map)
   }, 100)
 }
@@ -320,8 +375,13 @@ onUnmounted(() => {
 <style scoped>
 @import 'leaflet/dist/leaflet.css';
 
+.custom-toolbar {
+  --background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+  --color: white;
+}
+
 .detail-content {
-  --background: #f0f2f5;
+  --background: #2c3e50;
 }
 
 .loading-state,
@@ -331,7 +391,8 @@ onUnmounted(() => {
   align-items: center;
   justify-content: center;
   height: 100%;
-  color: #7f8c8d;
+  background: linear-gradient(135deg, #2c3e50, #34495e);
+  color: white;
 }
 
 .not-found-icon {
@@ -340,80 +401,261 @@ onUnmounted(() => {
   margin-bottom: 20px;
 }
 
+.btn-back-home {
+  padding: 14px 35px;
+  background: linear-gradient(135deg, #3498db, #2980b9);
+  color: white;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  font-size: 1rem;
+  font-weight: 600;
+}
+
 .detail-map {
   height: 200px;
   width: 100%;
 }
 
-.info-card {
-  margin: 15px;
-  border-radius: 16px;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+/* Panel Style - Identique au Web */
+.detail-panel {
+  background: linear-gradient(180deg, #2c3e50 0%, #34495e 100%);
+  color: white;
+  padding: 25px 20px;
+  min-height: calc(100% - 200px);
 }
 
-.info-card ion-card-header {
-  padding-bottom: 10px;
+.detail-header {
+  margin-bottom: 25px;
 }
 
-.info-card ion-badge {
+.status-badge {
+  display: inline-block;
+  padding: 8px 18px;
+  border-radius: 25px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  margin-bottom: 15px;
+}
+
+.detail-header h1 {
+  margin: 0;
+  font-size: 1.4rem;
+  line-height: 1.4;
+  font-weight: 600;
+}
+
+/* Barre de progression */
+.progress-container {
+  margin-top: 20px;
+  background: rgba(255, 255, 255, 0.1);
+  padding: 15px 18px;
+  border-radius: 12px;
+}
+
+.progress-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
   margin-bottom: 10px;
 }
 
-.info-card ion-card-title {
-  font-size: 1.2rem;
-  color: #2c3e50;
+.progress-label {
+  font-size: 0.9rem;
+  opacity: 0.8;
 }
 
-.info-card ion-item {
-  --background: #f8f9fa;
-  --border-radius: 10px;
-  margin-bottom: 8px;
+.progress-percent {
+  font-size: 1.1rem;
+  font-weight: bold;
 }
 
-.info-card ion-item p {
-  color: #7f8c8d;
-  font-size: 0.8rem;
+.progress-bar {
+  width: 100%;
+  height: 12px;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 10px;
+  overflow: hidden;
 }
 
-.info-card ion-item h3 {
-  color: #2c3e50;
-  font-size: 1rem;
-  font-weight: 600;
-  margin: 4px 0 0;
+.progress-fill {
+  height: 100%;
+  border-radius: 10px;
+  transition: width 0.5s ease, background 0.3s ease;
 }
 
-/* Admin Card */
-.admin-card {
-  margin: 15px;
-  border-radius: 16px;
-  border-top: 4px solid #9b59b6;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+/* Info Cards */
+.detail-info {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
 }
 
-.admin-card ion-card-title {
+.info-card {
   display: flex;
   align-items: center;
-  gap: 8px;
-  color: #9b59b6;
-  font-size: 1.1rem;
+  gap: 15px;
+  background: rgba(255, 255, 255, 0.1);
+  padding: 15px;
+  border-radius: 12px;
+  transition: background 0.2s;
 }
 
-.edit-form ion-item {
-  --background: white;
-  margin-bottom: 12px;
+.info-card:active {
+  background: rgba(255, 255, 255, 0.15);
+}
+
+.info-card .info-icon {
+  font-size: 1.8rem;
+  flex-shrink: 0;
+}
+
+.info-card div {
+  display: flex;
+  flex-direction: column;
+}
+
+.info-card label {
+  font-size: 0.8rem;
+  opacity: 0.7;
+  margin-bottom: 3px;
+}
+
+.info-card strong {
+  font-size: 1rem;
+}
+
+/* Section Admin */
+.admin-section {
+  margin-top: 25px;
+  padding-top: 20px;
+  border-top: 2px solid rgba(255, 255, 255, 0.2);
+}
+
+.admin-section h3 {
+  margin: 0 0 15px;
+  font-size: 1.1rem;
+  color: #f39c12;
+}
+
+.btn-edit {
+  width: 100%;
+  padding: 14px;
+  background: linear-gradient(135deg, #9b59b6, #8e44ad);
+  color: white;
+  border: none;
   border-radius: 10px;
-  border: 1px solid #e0e0e0;
+  cursor: pointer;
+  font-size: 1rem;
+  font-weight: 600;
+  transition: all 0.3s;
+}
+
+.btn-edit:active {
+  transform: scale(0.98);
+  box-shadow: 0 4px 15px rgba(155, 89, 182, 0.4);
+}
+
+/* Formulaire d'édition */
+.edit-form {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.edit-form .form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.edit-form .form-group label {
+  font-size: 0.9rem;
+  color: rgba(255, 255, 255, 0.8);
+  font-weight: 500;
+}
+
+.edit-form .form-group input,
+.edit-form .form-group textarea,
+.edit-form .form-group select {
+  padding: 12px;
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  border-radius: 10px;
+  font-size: 1rem;
+  background: rgba(255, 255, 255, 0.1);
+  color: white;
+  transition: border-color 0.2s;
+}
+
+.edit-form .form-group input:focus,
+.edit-form .form-group textarea:focus,
+.edit-form .form-group select:focus {
+  outline: none;
+  border-color: #3498db;
+  background: rgba(255, 255, 255, 0.15);
+}
+
+.edit-form .form-group select option {
+  background: #2c3e50;
+  color: white;
+}
+
+.edit-form .form-group textarea {
+  resize: vertical;
+  min-height: 80px;
+}
+
+.edit-form .form-row {
+  display: flex;
+  gap: 12px;
+}
+
+.edit-form .form-row .form-group {
+  flex: 1;
 }
 
 .edit-actions {
   display: flex;
-  flex-direction: column;
   gap: 10px;
-  margin-top: 15px;
+  margin-top: 10px;
 }
 
-.edit-actions ion-button {
-  --border-radius: 10px;
+.btn-save {
+  flex: 1;
+  padding: 14px;
+  background: linear-gradient(135deg, #27ae60, #219a52);
+  color: white;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  font-size: 1rem;
   font-weight: 600;
+  transition: all 0.3s;
+}
+
+.btn-save:active:not(:disabled) {
+  transform: scale(0.98);
+  box-shadow: 0 4px 15px rgba(39, 174, 96, 0.4);
+}
+
+.btn-save:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.btn-cancel {
+  padding: 14px 20px;
+  background: rgba(255, 255, 255, 0.2);
+  color: white;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  font-size: 1rem;
+  font-weight: 600;
+  transition: all 0.3s;
+}
+
+.btn-cancel:active {
+  background: rgba(231, 76, 60, 0.8);
 }
 </style>

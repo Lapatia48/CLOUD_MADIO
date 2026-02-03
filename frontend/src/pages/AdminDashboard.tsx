@@ -34,6 +34,16 @@ const AdminDashboard = () => {
   const [filterDateFrom, setFilterDateFrom] = useState('');
   const [filterDateTo, setFilterDateTo] = useState('');
 
+  // Modal de modification
+  const [editingSignalement, setEditingSignalement] = useState<Signalement | null>(null);
+  const [editForm, setEditForm] = useState({
+    description: '',
+    status: '',
+    surfaceM2: '',
+    budget: '',
+  });
+  const [saving, setSaving] = useState(false);
+
   useEffect(() => {
     fetchData();
   }, []);
@@ -77,10 +87,73 @@ const AdminDashboard = () => {
     }
   };
 
+  const getProgressPercent = (status: string) => {
+    switch (status) {
+      case 'NOUVEAU': return 0;
+      case 'EN_COURS': return 50;
+      case 'TERMINE': return 100;
+      default: return 0;
+    }
+  };
+
   const formatDate = (sig: Signalement) => {
     const dateStr = sig.dateSignalement || sig.date_signalement;
     if (!dateStr) return 'N/A';
     return new Date(dateStr).toLocaleDateString('fr-FR');
+  };
+
+  // Ouvrir le modal de modification
+  const openEditModal = (sig: Signalement) => {
+    setEditingSignalement(sig);
+    setEditForm({
+      description: sig.description || '',
+      status: sig.status || 'NOUVEAU',
+      surfaceM2: sig.surfaceM2?.toString() || '',
+      budget: sig.budget?.toString() || '',
+    });
+  };
+
+  // Fermer le modal
+  const closeEditModal = () => {
+    setEditingSignalement(null);
+    setEditForm({ description: '', status: '', surfaceM2: '', budget: '' });
+  };
+
+  // Sauvegarder la modification
+  const handleSaveEdit = async () => {
+    if (!editingSignalement) return;
+    setSaving(true);
+    try {
+      const token = localStorage.getItem('token');
+      const response = await fetch(`http://localhost:8080/api/signalements/${editingSignalement.id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token && { Authorization: `Bearer ${token}` }),
+        },
+        body: JSON.stringify({
+          description: editForm.description,
+          status: editForm.status,
+          latitude: editingSignalement.latitude,
+          longitude: editingSignalement.longitude,
+          surfaceM2: editForm.surfaceM2 ? parseFloat(editForm.surfaceM2) : null,
+          budget: editForm.budget ? parseFloat(editForm.budget) : null,
+        }),
+      });
+      if (response.ok) {
+        const updated = await response.json();
+        setSignalements(prev => prev.map(s => s.id === updated.id ? { ...s, ...updated } : s));
+        closeEditModal();
+        alert('✅ Signalement modifié avec succès !');
+      } else {
+        alert('❌ Erreur lors de la modification');
+      }
+    } catch (error) {
+      console.error('Erreur:', error);
+      alert('❌ Erreur lors de la modification');
+    } finally {
+      setSaving(false);
+    }
   };
 
   return (
@@ -167,6 +240,7 @@ const AdminDashboard = () => {
                 <th>ID</th>
                 <th>Description</th>
                 <th>Statut</th>
+                <th>Avancement</th>
                 <th>Date</th>
                 <th>Utilisateur</th>
                 <th>Actions</th>
@@ -182,11 +256,25 @@ const AdminDashboard = () => {
                       {sig.status}
                     </span>
                   </td>
+                  <td>
+                    <div className="progress-cell">
+                      <div className="progress-bar-mini">
+                        <div 
+                          className="progress-fill-mini" 
+                          style={{ width: `${getProgressPercent(sig.status)}%`, background: getStatusColor(sig.status) }}
+                        />
+                      </div>
+                      <span className="progress-text">{getProgressPercent(sig.status)}%</span>
+                    </div>
+                  </td>
                   <td>{formatDate(sig)}</td>
                   <td>{sig.user ? `${sig.user.prenom} ${sig.user.nom}` : 'N/A'}</td>
-                  <td>
+                  <td className="actions-cell">
+                    <button className="btn-edit" onClick={() => openEditModal(sig)}>
+                      ✏️ Modifier
+                    </button>
                     <button className="btn-view" onClick={() => navigate(`/signalement/${sig.id}`)}>
-                      Voir
+                      👁️ Voir
                     </button>
                   </td>
                 </tr>
@@ -195,6 +283,68 @@ const AdminDashboard = () => {
           </table>
         )}
       </div>
+
+      {/* Modal de modification */}
+      {editingSignalement && (
+        <div className="modal-overlay" onClick={closeEditModal}>
+          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <h2>✏️ Modifier le signalement #{editingSignalement.id}</h2>
+              <button className="modal-close" onClick={closeEditModal}>×</button>
+            </div>
+            <div className="modal-body">
+              <div className="form-group">
+                <label>Description</label>
+                <textarea
+                  value={editForm.description}
+                  onChange={(e) => setEditForm({ ...editForm, description: e.target.value })}
+                  rows={3}
+                  placeholder="Description du problème..."
+                />
+              </div>
+              <div className="form-group">
+                <label>Statut</label>
+                <select
+                  value={editForm.status}
+                  onChange={(e) => setEditForm({ ...editForm, status: e.target.value })}
+                >
+                  <option value="NOUVEAU">🔴 Nouveau</option>
+                  <option value="EN_COURS">🟠 En cours</option>
+                  <option value="TERMINE">🟢 Terminé</option>
+                </select>
+              </div>
+              <div className="form-row-modal">
+                <div className="form-group">
+                  <label>Surface (m²)</label>
+                  <input
+                    type="number"
+                    value={editForm.surfaceM2}
+                    onChange={(e) => setEditForm({ ...editForm, surfaceM2: e.target.value })}
+                    placeholder="Ex: 150"
+                  />
+                </div>
+                <div className="form-group">
+                  <label>Budget (Ar)</label>
+                  <input
+                    type="number"
+                    value={editForm.budget}
+                    onChange={(e) => setEditForm({ ...editForm, budget: e.target.value })}
+                    placeholder="Ex: 500000"
+                  />
+                </div>
+              </div>
+            </div>
+            <div className="modal-footer">
+              <button className="btn-cancel" onClick={closeEditModal}>
+                ❌ Annuler
+              </button>
+              <button className="btn-save" onClick={handleSaveEdit} disabled={saving}>
+                {saving ? '⏳ Enregistrement...' : '💾 Enregistrer'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

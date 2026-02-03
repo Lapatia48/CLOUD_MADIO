@@ -6,6 +6,7 @@ import 'leaflet/dist/leaflet.css';
 import markerIcon2x from 'leaflet/dist/images/marker-icon-2x.png';
 import markerIcon from 'leaflet/dist/images/marker-icon.png';
 import markerShadow from 'leaflet/dist/images/marker-shadow.png';
+import NotificationBell from '../components/NotificationBell';
 import '../assets/UserDashboard.css';
 
 type UserInfo = {
@@ -231,9 +232,14 @@ const UserDashboard = () => {
 
       {/* Panneau latéral droit */}
       <div className="sidebar">
+        {/* Header avec notifications */}
+        <div className="sidebar-header">
+          <h2>👤 Mon Profil</h2>
+          <NotificationBell />
+        </div>
+        
         {/* Infos utilisateur */}
         <div className="user-info">
-          <h2>👤 Mon Profil</h2>
           {user ? (
             <div className="user-details">
               <p><strong>Email:</strong> {user.email}</p>

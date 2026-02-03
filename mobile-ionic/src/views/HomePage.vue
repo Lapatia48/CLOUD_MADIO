@@ -4,9 +4,12 @@
     <ion-header>
       <ion-toolbar color="primary">
         <ion-title>🛣️ MADIO</ion-title>
-        <ion-chip slot="end" :color="isOffline ? 'danger' : 'success'" class="status-chip">
-          {{ isOffline ? '🔴 Offline' : '🟢 Online' }}
-        </ion-chip>
+        <div slot="end" class="header-actions">
+          <NotificationBell v-if="isAuthenticated" />
+          <ion-chip :color="isOffline ? 'danger' : 'success'" class="status-chip">
+            {{ isOffline ? '🔴 Offline' : '🟢 Online' }}
+          </ion-chip>
+        </div>
       </ion-toolbar>
     </ion-header>
 
@@ -69,6 +72,11 @@
           <ion-icon :icon="listOutline" slot="start"></ion-icon>
           Mes signalements
         </ion-button>
+        <!-- Bouton Admin pour gérer les signalements -->
+        <ion-button v-if="isAdmin" expand="block" color="tertiary" router-link="/admin/signalements">
+          <ion-icon :icon="settingsOutline" slot="start"></ion-icon>
+          Gestion Admin
+        </ion-button>
         <ion-button expand="block" color="medium" fill="outline" @click="handleLogout">
           <ion-icon :icon="logOutOutline" slot="start"></ion-icon>
           Déconnexion
@@ -86,9 +94,10 @@ import {
   IonButton, IonIcon, IonCard, IonCardHeader, IonCardTitle, 
   IonCardSubtitle, IonCardContent, IonChip, IonAvatar, IonBadge 
 } from '@ionic/vue'
-import { logInOutline, mapOutline, personAddOutline, addCircleOutline, listOutline, logOutOutline } from 'ionicons/icons'
+import { logInOutline, mapOutline, personAddOutline, addCircleOutline, listOutline, logOutOutline, settingsOutline } from 'ionicons/icons'
 import L from 'leaflet'
 import { useAuthStore } from '../stores/auth'
+import NotificationBell from '../components/NotificationBell.vue'
 
 const router = useRouter()
 const authStore = useAuthStore()
@@ -118,6 +127,18 @@ const userRole = computed(() => {
     } catch { return 'USER' }
   }
   return 'USER'
+})
+
+const isAdmin = computed(() => {
+  const user = localStorage.getItem('user')
+  if (user) {
+    try {
+      const parsed = JSON.parse(user)
+      // ADMIN = id_role 1 (selon init.sql), ou role='ADMIN'
+      return parsed.role === 'ADMIN' || parsed.id_role === 1
+    } catch { return false }
+  }
+  return false
 })
 
 let map: L.Map | null = null
@@ -177,6 +198,13 @@ onUnmounted(() => {
 .welcome-card ion-card-title,
 .welcome-card ion-card-subtitle {
   color: white;
+}
+
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding-right: 8px;
 }
 
 .welcome-card p {

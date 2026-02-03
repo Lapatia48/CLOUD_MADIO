@@ -184,7 +184,8 @@ const userRole = computed(() => {
 
 const isAdmin = computed(() => {
   const user = currentUser.value
-  return user?.role === 'ADMIN' || user?.id_role === 3
+  // ADMIN = id_role 1 (selon init.sql), ou role='ADMIN'
+  return user?.role === 'ADMIN' || user?.id_role === 1
 })
 
 const statsNouveau = computed(() => signalements.value.filter(s => s.status === 'NOUVEAU').length)
