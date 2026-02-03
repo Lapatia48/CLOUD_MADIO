@@ -146,11 +146,20 @@ const isOffline = ref(!navigator.onLine)
 const signalements = ref<Signalement[]>([])
 
 const currentUser = computed(() => {
-  const user = localStorage.getItem('user')
-  if (user) {
-    try {
-      return JSON.parse(user)
-    } catch { return null }
+  // Utiliser le store auth ou les valeurs du localStorage
+  if (authStore.user) {
+    return authStore.user
+  }
+  // Fallback sur localStorage (stocké séparément)
+  const email = localStorage.getItem('userEmail')
+  const role = localStorage.getItem('userRole')
+  if (email) {
+    return { 
+      id: 0, 
+      email, 
+      role: role || 'USER',
+      id_role: role === 'ADMIN' ? 3 : (role === 'ENTREPRISE' ? 2 : 1)
+    }
   }
   return null
 })
