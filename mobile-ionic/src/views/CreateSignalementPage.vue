@@ -50,6 +50,22 @@
                 class="custom-input"
               />
             </ion-item>
+            <!-- Entreprise responsable (optionnel) -->
+            <ion-item class="form-item">
+              <ion-select 
+                v-model="idEntreprise" 
+                label="Entreprise responsable" 
+                label-placement="floating"
+                placeholder="Sélectionner (optionnel)"
+                interface="action-sheet"
+                class="custom-input"
+              >
+                <ion-select-option :value="undefined">Aucune</ion-select-option>
+                <ion-select-option v-for="e in entreprises" :key="e.id" :value="e.id">
+                  {{ e.nom }}
+                </ion-select-option>
+              </ion-select>
+            </ion-item>
           </ion-list>
         </ion-card-content>
       </ion-card>
@@ -109,24 +125,45 @@ import {
   IonPage, IonHeader, IonToolbar, IonTitle, IonContent, IonButtons, 
   IonBackButton, IonList, IonItem, IonInput, IonTextarea, IonButton, 
   IonCard, IonCardHeader, IonCardTitle, IonCardSubtitle, IonCardContent,
-  IonIcon, IonSpinner
+  IonIcon, IonSpinner, IonSelect, IonSelectOption, toastController
 } from '@ionic/vue'
 import { createOutline, locationOutline, checkmarkCircleOutline, alertCircleOutline, cloudUploadOutline } from 'ionicons/icons'
 import L from 'leaflet'
-import { http, getApiErrorMessage } from '../api/http'
+import signalementFirebaseService from '../services/signalementFirebaseService'
+
+// Interface entreprise pour PostgreSQL
+interface Entreprise {
+  id: number
+  nom: string
+  adresse?: string
+  telephone?: string
+  email?: string
+}
 
 const router = useRouter()
 
 const description = ref('')
 const surfaceM2 = ref('')
 const budget = ref('')
+const idEntreprise = ref<number | undefined>(undefined)
+const entreprises = ref<Entreprise[]>([])
 const position = ref<{ lat: number; lng: number } | null>(null)
 const loading = ref(false)
 const error = ref<string | null>(null)
 
 let marker: L.Marker | null = null
 
-onMounted(() => {
+onMounted(async () => {
+  // Charger la liste des entreprises depuis le backend
+  try {
+    const response = await fetch('http://localhost:8080/api/entreprises')
+    if (response.ok) {
+      entreprises.value = await response.json()
+    }
+  } catch (e) {
+    console.warn('Impossible de charger les entreprises:', e)
+  }
+  
   setTimeout(() => {
     const map = L.map('create-map').setView([-18.8792, 47.5079], 13)
 
@@ -147,8 +184,9 @@ onMounted(() => {
 })
 
 async function handleSubmit() {
+  // Validation des contraintes (NOT NULL dans PostgreSQL)
   if (!position.value) {
-    error.value = 'Sélectionnez un emplacement sur la carte'
+    error.value = 'Sélectionnez un emplacement sur la carte (obligatoire)'
     return
   }
 
@@ -161,16 +199,29 @@ async function handleSubmit() {
   loading.value = true
 
   try {
-    await http.post('/api/signalements', {
-      description: description.value,
+    // Créer le signalement dans Firebase avec idEntreprise et dateSignalement
+    const result = await signalementFirebaseService.createSignalement({
+      description: description.value.trim(),
       latitude: position.value.lat,
       longitude: position.value.lng,
-      surfaceM2: parseFloat(surfaceM2.value) || 0,
-      budget: parseFloat(budget.value) || 0
+      surfaceM2: parseFloat(surfaceM2.value) || undefined,
+      budget: parseFloat(budget.value) || undefined,
+      idEntreprise: idEntreprise.value // FK vers entreprises(id) - peut être undefined
     })
-    router.replace('/map')
-  } catch (err) {
-    error.value = getApiErrorMessage(err)
+
+    if (result.success) {
+      const toast = await toastController.create({
+        message: '🔥 Signalement créé dans Firebase!',
+        duration: 2000,
+        color: 'success'
+      })
+      toast.present()
+      router.replace('/home')
+    } else {
+      error.value = result.error || 'Erreur lors de la création'
+    }
+  } catch (err: any) {
+    error.value = err.message || 'Erreur de connexion'
   } finally {
     loading.value = false
   }

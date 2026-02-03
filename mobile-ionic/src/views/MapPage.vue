@@ -13,98 +13,70 @@
       </ion-toolbar>
     </ion-header>
 
-    <ion-content class="ion-padding">
-      <!-- User Info Card -->
-      <ion-card class="user-card">
-        <ion-card-content>
-          <div class="user-info-row">
-            <ion-avatar class="user-avatar">
-              <div class="avatar-text">{{ userInitial }}</div>
-            </ion-avatar>
-            <div class="user-details">
-              <h2>{{ userName }}</h2>
-              <ion-badge color="primary">{{ userRole }}</ion-badge>
-            </div>
-            <ion-button fill="clear" color="danger" @click="handleLogout" class="logout-btn">
-              <ion-icon :icon="logOutOutline" />
-            </ion-button>
+    <ion-content :fullscreen="true" class="mes-signalements-content">
+      <!-- Carte prenant toute la hauteur disponible -->
+      <div class="map-section">
+        <div id="map" class="map-fullscreen"></div>
+        
+        <!-- User Info flottant -->
+        <div class="user-floating">
+          <ion-avatar class="user-avatar-small">
+            <div class="avatar-text">{{ userInitial }}</div>
+          </ion-avatar>
+          <div class="user-info-mini">
+            <strong>{{ userName }}</strong>
+            <span class="badge">{{ signalements.length }} signalement(s)</span>
           </div>
-        </ion-card-content>
-      </ion-card>
+          <ion-button fill="clear" color="danger" size="small" @click="handleLogout">
+            <ion-icon :icon="logOutOutline" />
+          </ion-button>
+        </div>
 
-      <!-- Stats Cards -->
-      <div class="stats-row">
-        <ion-card class="stat-card nouveau">
-          <ion-card-content>
-            <span class="stat-number">{{ statsNouveau }}</span>
-            <span class="stat-label">Nouveaux</span>
-          </ion-card-content>
-        </ion-card>
-        <ion-card class="stat-card en-cours">
-          <ion-card-content>
-            <span class="stat-number">{{ statsEnCours }}</span>
-            <span class="stat-label">En cours</span>
-          </ion-card-content>
-        </ion-card>
-        <ion-card class="stat-card termine">
-          <ion-card-content>
-            <span class="stat-number">{{ statsTermine }}</span>
-            <span class="stat-label">Terminés</span>
-          </ion-card-content>
-        </ion-card>
+        <!-- Stats flottantes -->
+        <div class="stats-floating">
+          <div class="stat-item nouveau">
+            <span class="num">{{ statsNouveau }}</span>
+            <span class="label">🔴</span>
+          </div>
+          <div class="stat-item en-cours">
+            <span class="num">{{ statsEnCours }}</span>
+            <span class="label">🟠</span>
+          </div>
+          <div class="stat-item termine">
+            <span class="num">{{ statsTermine }}</span>
+            <span class="label">🟢</span>
+          </div>
+        </div>
       </div>
 
-      <!-- Mini Map Card -->
-      <ion-card class="map-card">
-        <ion-card-header>
-          <ion-card-title>
-            <ion-icon :icon="mapOutline"></ion-icon> Localisation
-          </ion-card-title>
-        </ion-card-header>
-        <ion-card-content class="map-card-content">
-          <div id="map" class="mini-map"></div>
-        </ion-card-content>
-      </ion-card>
-
-      <!-- Signalements List -->
-      <ion-card class="list-card">
-        <ion-card-header>
-          <ion-card-title>
-            <ion-icon :icon="listOutline"></ion-icon> Liste ({{ signalements.length }})
-          </ion-card-title>
-        </ion-card-header>
-        <ion-card-content class="list-content">
-          <ion-list v-if="signalements.length > 0">
-            <ion-item v-for="sig in signalements" :key="sig.id" button @click="goToDetail(sig.id)">
-              <div class="status-dot" :style="{ backgroundColor: getStatusColor(sig.status) }" slot="start"></div>
-              <ion-label>
-                <h3>{{ sig.description?.slice(0, 30) || 'Signalement' }}...</h3>
-                <p>{{ getStatusLabel(sig.status) }} • {{ formatDate(sig) }}</p>
-              </ion-label>
-              <ion-icon :icon="chevronForwardOutline" slot="end" color="medium"></ion-icon>
-            </ion-item>
-          </ion-list>
-          <div v-else class="empty-state">
-            <ion-icon :icon="alertCircleOutline" class="empty-icon"></ion-icon>
-            <p>Aucun signalement</p>
-          </div>
-        </ion-card-content>
-      </ion-card>
-
-      <!-- Admin Section -->
-      <ion-card v-if="isAdmin" class="admin-card">
-        <ion-card-header>
-          <ion-card-title>
-            <ion-icon :icon="shieldOutline"></ion-icon> Administration
-          </ion-card-title>
-        </ion-card-header>
-        <ion-card-content>
-          <ion-button expand="block" color="danger" router-link="/blocked-users">
-            <ion-icon :icon="lockClosedOutline" slot="start" />
-            Utilisateurs bloqués
+      <!-- Liste des signalements (scrollable) -->
+      <div class="list-section">
+        <div class="list-header">
+          <h3>📋 Mes signalements ({{ signalements.length }})</h3>
+          <ion-button fill="clear" size="small" @click="refreshSignalements" :disabled="isLoading">
+            <ion-icon :icon="refreshOutline" :class="{ 'spin': isLoading }"></ion-icon>
           </ion-button>
-        </ion-card-content>
-      </ion-card>
+        </div>
+        
+        <ion-list v-if="signalements.length > 0" class="signalements-list">
+          <ion-item v-for="sig in signalements" :key="sig.documentId" button @click="goToDetail(sig.documentId)" detail>
+            <div class="status-dot" :style="{ backgroundColor: getStatusColor(sig.status) }" slot="start"></div>
+            <ion-label>
+              <h3>{{ sig.description?.slice(0, 35) || 'Signalement' }}...</h3>
+              <p>{{ getStatusLabel(sig.status) }} • {{ formatDate(sig.dateSignalement) }}</p>
+            </ion-label>
+          </ion-item>
+        </ion-list>
+        
+        <div v-else class="empty-state">
+          <ion-icon :icon="alertCircleOutline" class="empty-icon"></ion-icon>
+          <p>Vous n'avez pas encore de signalement</p>
+          <ion-button router-link="/signalement/new" color="primary">
+            <ion-icon :icon="addOutline" slot="start"></ion-icon>
+            Créer mon premier signalement
+          </ion-button>
+        </div>
+      </div>
 
       <!-- FAB Button -->
       <ion-fab vertical="bottom" horizontal="end" slot="fixed">
@@ -121,86 +93,47 @@ import { onMounted, ref, onUnmounted, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { 
   IonPage, IonHeader, IonToolbar, IonTitle, IonContent, IonButtons, IonButton, 
-  IonIcon, IonFab, IonFabButton, IonCard, IonCardHeader, IonCardTitle, 
-  IonCardContent, IonChip, IonAvatar, IonBadge, IonBackButton, IonList, IonItem, IonLabel 
+  IonIcon, IonFab, IonFabButton, IonChip, IonAvatar, IonBackButton, IonList, IonItem, IonLabel 
 } from '@ionic/vue'
-import { addOutline, logOutOutline, mapOutline, listOutline, chevronForwardOutline, alertCircleOutline, shieldOutline, lockClosedOutline } from 'ionicons/icons'
+import { addOutline, logOutOutline, refreshOutline, alertCircleOutline } from 'ionicons/icons'
 import L from 'leaflet'
 import { useAuthStore } from '../stores/auth'
-import { http } from '../api/http'
+import signalementFirebaseService, { type FirebaseSignalement } from '../services/signalementFirebaseService'
 
-interface Signalement {
-  id: number
-  description?: string
-  latitude: number
-  longitude: number
-  status: string
-  dateSignalement?: string
-  date_signalement?: string
-  user?: { id: number } | null
+interface MySignalement extends FirebaseSignalement {
+  documentId: string
 }
 
 const router = useRouter()
 const authStore = useAuthStore()
 const isOffline = ref(!navigator.onLine)
-const signalements = ref<Signalement[]>([])
+const isLoading = ref(false)
+const signalements = ref<MySignalement[]>([])
 
-const currentUser = computed(() => {
-  // Utiliser le store auth ou les valeurs du localStorage
-  if (authStore.user) {
-    return authStore.user
-  }
-  // Fallback sur localStorage (stocké séparément)
-  const email = localStorage.getItem('userEmail')
-  const role = localStorage.getItem('userRole')
-  if (email) {
-    return { 
-      id: 0, 
-      email, 
-      role: role || 'USER',
-      id_role: role === 'ADMIN' ? 3 : (role === 'ENTREPRISE' ? 2 : 1)
-    }
-  }
-  return null
-})
-
+// User info
 const userName = computed(() => {
-  const user = currentUser.value
-  if (user) {
-    return user.prenom || user.email || 'Utilisateur'
-  }
-  return 'Utilisateur'
+  const email = localStorage.getItem('userEmail')
+  return email?.split('@')[0] || 'Utilisateur'
 })
 
 const userInitial = computed(() => userName.value.charAt(0).toUpperCase())
 
-const userRole = computed(() => {
-  const user = currentUser.value
-  if (user) {
-    return user.role || 'USER'
-  }
-  return 'USER'
-})
-
-const isAdmin = computed(() => {
-  const user = currentUser.value
-  return user?.role === 'ADMIN' || user?.id_role === 3
-})
-
+// Stats
 const statsNouveau = computed(() => signalements.value.filter(s => s.status === 'NOUVEAU').length)
 const statsEnCours = computed(() => signalements.value.filter(s => s.status === 'EN_COURS').length)
 const statsTermine = computed(() => signalements.value.filter(s => s.status === 'TERMINE').length)
 
 let map: L.Map | null = null
 let tileLayer: L.TileLayer | null = null
+let markersGroup: L.LayerGroup | null = null
 
 function handleLogout() {
   authStore.logout()
   router.replace('/login')
 }
 
-function goToDetail(id: number) {
-  router.push(`/signalement/${id}`)
+function goToDetail(documentId: string) {
+  router.push(`/signalement/${documentId}`)
 }
 
 function getStatusColor(status: string) {
@@ -221,8 +154,7 @@ function getStatusLabel(status: string) {
   }
 }
 
-function formatDate(sig: Signalement) {
-  const dateStr = sig.dateSignalement || sig.date_signalement
+function formatDate(dateStr?: string) {
   if (!dateStr) return 'N/A'
   return new Date(dateStr).toLocaleDateString('fr-FR')
 }
@@ -235,7 +167,7 @@ function updateTileLayer() {
   if (tileLayer) map.removeLayer(tileLayer)
   
   const tileUrl = isOffline.value
-    ? 'http://localhost:8081/styles/basic/{z}/{x}/{y}.png'
+    ? 'http://localhost:8085/styles/basic/{z}/{x}/{y}.png'
     : 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png'
 
   tileLayer = L.tileLayer(tileUrl, {
@@ -243,56 +175,96 @@ function updateTileLayer() {
   }).addTo(map)
 }
 
-onMounted(async () => {
-  window.addEventListener('online', handleOnline)
-  window.addEventListener('offline', handleOffline)
+async function refreshSignalements() {
+  isLoading.value = true
+  await fetchMySignalements()
+  isLoading.value = false
+}
 
-  // Charger les signalements d'abord
-  await fetchSignalements()
-
-  setTimeout(() => {
-    map = L.map('map').setView([-18.8792, 47.5079], 13)
-    updateTileLayer()
-
-    // Add markers after loading signalements
-    addMarkersToMap()
-  }, 100)
-})
-
-async function fetchSignalements() {
+async function fetchMySignalements() {
   try {
-    const res = await http.get('/api/signalements')
-    let data = Array.isArray(res.data) ? res.data : []
+    // Récupérer uniquement MES signalements depuis Firebase
+    const mySignalements = await signalementFirebaseService.getMySignalements()
     
-    // Filtrer pour les utilisateurs simples (comme dans le web)
-    const user = currentUser.value
-    if (user && user.role === 'USER') {
-      data = data.filter((s: Signalement) => s.user?.id === user.userId)
+    // Ajouter documentId (on doit récupérer avec IDs)
+    const firebaseUid = localStorage.getItem('firebaseUid')
+    if (!firebaseUid) {
+      console.warn('Pas de firebaseUid trouvé')
+      signalements.value = []
+      return
     }
     
-    signalements.value = data
-    console.log('Signalements chargés:', signalements.value.length)
+    // Utiliser getAllSignalements et filtrer par firebaseUid de l'utilisateur
+    const allSigs = await signalementFirebaseService.getAllSignalements()
+    signalements.value = allSigs.filter(s => s.firebaseUid === firebaseUid) as MySignalement[]
     
-    // Mettre à jour les marqueurs si la carte existe déjà
-    if (map) {
-      addMarkersToMap()
-    }
+    console.log('Mes signalements Firebase:', signalements.value.length)
+    addMarkersToMap()
   } catch (e) {
-    console.error('Erreur chargement signalements:', e)
+    console.error('Erreur chargement mes signalements:', e)
   }
 }
 
 function addMarkersToMap() {
   if (!map) return
   
+  // Supprimer les anciens marqueurs
+  if (markersGroup) {
+    map.removeLayer(markersGroup)
+  }
+  markersGroup = L.layerGroup().addTo(map)
+  
   signalements.value.forEach((s) => {
     if (s.latitude && s.longitude) {
-      L.marker([s.latitude, s.longitude])
-        .addTo(map!)
-        .bindPopup(`<b>${s.description?.slice(0, 20) || 'Signalement'}</b><br>${getStatusLabel(s.status)}`)
+      const marker = L.circleMarker([s.latitude, s.longitude], {
+        radius: 12,
+        fillColor: getStatusColor(s.status),
+        color: '#fff',
+        weight: 3,
+        fillOpacity: 0.9
+      })
+      
+      const tooltipContent = `
+        <div style="min-width: 120px;">
+          <strong>${s.description?.slice(0, 25) || 'Signalement'}</strong>
+          <br><span style="color: ${getStatusColor(s.status)}">${getStatusLabel(s.status)}</span>
+          <br><small>📅 ${formatDate(s.dateSignalement)}</small>
+        </div>
+      `
+      
+      marker.bindTooltip(tooltipContent, {
+        permanent: false,
+        sticky: true,
+        direction: 'top',
+        offset: [0, -10],
+        opacity: 0.95
+      })
+      
+      marker.addTo(markersGroup!)
     }
   })
+  
+  // Centrer la carte sur les marqueurs s'il y en a
+  if (signalements.value.length > 0 && map) {
+    const bounds = L.latLngBounds(signalements.value.map(s => [s.latitude, s.longitude]))
+    map.fitBounds(bounds, { padding: [30, 30] })
+  }
 }
+
+onMounted(async () => {
+  window.addEventListener('online', handleOnline)
+  window.addEventListener('offline', handleOffline)
+
+  // Charger mes signalements
+  await fetchMySignalements()
+
+  setTimeout(() => {
+    map = L.map('map', { zoomControl: false }).setView([-18.8792, 47.5079], 13)
+    L.control.zoom({ position: 'bottomright' }).addTo(map)
+    updateTileLayer()
+    addMarkersToMap()
+  }, 100)
+})
 
 onUnmounted(() => {
   window.removeEventListener('online', handleOnline)
@@ -304,27 +276,52 @@ onUnmounted(() => {
 <style scoped>
 @import 'leaflet/dist/leaflet.css';
 
+.mes-signalements-content {
+  --padding-start: 0;
+  --padding-end: 0;
+  --padding-top: 0;
+  --padding-bottom: 0;
+}
+
 .status-chip {
   margin-right: 8px;
   font-size: 0.7rem;
 }
 
-.user-card {
-  background: linear-gradient(135deg, #3498db, #2980b9);
-  color: white;
-  margin-bottom: 8px;
+/* Section carte */
+.map-section {
+  position: relative;
+  width: 100%;
+  height: 45vh;
+  min-height: 280px;
 }
 
-.user-info-row {
+.map-fullscreen {
+  width: 100%;
+  height: 100%;
+}
+
+/* User info flottant */
+.user-floating {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  right: 10px;
+  background: rgba(255, 255, 255, 0.95);
+  border-radius: 12px;
+  padding: 8px 12px;
+  z-index: 999;
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 10px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
 }
 
-.user-avatar {
-  width: 45px;
-  height: 45px;
-  background: linear-gradient(135deg, #9b59b6, #8e44ad);
+.user-avatar-small {
+  width: 35px;
+  height: 35px;
+  background: linear-gradient(135deg, #3498db, #2980b9);
+  flex-shrink: 0;
 }
 
 .avatar-text {
@@ -333,132 +330,144 @@ onUnmounted(() => {
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 1.3rem;
+  font-size: 1rem;
   font-weight: bold;
   color: white;
 }
 
-.user-details {
+.user-info-mini {
   flex: 1;
-}
-
-.user-details h2 {
-  margin: 0 0 4px;
-  font-size: 1.1rem;
-  color: white;
-}
-
-.logout-btn {
-  --padding-start: 8px;
-  --padding-end: 8px;
-}
-
-.stats-row {
-  display: flex;
-  gap: 8px;
-  margin-bottom: 8px;
-}
-
-.stat-card {
-  flex: 1;
-  margin: 0;
-  text-align: center;
-}
-
-.stat-card ion-card-content {
-  padding: 12px 8px;
   display: flex;
   flex-direction: column;
 }
 
-.stat-number {
-  font-size: 1.5rem;
-  font-weight: bold;
+.user-info-mini strong {
+  font-size: 0.9rem;
+  color: #2c3e50;
 }
 
-.stat-label {
+.user-info-mini .badge {
   font-size: 0.7rem;
-  opacity: 0.8;
+  color: #7f8c8d;
 }
 
-.stat-card.nouveau {
-  border-top: 3px solid #e74c3c;
-}
-.stat-card.nouveau .stat-number {
-  color: #e74c3c;
-}
-
-.stat-card.en-cours {
-  border-top: 3px solid #f39c12;
-}
-.stat-card.en-cours .stat-number {
-  color: #f39c12;
+/* Stats flottants */
+.stats-floating {
+  position: absolute;
+  bottom: 10px;
+  left: 10px;
+  display: flex;
+  gap: 8px;
+  z-index: 999;
 }
 
-.stat-card.termine {
-  border-top: 3px solid #27ae60;
-}
-.stat-card.termine .stat-number {
-  color: #27ae60;
+.stat-item {
+  background: rgba(255, 255, 255, 0.95);
+  border-radius: 8px;
+  padding: 6px 12px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.15);
 }
 
-.map-card {
+.stat-item .num {
+  font-weight: bold;
+  font-size: 1rem;
+}
+
+.stat-item .label {
+  font-size: 0.8rem;
+}
+
+.stat-item.nouveau .num { color: #e74c3c; }
+.stat-item.en-cours .num { color: #f39c12; }
+.stat-item.termine .num { color: #27ae60; }
+
+/* Section liste */
+.list-section {
+  background: #f5f6fa;
+  min-height: calc(55vh - 56px);
+  padding: 12px;
+}
+
+.list-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
   margin-bottom: 8px;
 }
 
-.map-card-content {
-  padding: 0;
+.list-header h3 {
+  margin: 0;
+  font-size: 1rem;
+  color: #2c3e50;
 }
 
-.mini-map {
-  height: 180px;
-  width: 100%;
-  border-radius: 0 0 8px 8px;
+.signalements-list {
+  background: transparent;
+  border-radius: 12px;
+  overflow: hidden;
 }
 
-.list-card {
-  margin-bottom: 20px;
-}
-
-.list-content {
-  padding: 0;
+.signalements-list ion-item {
+  --background: white;
+  --border-radius: 8px;
+  margin-bottom: 8px;
+  --padding-start: 12px;
 }
 
 .status-dot {
-  width: 12px;
-  height: 12px;
+  width: 14px;
+  height: 14px;
   border-radius: 50%;
   margin-right: 8px;
+  border: 2px solid white;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.3);
 }
 
 .empty-state {
   text-align: center;
-  padding: 32px 16px;
-  color: var(--ion-color-medium);
+  padding: 40px 20px;
+  color: #7f8c8d;
 }
 
 .empty-icon {
-  font-size: 48px;
-  margin-bottom: 8px;
+  font-size: 60px;
+  margin-bottom: 16px;
+  color: #bdc3c7;
 }
 
-/* Admin Card */
-.admin-card {
-  margin-bottom: 80px;
-  border-top: 4px solid #9b59b6;
-  border-radius: 12px;
+.empty-state p {
+  margin-bottom: 16px;
 }
 
-.admin-card ion-card-title {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  color: #9b59b6;
-  font-size: 1rem;
+/* Animation spin */
+.spin {
+  animation: spin 1s linear infinite;
 }
 
-.admin-card ion-button {
-  --border-radius: 10px;
-  font-weight: 600;
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+/* Responsive landscape */
+@media (orientation: landscape) {
+  .map-section {
+    height: 60vh;
+  }
+  
+  .list-section {
+    min-height: 40vh;
+  }
+}
+
+/* Petit écran */
+@media (max-height: 600px) {
+  .map-section {
+    height: 40vh;
+    min-height: 200px;
+  }
 }
 </style>

@@ -1,17 +1,30 @@
-import { useState, type FormEvent } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { useState, useEffect, type FormEvent } from 'react'
+import { Link, useNavigate, useLocation } from 'react-router-dom'
 import '../assets/css/Auth.css'
 
 export default function LoginPage() {
   const navigate = useNavigate()
+  const location = useLocation()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [successMessage, setSuccessMessage] = useState<string | null>(null)
+
+  // Récupérer le message de succès après inscription
+  useEffect(() => {
+    const state = location.state as { message?: string; firebaseSynced?: boolean } | null
+    if (state?.message) {
+      setSuccessMessage(state.message)
+      // Nettoyer l'état pour ne pas réafficher le message
+      window.history.replaceState({}, document.title)
+    }
+  }, [location])
 
   async function onSubmit(e: FormEvent) {
     e.preventDefault()
     setError(null)
+    setSuccessMessage(null)
     setLoading(true)
 
     try {
@@ -53,6 +66,13 @@ export default function LoginPage() {
         </div>
 
         <form onSubmit={onSubmit} className="auth-form">
+          {successMessage && (
+            <div className="success-message">
+              {successMessage}
+              <p className="firebase-note">📱 Vous pouvez aussi vous connecter sur l'app mobile!</p>
+            </div>
+          )}
+
           <div className="form-group">
             <label>Email</label>
             <input

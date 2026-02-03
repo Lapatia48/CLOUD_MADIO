@@ -20,4 +20,5 @@ public class UserResponse {
     private boolean isBlocked;
     private int failedAttempts;
     private LocalDateTime createdAt;
+    private String firebaseUid; // Pour indiquer si synchronisé avec Firebase
 }

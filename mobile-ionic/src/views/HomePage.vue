@@ -10,70 +10,86 @@
       </ion-toolbar>
     </ion-header>
 
-    <ion-content class="ion-padding">
+    <ion-content :fullscreen="true" class="home-content">
       <!-- Guest Card si non connecté -->
-      <ion-card v-if="!isAuthenticated" class="welcome-card">
-        <ion-card-header>
-          <ion-card-title>👋 Bienvenue !</ion-card-title>
-          <ion-card-subtitle>Gestion des routes</ion-card-subtitle>
-        </ion-card-header>
-        <ion-card-content>
-          <p>Connectez-vous pour signaler et suivre les problèmes routiers.</p>
-          <div class="action-buttons">
-            <ion-button expand="block" router-link="/login">
-              <ion-icon :icon="logInOutline" slot="start"></ion-icon>
-              Se connecter
-            </ion-button>
-            <ion-button expand="block" fill="outline" router-link="/register">
-              <ion-icon :icon="personAddOutline" slot="start"></ion-icon>
-              Créer un compte
-            </ion-button>
-          </div>
-        </ion-card-content>
-      </ion-card>
-
-      <!-- User Card si connecté -->
-      <ion-card v-else class="user-card">
-        <ion-card-content>
-          <div class="user-info-row">
-            <ion-avatar class="user-avatar">
-              <div class="avatar-text">{{ userInitial }}</div>
-            </ion-avatar>
-            <div class="user-details">
-              <h2>{{ userName }}</h2>
-              <ion-badge color="primary">{{ userRole }}</ion-badge>
+      <div v-if="!isAuthenticated" class="guest-overlay">
+        <ion-card class="welcome-card">
+          <ion-card-header>
+            <ion-card-title>👋 Bienvenue sur MADIO !</ion-card-title>
+            <ion-card-subtitle>Gestion des routes d'Antananarivo</ion-card-subtitle>
+          </ion-card-header>
+          <ion-card-content>
+            <p>Connectez-vous pour signaler et suivre les problèmes routiers.</p>
+            <div class="action-buttons">
+              <ion-button expand="block" router-link="/login">
+                <ion-icon :icon="logInOutline" slot="start"></ion-icon>
+                Se connecter
+              </ion-button>
+              <ion-button expand="block" fill="outline" router-link="/register">
+                <ion-icon :icon="personAddOutline" slot="start"></ion-icon>
+                Créer un compte
+              </ion-button>
             </div>
+          </ion-card-content>
+        </ion-card>
+      </div>
+
+      <!-- Carte plein écran avec tous les signalements -->
+      <div class="map-fullscreen">
+        <div id="home-map" class="map-container"></div>
+        
+        <!-- Légende flottante -->
+        <div class="legend-floating">
+          <div class="legend-title">📊 Signalements</div>
+          <div class="legend-item">
+            <span class="dot" style="background: #e74c3c;"></span>
+            <span>Nouveaux ({{ statsNouveau }})</span>
           </div>
-        </ion-card-content>
-      </ion-card>
+          <div class="legend-item">
+            <span class="dot" style="background: #f39c12;"></span>
+            <span>En cours ({{ statsEnCours }})</span>
+          </div>
+          <div class="legend-item">
+            <span class="dot" style="background: #27ae60;"></span>
+            <span>Terminés ({{ statsTermine }})</span>
+          </div>
+          <div class="legend-total">Total: {{ signalements.length }}</div>
+        </div>
 
-      <!-- Carte miniature -->
-      <ion-card class="map-card">
-        <ion-card-header>
-          <ion-card-title>
-            <ion-icon :icon="mapOutline"></ion-icon> Carte
-          </ion-card-title>
-        </ion-card-header>
-        <ion-card-content class="map-card-content">
-          <div id="home-map" class="mini-map"></div>
-        </ion-card-content>
-      </ion-card>
+        <!-- User info card flottante si connecté -->
+        <div v-if="isAuthenticated" class="user-floating-card">
+          <ion-avatar class="user-avatar-small">
+            <div class="avatar-text">{{ userInitial }}</div>
+          </ion-avatar>
+          <div class="user-info-mini">
+            <strong>{{ userName }}</strong>
+            <span class="role-badge">{{ userRole }}</span>
+          </div>
+        </div>
+      </div>
 
-      <!-- Actions si connecté -->
-      <div v-if="isAuthenticated" class="action-buttons">
-        <ion-button expand="block" color="primary" router-link="/signalement/new">
+      <!-- Actions si connecté (bottom bar) -->
+      <div v-if="isAuthenticated" class="bottom-actions">
+        <ion-button expand="block" color="primary" router-link="/signalement/new" class="action-btn">
           <ion-icon :icon="addCircleOutline" slot="start"></ion-icon>
-          Nouveau signalement
+          Nouveau
         </ion-button>
-        <ion-button expand="block" color="secondary" router-link="/map">
+        <ion-button expand="block" color="secondary" router-link="/map" class="action-btn">
           <ion-icon :icon="listOutline" slot="start"></ion-icon>
           Mes signalements
         </ion-button>
-        <ion-button expand="block" color="medium" fill="outline" @click="handleLogout">
+        <ion-button expand="block" color="medium" fill="outline" @click="handleLogout" class="action-btn">
           <ion-icon :icon="logOutOutline" slot="start"></ion-icon>
           Déconnexion
         </ion-button>
       </div>
+
+      <!-- FAB pour rafraîchir -->
+      <ion-fab vertical="bottom" horizontal="start" slot="fixed" class="refresh-fab">
+        <ion-fab-button color="light" size="small" @click="refreshSignalements">
+          <ion-icon :icon="refreshOutline" :class="{ 'spin': isLoading }"></ion-icon>
+        </ion-fab-button>
+      </ion-fab>
     </ion-content>
   </ion-page>
 </template>
@@ -84,17 +100,30 @@ import { useRouter } from 'vue-router'
 import { 
   IonPage, IonHeader, IonToolbar, IonTitle, IonContent, 
   IonButton, IonIcon, IonCard, IonCardHeader, IonCardTitle, 
-  IonCardSubtitle, IonCardContent, IonChip, IonAvatar, IonBadge 
+  IonCardSubtitle, IonCardContent, IonChip, IonAvatar, IonFab, IonFabButton 
 } from '@ionic/vue'
-import { logInOutline, mapOutline, personAddOutline, addCircleOutline, listOutline, logOutOutline } from 'ionicons/icons'
+import { logInOutline, personAddOutline, addCircleOutline, listOutline, logOutOutline, refreshOutline } from 'ionicons/icons'
 import L from 'leaflet'
 import { useAuthStore } from '../stores/auth'
+import signalementFirebaseService, { type FirebaseSignalement } from '../services/signalementFirebaseService'
+
+interface DisplaySignalement {
+  id?: string
+  description?: string
+  latitude: number
+  longitude: number
+  status: string
+  dateSignalement?: string
+  userEmail?: string
+}
 
 const router = useRouter()
 const authStore = useAuthStore()
 
 const isOffline = ref(!navigator.onLine)
-const isAuthenticated = computed(() => !!localStorage.getItem('token'))
+const isLoading = ref(false)
+const isAuthenticated = computed(() => !!localStorage.getItem('firebase_token') || !!localStorage.getItem('token'))
+const signalements = ref<DisplaySignalement[]>([])
 
 const userName = computed(() => {
   const user = localStorage.getItem('user')
@@ -102,26 +131,30 @@ const userName = computed(() => {
     try {
       const parsed = JSON.parse(user)
       return parsed.prenom || parsed.email || 'Utilisateur'
-    } catch { return 'Utilisateur' }
+    } catch { 
+      const email = localStorage.getItem('userEmail')
+      return email?.split('@')[0] || 'Utilisateur'
+    }
   }
-  return 'Utilisateur'
+  const email = localStorage.getItem('userEmail')
+  return email?.split('@')[0] || 'Utilisateur'
 })
 
 const userInitial = computed(() => userName.value.charAt(0).toUpperCase())
 
 const userRole = computed(() => {
-  const user = localStorage.getItem('user')
-  if (user) {
-    try {
-      const parsed = JSON.parse(user)
-      return parsed.role || 'USER'
-    } catch { return 'USER' }
-  }
-  return 'USER'
+  const role = localStorage.getItem('userRole')
+  return role || 'USER'
 })
+
+// Stats
+const statsNouveau = computed(() => signalements.value.filter(s => s.status === 'NOUVEAU').length)
+const statsEnCours = computed(() => signalements.value.filter(s => s.status === 'EN_COURS').length)
+const statsTermine = computed(() => signalements.value.filter(s => s.status === 'TERMINE').length)
 
 let map: L.Map | null = null
 let tileLayer: L.TileLayer | null = null
+let markersGroup: L.LayerGroup | null = null
 
 function handleOnline() { isOffline.value = false; updateTileLayer() }
 function handleOffline() { isOffline.value = true; updateTileLayer() }
@@ -136,7 +169,7 @@ function updateTileLayer() {
   if (tileLayer) map.removeLayer(tileLayer)
   
   const tileUrl = isOffline.value
-    ? 'http://localhost:8081/styles/basic/{z}/{x}/{y}.png'
+    ? 'http://localhost:8085/styles/basic/{z}/{x}/{y}.png'
     : 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png'
 
   tileLayer = L.tileLayer(tileUrl, {
@@ -144,13 +177,111 @@ function updateTileLayer() {
   }).addTo(map)
 }
 
-onMounted(() => {
+function getStatusColor(status: string) {
+  switch (status) {
+    case 'NOUVEAU': return '#e74c3c'
+    case 'EN_COURS': return '#f39c12'
+    case 'TERMINE': return '#27ae60'
+    default: return '#3498db'
+  }
+}
+
+function getStatusLabel(status: string) {
+  switch (status) {
+    case 'NOUVEAU': return '🔴 Nouveau'
+    case 'EN_COURS': return '🟠 En cours'
+    case 'TERMINE': return '🟢 Terminé'
+    default: return status
+  }
+}
+
+async function refreshSignalements() {
+  isLoading.value = true
+  await fetchAllSignalements()
+  isLoading.value = false
+}
+
+async function fetchAllSignalements() {
+  try {
+    // Récupérer tous les signalements depuis Firebase
+    const firebaseSignalements = await signalementFirebaseService.getAllSignalements()
+    
+    signalements.value = firebaseSignalements.map((s: FirebaseSignalement & { documentId?: string }) => ({
+      id: s.documentId || '',
+      description: s.description,
+      latitude: s.latitude,
+      longitude: s.longitude,
+      status: s.status,
+      dateSignalement: s.dateSignalement,
+      userEmail: s.userEmail
+    }))
+    
+    console.log('Tous les signalements Firebase chargés:', signalements.value.length)
+    addMarkersToMap()
+  } catch (e) {
+    console.error('Erreur chargement signalements Firebase:', e)
+  }
+}
+
+function addMarkersToMap() {
+  if (!map) return
+  
+  // Supprimer les anciens marqueurs
+  if (markersGroup) {
+    map.removeLayer(markersGroup)
+  }
+  markersGroup = L.layerGroup().addTo(map)
+  
+  signalements.value.forEach((s) => {
+    if (s.latitude && s.longitude) {
+      const marker = L.circleMarker([s.latitude, s.longitude], {
+        radius: 10,
+        fillColor: getStatusColor(s.status),
+        color: '#fff',
+        weight: 2,
+        fillOpacity: 0.9
+      })
+      
+      const tooltipContent = `
+        <div style="min-width: 150px;">
+          <strong>${s.description?.slice(0, 30) || 'Signalement'}</strong>
+          <br><span style="color: ${getStatusColor(s.status)}">${getStatusLabel(s.status)}</span>
+          <br><small>📅 ${s.dateSignalement ? new Date(s.dateSignalement).toLocaleDateString('fr-FR') : 'N/A'}</small>
+          ${s.userEmail ? `<br><small>👤 ${s.userEmail}</small>` : ''}
+        </div>
+      `
+      
+      // Afficher au survol avec bindTooltip au lieu de bindPopup
+      marker.bindTooltip(tooltipContent, {
+        permanent: false,
+        sticky: true,
+        direction: 'top',
+        offset: [0, -10],
+        opacity: 0.95
+      })
+      
+      marker.addTo(markersGroup!)
+    }
+  })
+}
+
+onMounted(async () => {
   window.addEventListener('online', handleOnline)
   window.addEventListener('offline', handleOffline)
 
+  // Charger les signalements
+  await fetchAllSignalements()
+
   setTimeout(() => {
-    map = L.map('home-map').setView([-18.8792, 47.5079], 13)
+    map = L.map('home-map', {
+      zoomControl: false
+    }).setView([-18.8792, 47.5079], 13)
+    
+    // Zoom control en bas à droite
+    L.control.zoom({ position: 'bottomright' }).addTo(map)
+    
     updateTileLayer()
+    addMarkersToMap()
   }, 100)
 })
 
@@ -164,14 +295,51 @@ onUnmounted(() => {
 <style scoped>
 @import 'leaflet/dist/leaflet.css';
 
+.home-content {
+  --padding-start: 0;
+  --padding-end: 0;
+  --padding-top: 0;
+  --padding-bottom: 0;
+}
+
 .status-chip {
   margin-right: 8px;
   font-size: 0.75rem;
 }
 
+/* Carte plein écran */
+.map-fullscreen {
+  position: relative;
+  width: 100%;
+  height: calc(100vh - 56px - 70px); /* header + bottom actions */
+}
+
+.map-container {
+  width: 100%;
+  height: 100%;
+}
+
+/* Overlay invité */
+.guest-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 70px;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(5px);
+}
+
 .welcome-card {
+  max-width: 350px;
+  margin: 16px;
   background: linear-gradient(135deg, #2c3e50, #34495e);
   color: white;
+  border-radius: 16px;
 }
 
 .welcome-card ion-card-title,
@@ -184,21 +352,81 @@ onUnmounted(() => {
   opacity: 0.9;
 }
 
-.user-card {
-  background: linear-gradient(135deg, #3498db, #2980b9);
-  color: white;
+.action-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
 }
 
-.user-info-row {
+.action-buttons ion-button {
+  --border-radius: 10px;
+}
+
+/* Légende flottante */
+.legend-floating {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  background: rgba(255, 255, 255, 0.95);
+  border-radius: 12px;
+  padding: 12px;
+  z-index: 999;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+  min-width: 140px;
+}
+
+.legend-title {
+  font-weight: bold;
+  margin-bottom: 8px;
+  font-size: 0.9rem;
+  color: #2c3e50;
+}
+
+.legend-item {
   display: flex;
   align-items: center;
-  gap: 16px;
+  gap: 8px;
+  font-size: 0.8rem;
+  margin: 4px 0;
+  color: #34495e;
 }
 
-.user-avatar {
-  width: 50px;
-  height: 50px;
-  background: linear-gradient(135deg, #9b59b6, #8e44ad);
+.legend-item .dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  border: 2px solid white;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+}
+
+.legend-total {
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px solid #eee;
+  font-weight: bold;
+  font-size: 0.85rem;
+  color: #2c3e50;
+}
+
+/* User card flottante */
+.user-floating-card {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background: rgba(255, 255, 255, 0.95);
+  border-radius: 25px;
+  padding: 8px 14px 8px 8px;
+  z-index: 999;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+}
+
+.user-avatar-small {
+  width: 35px;
+  height: 35px;
+  background: linear-gradient(135deg, #3498db, #2980b9);
 }
 
 .avatar-text {
@@ -207,39 +435,93 @@ onUnmounted(() => {
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 1.5rem;
+  font-size: 1rem;
   font-weight: bold;
   color: white;
 }
 
-.user-details h2 {
-  margin: 0 0 4px;
-  font-size: 1.2rem;
-  color: white;
-}
-
-.map-card {
-  margin-top: 16px;
-}
-
-.map-card-content {
-  padding: 0;
-}
-
-.mini-map {
-  height: 200px;
-  width: 100%;
-  border-radius: 0 0 8px 8px;
-}
-
-.action-buttons {
+.user-info-mini {
   display: flex;
   flex-direction: column;
-  gap: 8px;
-  margin-top: 16px;
 }
 
-.action-buttons ion-button {
+.user-info-mini strong {
+  font-size: 0.85rem;
+  color: #2c3e50;
+}
+
+.role-badge {
+  font-size: 0.65rem;
+  color: #3498db;
+  font-weight: 600;
+}
+
+/* Bottom actions bar */
+.bottom-actions {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  display: flex;
+  gap: 8px;
+  padding: 10px;
+  background: linear-gradient(135deg, #2c3e50, #34495e);
+  z-index: 1000;
+}
+
+.action-btn {
+  flex: 1;
   --border-radius: 8px;
+  font-size: 0.75rem;
+  margin: 0;
+}
+
+.action-btn ion-icon {
+  font-size: 1rem;
+}
+
+/* FAB refresh */
+.refresh-fab {
+  margin-bottom: 80px;
+  margin-left: 10px;
+}
+
+.spin {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+/* Responsive - mode paysage */
+@media (orientation: landscape) {
+  .map-fullscreen {
+    height: calc(100vh - 56px);
+  }
+  
+  .bottom-actions {
+    flex-direction: row;
+    padding: 8px 16px;
+  }
+}
+
+/* Téléphone en portrait - plus de hauteur pour la carte */
+@media (max-height: 700px) {
+  .legend-floating {
+    padding: 8px;
+    font-size: 0.75rem;
+  }
+  
+  .legend-title {
+    font-size: 0.8rem;
+    margin-bottom: 4px;
+  }
+  
+  .legend-item {
+    font-size: 0.7rem;
+    margin: 2px 0;
+  }
 }
 </style>

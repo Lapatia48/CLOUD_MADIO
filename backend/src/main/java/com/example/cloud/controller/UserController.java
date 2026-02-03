@@ -77,6 +77,7 @@ public class UserController {
                 .role(user.getRole() != null ? user.getRole().getLibelle() : "USER")
                 .isBlocked(user.isBlocked())
                 .failedAttempts(user.getFailedAttempts())
+                .firebaseUid(user.getFirebaseUid())
                 .build();
     }
 }

@@ -10,13 +10,40 @@ export default function RegisterPage() {
   const [prenom, setPrenom] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [syncStatus, setSyncStatus] = useState<'idle' | 'syncing' | 'success' | 'error'>('idle')
+
+  async function syncToFirebase(userId: number, plainPassword: string): Promise<boolean> {
+    try {
+      setSyncStatus('syncing')
+      const response = await fetch('http://localhost:8080/api/firebase/sync/user', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId, plainPassword }),
+      })
+      const data = await response.json()
+      if (data.success) {
+        setSyncStatus('success')
+        return true
+      } else {
+        setSyncStatus('error')
+        console.error('Firebase sync failed:', data.message)
+        return false
+      }
+    } catch (err) {
+      setSyncStatus('error')
+      console.error('Firebase sync error:', err)
+      return false
+    }
+  }
 
   async function onSubmit(e: FormEvent) {
     e.preventDefault()
     setError(null)
     setLoading(true)
+    setSyncStatus('idle')
 
     try {
+      // 1. Créer le compte dans PostgreSQL
       const response = await fetch('http://localhost:8080/api/auth/register', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -24,22 +51,34 @@ export default function RegisterPage() {
       })
 
       const data = await response.json()
+      console.log('Register response:', data)
 
-      if (response.ok && (data.success || data.token || data.userId || data.id)) {
-        const userData = data.user || data
-        localStorage.setItem('user', JSON.stringify({
-          userId: userData.userId || userData.id,
-          email: userData.email || email,
-          nom: userData.nom || nom,
-          prenom: userData.prenom || prenom,
-          role: userData.role || 'USER',
-          token: data.token,
-        }))
-        navigate('/', { replace: true })
+      if (response.ok && (data.token || data.userId)) {
+        // Récupérer l'ID utilisateur depuis la réponse
+        const userId = data.userId
+        console.log('User ID for Firebase sync:', userId)
+
+        // 2. Synchroniser vers Firebase pour l'app mobile
+        if (userId) {
+          const syncSuccess = await syncToFirebase(userId, password)
+          console.log('Firebase sync result:', syncSuccess)
+        } else {
+          console.error('No user ID returned from register endpoint')
+        }
+
+        // 3. Retourner à l'espace manager
+        navigate('/manager', { 
+          replace: true,
+          state: { 
+            message: '✅ Compte créé et synchronisé avec Firebase!',
+            firebaseSynced: syncStatus === 'success'
+          }
+        })
       } else {
         setError(data.message || 'Erreur lors de l\'inscription')
       }
     } catch (err) {
+      console.error('Register error:', err)
       setError('Erreur de connexion au serveur')
     } finally {
       setLoading(false)
@@ -94,19 +133,30 @@ export default function RegisterPage() {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               placeholder="••••••••"
+              minLength={6}
               required
             />
           </div>
 
           {error && <div className="error-message">{error}</div>}
 
+          {syncStatus === 'syncing' && (
+            <div className="sync-message syncing">
+              🔄 Synchronisation Firebase en cours...
+            </div>
+          )}
+
           <button type="submit" className="btn-submit" disabled={loading}>
-            {loading ? '⏳ Création...' : '📝 Créer mon compte'}
+            {loading ? '⏳ Création...' : 'Creer le compte et synchhroniser firebase'}
           </button>
 
+          <div className="firebase-info">
+            <p>🔥 Votre compte sera automatiquement synchronisé avec Firebase</p>
+            <p>📱 Vous pourrez vous connecter sur l'application mobile</p>
+          </div>
+
           <div className="auth-footer">
-            <Link to="/">← Retour à la carte</Link>
-            <Link to="/login">Déjà un compte ?</Link>
+            <Link to="/manager">← Retour à l'espace Manager</Link>
           </div>
         </form>
       </div>

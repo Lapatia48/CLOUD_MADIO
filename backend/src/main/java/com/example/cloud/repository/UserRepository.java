@@ -37,4 +37,7 @@ public interface UserRepository extends JpaRepository<User, Long> {
     @Transactional
     @Query("UPDATE User u SET u.isBlocked = false, u.failedAttempts = 0 WHERE u.email = :email")
     void unblockUser(@Param("email") String email);
+
+    @Query("SELECT u FROM User u LEFT JOIN FETCH u.role WHERE u.firebaseUid = :firebaseUid")
+    Optional<User> findByFirebaseUid(@Param("firebaseUid") String firebaseUid);
 }

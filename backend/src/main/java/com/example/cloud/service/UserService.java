@@ -38,7 +38,7 @@ public class UserService {
 
         User user = new User();
         user.setEmail(request.getEmail());
-        user.setPassword(passwordEncoder.encode(request.getPassword()));
+        user.setPassword(request.getPassword()); // Stocké en clair, pas de hash
         user.setNom(request.getNom());
         user.setPrenom(request.getPrenom());
         user.setRole(role);
@@ -48,13 +48,18 @@ public class UserService {
         user = userRepository.saveAndFlush(user);
 
         String roleName = getRoleName(user);
+        Long idRole = user.getRole() != null ? user.getRole().getId() : null;
         String token = jwtUtil.generateToken(user.getEmail(), roleName);
         saveSession(user, token);
 
         return AuthResponse.builder()
+                .userId(user.getId())
                 .token(token)
                 .email(user.getEmail())
+                .nom(user.getNom())
+                .prenom(user.getPrenom())
                 .role(roleName)
+                .idRole(idRole)
                 .build();
     }
 
@@ -77,13 +82,18 @@ public class UserService {
         }
 
         String roleName = getRoleName(user);
+        Long idRole = user.getRole() != null ? user.getRole().getId() : null;
         String token = jwtUtil.generateToken(user.getEmail(), roleName);
         saveSession(user, token);
 
         return AuthResponse.builder()
+                .userId(user.getId())
                 .token(token)
                 .email(user.getEmail())
+                .nom(user.getNom())
+                .prenom(user.getPrenom())
                 .role(roleName)
+                .idRole(idRole)
                 .build();
     }
 

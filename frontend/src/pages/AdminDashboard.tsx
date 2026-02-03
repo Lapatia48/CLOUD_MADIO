@@ -27,6 +27,8 @@ const AdminDashboard = () => {
   const [signalements, setSignalements] = useState<Signalement[]>([]);
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
+  const [syncingFirebase, setSyncingFirebase] = useState(false);
+  const [syncMessage, setSyncMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
 
   // Filtres
   const [filterStatus, setFilterStatus] = useState('');
@@ -52,6 +54,55 @@ const AdminDashboard = () => {
       console.error('Erreur:', error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  // Synchroniser les signalements depuis Firebase
+  const syncFromFirebase = async () => {
+    setSyncingFirebase(true);
+    setSyncMessage(null);
+    
+    try {
+      // Récupérer un token d'admin stocké ou utiliser un token système
+      // Pour l'instant, on utilise un token d'accès simple via localStorage si disponible
+      const token = localStorage.getItem('firebaseToken') || 'admin-sync-token';
+      
+      const response = await fetch('http://localhost:8080/api/firebase/sync/signalements', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        }
+      });
+
+      const result = await response.json();
+      
+      if (response.ok) {
+        const successCount = result.synced?.length || 0;
+        const failedCount = result.failed?.length || 0;
+        const total = result.totalFetched || 0;
+        
+        setSyncMessage({
+          type: 'success',
+          text: `✅ Synchronisation terminée! ${successCount} signalement(s) importé(s), ${failedCount} échec(s) sur ${total} total.`
+        });
+        
+        // Rafraîchir les données
+        await fetchData();
+      } else {
+        setSyncMessage({
+          type: 'error',
+          text: `❌ Erreur: ${result.error || 'Échec de la synchronisation'}`
+        });
+      }
+    } catch (error) {
+      console.error('Erreur sync Firebase:', error);
+      setSyncMessage({
+        type: 'error',
+        text: `❌ Erreur de connexion au serveur`
+      });
+    } finally {
+      setSyncingFirebase(false);
     }
   };
 
@@ -88,7 +139,27 @@ const AdminDashboard = () => {
       <div className="admin-header">
         <button className="btn-back" onClick={() => navigate('/')}>← Retour</button>
         <h1>📊 Dashboard Admin</h1>
+        <div className="header-buttons">
+          <button 
+            className="btn-firebase-sync" 
+            onClick={syncFromFirebase}
+            disabled={syncingFirebase}
+          >
+            {syncingFirebase ? '🔄 Synchronisation...' : '🔥 Sync Firebase → PostgreSQL'}
+          </button>
+          <button className="btn-users" onClick={() => navigate('/admin/users')}>
+            👥 Gestion Utilisateurs & Firebase
+          </button>
+        </div>
       </div>
+
+      {/* Message de synchronisation */}
+      {syncMessage && (
+        <div className={`sync-message ${syncMessage.type}`}>
+          {syncMessage.text}
+          <button className="close-btn" onClick={() => setSyncMessage(null)}>×</button>
+        </div>
+      )}
 
       {/* Stats */}
       <div className="admin-stats">

@@ -17,6 +17,9 @@ public interface SignalementRepository extends JpaRepository<Signalement, Long> 
     
     List<Signalement> findByEntrepriseId(Long entrepriseId);
     
+    // Pour vérifier si un signalement existe déjà (même coordonnées)
+    List<Signalement> findByLatitudeAndLongitude(Double latitude, Double longitude);
+    
     @Modifying(clearAutomatically = true)
     @Query("UPDATE Signalement s SET s.status = ?2 WHERE s.id = ?1")
     void updateStatus(Long id, String status);
