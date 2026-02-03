@@ -18,5 +18,6 @@ public class UserResponse {
     private String prenom;
     private String role;
     private boolean isBlocked;
+    private int failedAttempts;
     private LocalDateTime createdAt;
 }

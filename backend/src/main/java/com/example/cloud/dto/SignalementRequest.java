@@ -29,4 +29,6 @@ public class SignalementRequest {
     private Long entrepriseId;
     
     private Long userId;
+    
+    private String status;
 }

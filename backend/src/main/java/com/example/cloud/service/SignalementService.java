@@ -62,6 +62,42 @@ public class SignalementService {
         return mapToResponse(updated);
     }
     
+    @Transactional
+    public SignalementResponse update(Long id, SignalementRequest request) {
+        Signalement signalement = signalementRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Signalement non trouvé avec l'id: " + id));
+        
+        // Mettre à jour les champs
+        if (request.getDescription() != null) {
+            signalement.setDescription(request.getDescription());
+        }
+        if (request.getLatitude() != null) {
+            signalement.setLatitude(request.getLatitude());
+        }
+        if (request.getLongitude() != null) {
+            signalement.setLongitude(request.getLongitude());
+        }
+        if (request.getSurfaceM2() != null) {
+            signalement.setSurfaceM2(request.getSurfaceM2());
+        }
+        if (request.getBudget() != null) {
+            signalement.setBudget(request.getBudget());
+        }
+        if (request.getStatus() != null) {
+            signalement.setStatus(request.getStatus());
+        }
+        
+        // Mettre à jour l'entreprise si fournie
+        if (request.getEntrepriseId() != null) {
+            Entreprise entreprise = entrepriseRepository.findById(request.getEntrepriseId())
+                    .orElseThrow(() -> new RuntimeException("Entreprise non trouvée avec l'id: " + request.getEntrepriseId()));
+            signalement.setEntreprise(entreprise);
+        }
+        
+        Signalement updated = signalementRepository.save(signalement);
+        return mapToResponse(updated);
+    }
+    
     public List<SignalementResponse> getAll() {
         return signalementRepository.findAll()
                 .stream()

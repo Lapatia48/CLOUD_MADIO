@@ -27,6 +27,16 @@ const routes = [
     component: () => import('../views/CreateSignalementPage.vue'),
     meta: { requiresAuth: true }
   },
+  { 
+    path: '/signalement/:id', 
+    component: () => import('../views/SignalementDetailPage.vue'),
+    meta: { requiresAuth: true }
+  },
+  { 
+    path: '/blocked-users', 
+    component: () => import('../views/BlockedUsersPage.vue'),
+    meta: { requiresAuth: true, requiresAdmin: true }
+  },
   // Rediriger les anciennes routes vers /map
   {
     path: '/tabs/:pathMatch(.*)*',
