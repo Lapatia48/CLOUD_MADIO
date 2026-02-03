@@ -45,6 +45,15 @@ CREATE TABLE IF NOT EXISTS signalements (
     user_id INT REFERENCES users(id)
 );
 
+create table if not exists notifications (
+    id SERIAL PRIMARY KEY,
+    description TEXT,
+    id_user int REFERENCES users(id),
+    id_signalement int REFERENCES signalements(id),
+    date_notif TIMESTAMP,
+    is_read BOOLEAN
+);
+
 -- Insertion des rôles
 INSERT INTO roles (libelle) VALUES ('ADMIN'), ('MANAGER'), ('USER')
 ON CONFLICT DO NOTHING;
