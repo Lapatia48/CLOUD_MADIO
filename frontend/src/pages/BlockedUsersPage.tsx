@@ -19,6 +19,7 @@ const BlockedUsersPage = () => {
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [unblocking, setUnblocking] = useState<number | null>(null);
 
   useEffect(() => {
     fetchBlockedUsers();
@@ -28,24 +29,13 @@ const BlockedUsersPage = () => {
     setLoading(true);
     setError(null);
     try {
-      const response = await fetch('http://localhost:8080/api/users');
+      // Utiliser le nouvel endpoint dédié aux utilisateurs bloqués
+      const response = await fetch('http://localhost:8080/api/users/blocked');
       
       if (response.ok) {
         const data = await response.json();
-        console.log('All users:', data);
-        
-        // Filtrer les users bloqués (vérifier tous les formats possibles)
-        const blocked = (data as User[]).filter((u) => {
-          const isBlocked = u.isBlocked === true || 
-                           u.is_blocked === true || 
-                           u.blocked === true ||
-                           (u as any).isBlocked === true;
-          console.log(`User ${u.email}: isBlocked=${u.isBlocked}, is_blocked=${u.is_blocked}`, isBlocked);
-          return isBlocked;
-        });
-        
-        console.log('Blocked users:', blocked);
-        setUsers(blocked);
+        console.log('Blocked users:', data);
+        setUsers(data);
       } else {
         setError('Erreur lors du chargement des utilisateurs');
       }
@@ -57,16 +47,21 @@ const BlockedUsersPage = () => {
     }
   };
 
-  const handleUnblock = async (userId: number) => {
+  const handleUnblock = async (user: User) => {
+    setUnblocking(user.id);
     try {
-      const response = await fetch(`http://localhost:8080/api/users/${userId}/unblock`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
+      const token = localStorage.getItem('token');
+      const response = await fetch(`http://localhost:8080/api/users/${user.id}/unblock`, {
+        method: 'POST',
+        headers: { 
+          'Content-Type': 'application/json',
+          ...(token && { Authorization: `Bearer ${token}` }),
+        },
       });
       
       if (response.ok) {
-        setUsers(users.filter(u => u.id !== userId));
-        alert('✅ Utilisateur débloqué avec succès !');
+        setUsers(users.filter(u => u.id !== user.id));
+        alert(`✅ ${user.prenom || user.email} a été débloqué avec succès !`);
       } else {
         const errData = await response.json().catch(() => ({}));
         alert(errData.message || 'Erreur lors du déblocage');
@@ -74,6 +69,8 @@ const BlockedUsersPage = () => {
     } catch (err) {
       console.error('Erreur:', err);
       alert('Erreur de connexion');
+    } finally {
+      setUnblocking(null);
     }
   };
 
@@ -119,9 +116,10 @@ const BlockedUsersPage = () => {
                 </div>
                 <button 
                   className="btn-unblock"
-                  onClick={() => handleUnblock(user.id)}
+                  onClick={() => handleUnblock(user)}
+                  disabled={unblocking === user.id}
                 >
-                  ✓ Débloquer
+                  {unblocking === user.id ? '⏳...' : '✓ Débloquer'}
                 </button>
               </div>
             ))}

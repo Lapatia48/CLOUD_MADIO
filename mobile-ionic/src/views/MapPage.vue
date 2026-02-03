@@ -91,6 +91,21 @@
         </ion-card-content>
       </ion-card>
 
+      <!-- Admin Section -->
+      <ion-card v-if="isAdmin" class="admin-card">
+        <ion-card-header>
+          <ion-card-title>
+            <ion-icon :icon="shieldOutline"></ion-icon> Administration
+          </ion-card-title>
+        </ion-card-header>
+        <ion-card-content>
+          <ion-button expand="block" color="danger" router-link="/blocked-users">
+            <ion-icon :icon="lockClosedOutline" slot="start" />
+            Utilisateurs bloqués
+          </ion-button>
+        </ion-card-content>
+      </ion-card>
+
       <!-- FAB Button -->
       <ion-fab vertical="bottom" horizontal="end" slot="fixed">
         <ion-fab-button color="primary" router-link="/signalement/new">
@@ -109,7 +124,7 @@ import {
   IonIcon, IonFab, IonFabButton, IonCard, IonCardHeader, IonCardTitle, 
   IonCardContent, IonChip, IonAvatar, IonBadge, IonBackButton, IonList, IonItem, IonLabel 
 } from '@ionic/vue'
-import { addOutline, logOutOutline, mapOutline, listOutline, chevronForwardOutline, alertCircleOutline } from 'ionicons/icons'
+import { addOutline, logOutOutline, mapOutline, listOutline, chevronForwardOutline, alertCircleOutline, shieldOutline, lockClosedOutline } from 'ionicons/icons'
 import L from 'leaflet'
 import { useAuthStore } from '../stores/auth'
 import { http } from '../api/http'
@@ -122,6 +137,7 @@ interface Signalement {
   status: string
   dateSignalement?: string
   date_signalement?: string
+  user?: { id: number } | null
 }
 
 const router = useRouter()
@@ -129,13 +145,20 @@ const authStore = useAuthStore()
 const isOffline = ref(!navigator.onLine)
 const signalements = ref<Signalement[]>([])
 
-const userName = computed(() => {
+const currentUser = computed(() => {
   const user = localStorage.getItem('user')
   if (user) {
     try {
-      const parsed = JSON.parse(user)
-      return parsed.prenom || parsed.email || 'Utilisateur'
-    } catch { return 'Utilisateur' }
+      return JSON.parse(user)
+    } catch { return null }
+  }
+  return null
+})
+
+const userName = computed(() => {
+  const user = currentUser.value
+  if (user) {
+    return user.prenom || user.email || 'Utilisateur'
   }
   return 'Utilisateur'
 })
@@ -143,14 +166,16 @@ const userName = computed(() => {
 const userInitial = computed(() => userName.value.charAt(0).toUpperCase())
 
 const userRole = computed(() => {
-  const user = localStorage.getItem('user')
+  const user = currentUser.value
   if (user) {
-    try {
-      const parsed = JSON.parse(user)
-      return parsed.role || 'USER'
-    } catch { return 'USER' }
+    return user.role || 'USER'
   }
   return 'USER'
+})
+
+const isAdmin = computed(() => {
+  const user = currentUser.value
+  return user?.role === 'ADMIN' || user?.id_role === 3
 })
 
 const statsNouveau = computed(() => signalements.value.filter(s => s.status === 'NOUVEAU').length)
@@ -213,34 +238,52 @@ onMounted(async () => {
   window.addEventListener('online', handleOnline)
   window.addEventListener('offline', handleOffline)
 
+  // Charger les signalements d'abord
+  await fetchSignalements()
+
   setTimeout(() => {
     map = L.map('map').setView([-18.8792, 47.5079], 13)
     updateTileLayer()
 
     // Add markers after loading signalements
-    signalements.value.forEach((s) => {
-      L.marker([s.latitude, s.longitude])
-        .addTo(map!)
-        .bindPopup(`<b>${s.description?.slice(0, 20) || 'Signalement'}</b><br>${getStatusLabel(s.status)}`)
-    })
+    addMarkersToMap()
   }, 100)
+})
 
+async function fetchSignalements() {
   try {
-    const res = await http.get('/api/signalements/me')
-    signalements.value = res.data
-
-    // Update markers on map
+    const res = await http.get('/api/signalements')
+    let data = Array.isArray(res.data) ? res.data : []
+    
+    // Filtrer pour les utilisateurs simples (comme dans le web)
+    const user = currentUser.value
+    if (user && user.role === 'USER') {
+      data = data.filter((s: Signalement) => s.user?.id === user.userId)
+    }
+    
+    signalements.value = data
+    console.log('Signalements chargés:', signalements.value.length)
+    
+    // Mettre à jour les marqueurs si la carte existe déjà
     if (map) {
-      signalements.value.forEach((s) => {
-        L.marker([s.latitude, s.longitude])
-          .addTo(map!)
-          .bindPopup(`<b>${s.description?.slice(0, 20) || 'Signalement'}</b><br>${getStatusLabel(s.status)}`)
-      })
+      addMarkersToMap()
     }
   } catch (e) {
     console.error('Erreur chargement signalements:', e)
   }
-})
+}
+
+function addMarkersToMap() {
+  if (!map) return
+  
+  signalements.value.forEach((s) => {
+    if (s.latitude && s.longitude) {
+      L.marker([s.latitude, s.longitude])
+        .addTo(map!)
+        .bindPopup(`<b>${s.description?.slice(0, 20) || 'Signalement'}</b><br>${getStatusLabel(s.status)}`)
+    }
+  })
+}
 
 onUnmounted(() => {
   window.removeEventListener('online', handleOnline)
@@ -365,7 +408,7 @@ onUnmounted(() => {
 }
 
 .list-card {
-  margin-bottom: 80px;
+  margin-bottom: 20px;
 }
 
 .list-content {
@@ -388,5 +431,25 @@ onUnmounted(() => {
 .empty-icon {
   font-size: 48px;
   margin-bottom: 8px;
+}
+
+/* Admin Card */
+.admin-card {
+  margin-bottom: 80px;
+  border-top: 4px solid #9b59b6;
+  border-radius: 12px;
+}
+
+.admin-card ion-card-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #9b59b6;
+  font-size: 1rem;
+}
+
+.admin-card ion-button {
+  --border-radius: 10px;
+  font-weight: 600;
 }
 </style>

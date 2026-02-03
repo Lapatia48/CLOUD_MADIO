@@ -139,3 +139,131 @@
   background: transparent;
   border: none;
 }
+
+/* Section Admin */
+.admin-section {
+  margin-top: 25px;
+  padding-top: 20px;
+  border-top: 2px solid rgba(255,255,255,0.2);
+}
+
+.admin-section h3 {
+  margin: 0 0 15px;
+  font-size: 1.1rem;
+  color: #f39c12;
+}
+
+.btn-edit {
+  width: 100%;
+  padding: 14px;
+  background: linear-gradient(135deg, #9b59b6, #8e44ad);
+  color: white;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  font-size: 1rem;
+  font-weight: 600;
+  transition: all 0.3s;
+}
+
+.btn-edit:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 15px rgba(155, 89, 182, 0.4);
+}
+
+.edit-form {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.edit-form .form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.edit-form .form-group label {
+  font-size: 0.9rem;
+  color: rgba(255,255,255,0.8);
+  font-weight: 500;
+}
+
+.edit-form .form-group input,
+.edit-form .form-group textarea,
+.edit-form .form-group select {
+  padding: 12px;
+  border: 2px solid rgba(255,255,255,0.2);
+  border-radius: 10px;
+  font-size: 1rem;
+  background: rgba(255,255,255,0.1);
+  color: white;
+  transition: border-color 0.2s;
+}
+
+.edit-form .form-group input:focus,
+.edit-form .form-group textarea:focus,
+.edit-form .form-group select:focus {
+  outline: none;
+  border-color: #3498db;
+  background: rgba(255,255,255,0.15);
+}
+
+.edit-form .form-group select option {
+  background: #2c3e50;
+  color: white;
+}
+
+.edit-form .form-row {
+  display: flex;
+  gap: 15px;
+}
+
+.edit-form .form-row .form-group {
+  flex: 1;
+}
+
+.edit-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.btn-save {
+  flex: 1;
+  padding: 14px;
+  background: linear-gradient(135deg, #27ae60, #219a52);
+  color: white;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  font-size: 1rem;
+  font-weight: 600;
+  transition: all 0.3s;
+}
+
+.btn-save:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 15px rgba(39, 174, 96, 0.4);
+}
+
+.btn-save:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.btn-cancel {
+  padding: 14px 20px;
+  background: rgba(255,255,255,0.2);
+  color: white;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  font-size: 1rem;
+  font-weight: 600;
+  transition: all 0.3s;
+}
+
+.btn-cancel:hover {
+  background: rgba(231, 76, 60, 0.8);
+}

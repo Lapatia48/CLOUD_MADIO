@@ -36,6 +36,14 @@ public class SignalementController {
         return ResponseEntity.ok(signalementService.updateStatus(id, request));
     }
     
+    @PutMapping("/{id}")
+    @Operation(summary = "Modifier un signalement (Admin uniquement)")
+    public ResponseEntity<SignalementResponse> update(
+            @PathVariable Long id,
+            @Valid @RequestBody SignalementRequest request) {
+        return ResponseEntity.ok(signalementService.update(id, request));
+    }
+    
     @GetMapping
     @Operation(summary = "Récupérer tous les signalements")
     public ResponseEntity<List<SignalementResponse>> getAll() {
