@@ -276,13 +276,11 @@ const MainDashboard = () => {
             {syncingFirebase ? '⏳ Synchronisation...' : '🔥 Synchroniser Firebase → PostgreSQL'}
           </button>
 
-          <button className="btn btn-secondary" onClick={() => void fetchSignalements()}>
-            🔄 Rafraîchir la carte
-          </button>
 
-          {/* Créer un compte (sync vers Firebase) */}
-          <button className="btn btn-outline" onClick={() => navigate('/register')}>
-            📝 Créer un compte utilisateur
+
+          {/* Gestion des comptes (menu complet) */}
+          <button className="btn btn-outline" onClick={() => navigate('/accounts')}>
+            👥 Gestion des comptes
           </button>
 
           {/* Accès Admin */}

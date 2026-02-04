@@ -10,6 +10,9 @@ import UserManagementPage from './pages/UserManagementPage'
 import LandingPage from './pages/LandingPage'
 import ManagerLoginPage from './pages/ManagerLoginPage'
 import VisitorPage from './pages/VisitorPage'
+import AccountManagementPage from './pages/AccountManagementPage'
+import ManageAccountsPage from './pages/ManageAccountsPage'
+import ConfigurationPage from './pages/ConfigurationPage'
 
 function App() {
   return (
@@ -32,6 +35,12 @@ function App() {
       
       {/* Rediriger /login vers login manager */}
       <Route path="/login" element={<Navigate to="/manager-login" replace />} />
+
+      {/* Gestion des comptes */}
+      <Route path="/accounts" element={<AccountManagementPage />} />
+      <Route path="/accounts/create" element={<RegisterPage />} />
+      <Route path="/accounts/manage" element={<ManageAccountsPage />} />
+      <Route path="/accounts/configuration" element={<ConfigurationPage />} />
 
       {/* Routes Manager - signalements */}
       <Route element={<ProtectedRoute allowedRoles={['ADMIN', 'MANAGER']} />}>

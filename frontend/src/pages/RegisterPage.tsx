@@ -10,40 +10,14 @@ export default function RegisterPage() {
   const [prenom, setPrenom] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const [syncStatus, setSyncStatus] = useState<'idle' | 'syncing' | 'success' | 'error'>('idle')
-
-  async function syncToFirebase(userId: number, plainPassword: string): Promise<boolean> {
-    try {
-      setSyncStatus('syncing')
-      const response = await fetch('http://localhost:8080/api/firebase/sync/user', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ userId, plainPassword }),
-      })
-      const data = await response.json()
-      if (data.success) {
-        setSyncStatus('success')
-        return true
-      } else {
-        setSyncStatus('error')
-        console.error('Firebase sync failed:', data.message)
-        return false
-      }
-    } catch (err) {
-      setSyncStatus('error')
-      console.error('Firebase sync error:', err)
-      return false
-    }
-  }
 
   async function onSubmit(e: FormEvent) {
     e.preventDefault()
     setError(null)
     setLoading(true)
-    setSyncStatus('idle')
 
     try {
-      // 1. Créer le compte dans PostgreSQL
+      // Créer le compte dans PostgreSQL (le backend sync automatiquement vers Firebase avec le password)
       const response = await fetch('http://localhost:8080/api/auth/register', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -54,24 +28,11 @@ export default function RegisterPage() {
       console.log('Register response:', data)
 
       if (response.ok && (data.token || data.userId)) {
-        // Récupérer l'ID utilisateur depuis la réponse
-        const userId = data.userId
-        console.log('User ID for Firebase sync:', userId)
-
-        // 2. Synchroniser vers Firebase pour l'app mobile
-        if (userId) {
-          const syncSuccess = await syncToFirebase(userId, password)
-          console.log('Firebase sync result:', syncSuccess)
-        } else {
-          console.error('No user ID returned from register endpoint')
-        }
-
-        // 3. Retourner à l'espace manager
+        // Retourner à l'espace manager
         navigate('/manager', { 
           replace: true,
           state: { 
-            message: '✅ Compte créé et synchronisé avec Firebase!',
-            firebaseSynced: syncStatus === 'success'
+            message: '✅ Compte créé et synchronisé avec Firebase!'
           }
         })
       } else {
@@ -140,14 +101,8 @@ export default function RegisterPage() {
 
           {error && <div className="error-message">{error}</div>}
 
-          {syncStatus === 'syncing' && (
-            <div className="sync-message syncing">
-              🔄 Synchronisation Firebase en cours...
-            </div>
-          )}
-
           <button type="submit" className="btn-submit" disabled={loading}>
-            {loading ? '⏳ Création...' : 'Creer le compte et synchhroniser firebase'}
+            {loading ? '⏳ Création...' : 'Créer le compte'}
           </button>
 
           <div className="firebase-info">

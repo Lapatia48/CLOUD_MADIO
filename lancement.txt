@@ -158,3 +158,19 @@ docker system prune -a
 +-------------------+     +-------------------+
 
 ================================================================================
+
+
+
+
+docker compose logs backend 2>&1 | Select-Object -Last 50
+
+docker compose up -d --build
+docker compose build --no-cache backend
+
+docker compose build --no-cache backend frontend; docker compose up -d backend frontend
+
+
+docker compose build --no-cache backend frontend mobile-ionic; docker compose up -d backend frontend mobile-ionic
+
+docker compose build --no-cache mobile-ionic
+docker compose up -d --force-recreate mobile-ionic

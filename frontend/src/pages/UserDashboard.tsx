@@ -254,13 +254,7 @@ const UserDashboard = () => {
             ➕ Nouveau signalement
           </button>
 
-          <button
-            className="btn btn-secondary"
-            onClick={() => void fetchSignalements()}
-            type="button"
-          >
-            🔄 Rafraîchir la carte
-          </button>
+
 
           <button
             className="btn btn-sync"

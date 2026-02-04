@@ -129,12 +129,12 @@ class SignalementFirebaseService {
     }
 
     try {
+      // Firestore en mode dev accepte les requêtes sans authentification
       const response = await axios.post(
         `${FIRESTORE_URL}/signalements`,
         firestoreDoc,
         {
           headers: {
-            Authorization: `Bearer ${token}`,
             'Content-Type': 'application/json',
           },
         }
@@ -212,11 +212,6 @@ class SignalementFirebaseService {
               { field: { fieldPath: 'dateSignalement' }, direction: 'DESCENDING' }
             ],
           },
-        },
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
         }
       )
 
@@ -250,11 +245,6 @@ class SignalementFirebaseService {
               },
             },
           },
-        },
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
         }
       )
 
@@ -279,11 +269,6 @@ class SignalementFirebaseService {
           fields: {
             syncedToPostgres: { booleanValue: true },
             postgresId: { integerValue: postgresId.toString() },
-          },
-        },
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
           },
         }
       )

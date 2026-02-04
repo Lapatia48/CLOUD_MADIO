@@ -20,22 +20,7 @@ public interface UserRepository extends JpaRepository<User, Long> {
     
     @Modifying
     @Transactional
-    @Query("UPDATE User u SET u.failedAttempts = u.failedAttempts + 1 WHERE u.email = :email")
-    void incrementFailedAttempts(@Param("email") String email);
-    
-    @Modifying
-    @Transactional
-    @Query("UPDATE User u SET u.failedAttempts = 0 WHERE u.email = :email")
-    void resetFailedAttempts(@Param("email") String email);
-    
-    @Modifying
-    @Transactional
-    @Query("UPDATE User u SET u.isBlocked = true WHERE u.email = :email")
-    void blockUser(@Param("email") String email);
-    
-    @Modifying
-    @Transactional
-    @Query("UPDATE User u SET u.isBlocked = false, u.failedAttempts = 0 WHERE u.email = :email")
+    @Query("UPDATE User u SET u.blocked = false WHERE u.email = :email")
     void unblockUser(@Param("email") String email);
 
     @Query("SELECT u FROM User u LEFT JOIN FETCH u.role WHERE u.firebaseUid = :firebaseUid")

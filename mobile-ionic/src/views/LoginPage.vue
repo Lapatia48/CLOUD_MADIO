@@ -36,6 +36,29 @@
           💡 Utilisez vos identifiants créés depuis l'application web manager.
         </p>
       </div>
+
+      <!-- Modal de compte bloqué -->
+      <ion-modal :is-open="showBlockedModal" @did-dismiss="showBlockedModal = false">
+        <ion-header>
+          <ion-toolbar color="danger">
+            <ion-title>🔒 Compte Bloqué</ion-title>
+          </ion-toolbar>
+        </ion-header>
+        <ion-content class="ion-padding">
+          <div class="blocked-modal-content">
+            <div class="blocked-icon">🚫</div>
+            <h2>Accès Refusé</h2>
+            <p>{{ blockedMessage }}</p>
+            <div class="blocked-info">
+              <ion-icon :icon="informationCircleOutline"></ion-icon>
+              <span>Pour débloquer votre compte, veuillez contacter l'administrateur via l'application web.</span>
+            </div>
+            <ion-button expand="block" color="medium" @click="showBlockedModal = false">
+              Compris
+            </ion-button>
+          </div>
+        </ion-content>
+      </ion-modal>
     </ion-content>
   </ion-page>
 </template>
@@ -43,9 +66,9 @@
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
-import { IonPage, IonHeader, IonToolbar, IonTitle, IonContent, IonList, IonItem, IonLabel, IonInput, IonButton, IonSpinner, IonChip, IonIcon, toastController } from '@ionic/vue'
-import { cloudOfflineOutline } from 'ionicons/icons'
-import { useAuthStore } from '@/stores/auth'
+import { IonPage, IonHeader, IonToolbar, IonTitle, IonContent, IonList, IonItem, IonLabel, IonInput, IonButton, IonSpinner, IonIcon, IonModal, toastController } from '@ionic/vue'
+import { cloudOfflineOutline, informationCircleOutline } from 'ionicons/icons'
+import { useAuthStore, AccountBlockedError } from '@/stores/auth'
 
 const router = useRouter()
 const authStore = useAuthStore()
@@ -53,6 +76,8 @@ const email = ref('')
 const password = ref('')
 const loading = ref(false)
 const isOnline = ref(navigator.onLine)
+const showBlockedModal = ref(false)
+const blockedMessage = ref('')
 
 function handleOnline() { isOnline.value = true }
 function handleOffline() { isOnline.value = false }
@@ -93,12 +118,18 @@ async function handleLogin() {
       router.replace('/home')
     }, 100)
   } catch (error: any) {
-    const toast = await toastController.create({ 
-      message: error.message || 'Erreur de connexion', 
-      duration: 3000, 
-      color: 'danger' 
-    })
-    toast.present()
+    // Vérifier si c'est une erreur de compte bloqué
+    if (error instanceof AccountBlockedError || error.name === 'AccountBlockedError') {
+      blockedMessage.value = error.message
+      showBlockedModal.value = true
+    } else {
+      const toast = await toastController.create({ 
+        message: error.message || 'Erreur de connexion', 
+        duration: 4000, 
+        color: 'danger' 
+      })
+      toast.present()
+    }
   } finally {
     loading.value = false
   }
@@ -145,5 +176,46 @@ ion-button { margin-top: 16px; }
 }
 .offline-alert ion-icon {
   font-size: 24px;
+}
+
+/* Styles pour le modal de compte bloqué */
+.blocked-modal-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 2rem;
+  text-align: center;
+}
+.blocked-icon {
+  font-size: 4rem;
+  margin-bottom: 1rem;
+}
+.blocked-modal-content h2 {
+  color: #e74c3c;
+  margin-bottom: 1rem;
+}
+.blocked-modal-content p {
+  color: #666;
+  margin-bottom: 1.5rem;
+  line-height: 1.6;
+}
+.blocked-info {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  background: #f0f0f0;
+  padding: 1rem;
+  border-radius: 8px;
+  margin-bottom: 1.5rem;
+  text-align: left;
+}
+.blocked-info ion-icon {
+  font-size: 24px;
+  color: #3498db;
+  flex-shrink: 0;
+}
+.blocked-info span {
+  font-size: 0.9rem;
+  color: #555;
 }
 </style>

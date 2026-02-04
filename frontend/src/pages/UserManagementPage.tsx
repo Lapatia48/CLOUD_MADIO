@@ -10,7 +10,6 @@ type User = {
   prenom?: string;
   role: string;
   isBlocked: boolean;
-  failedAttempts: number;
   firebaseUid?: string | null;
 };
 

@@ -48,6 +48,7 @@ public class SecurityConfig {
                 .requestMatchers("/api/signalements/**").permitAll() // Autoriser signalements
                 .requestMatchers("/api/entreprises/**").permitAll() // Autoriser entreprises
                 .requestMatchers("/api/users/**").permitAll()
+                .requestMatchers("/api/configuration/**").permitAll() // Autoriser configuration
                 .requestMatchers("/api/sync/**").permitAll()
                 .requestMatchers("/api/firebase/**").permitAll() // Autoriser endpoints Firebase
                 .anyRequest().authenticated())

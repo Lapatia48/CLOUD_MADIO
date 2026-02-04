@@ -68,12 +68,4 @@ public class AuthController {
         userService.unblockUser(email);
         return ResponseEntity.ok().build();
     }
-    
-    @PostMapping("/users/{email}/block")
-    @PreAuthorize("hasRole('MANAGER')")
-    @Operation(summary = "Block user (Manager only)")
-    public ResponseEntity<Void> blockUser(@PathVariable String email) {
-        userService.blockUser(email);
-        return ResponseEntity.ok().build();
-    }
 }

@@ -13,4 +13,6 @@ public class UserUpdateRequest {
     private String email;
     private String nom;
     private String prenom;
+    private String password;
+    private Boolean blocked;
 }

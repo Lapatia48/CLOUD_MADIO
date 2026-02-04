@@ -9,6 +9,7 @@ DROP TABLE IF EXISTS sessions CASCADE;
 DROP TABLE IF EXISTS users CASCADE;
 DROP TABLE IF EXISTS entreprises CASCADE;
 DROP TABLE IF EXISTS roles CASCADE;
+DROP TABLE IF EXISTS configuration CASCADE;
 
 -- ===========================================
 -- TABLE ROLES
@@ -22,6 +23,18 @@ INSERT INTO roles (libelle) VALUES
     ('USER'),
     ('MANAGER'),
     ('ADMIN');
+
+-- ===========================================
+-- TABLE CONFIGURATION
+-- ===========================================
+CREATE TABLE configuration (
+    id SERIAL PRIMARY KEY,
+    libelle VARCHAR(100) UNIQUE NOT NULL,
+    valeur VARCHAR(255) NOT NULL
+);
+
+INSERT INTO configuration (libelle, valeur) VALUES
+    ('max_attempts', '3');
 
 -- ===========================================
 -- TABLE ENTREPRISES
@@ -40,13 +53,12 @@ INSERT INTO entreprises (nom, adresse, telephone, email) VALUES
     ('CRBC Madagascar', 'Ivandry, Antananarivo', '0331112233', 'contact@crbc.mg');
 
 -- ===========================================
--- TABLE USERS (mot de passe en clair, pas de hash)
+-- TABLE USERS (sans failed_attempts - géré par Firebase)
 -- ===========================================
 CREATE TABLE users (
     id SERIAL PRIMARY KEY,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     email VARCHAR(255) UNIQUE NOT NULL,
-    failed_attempts INT NOT NULL DEFAULT 0,
     firebase_uid VARCHAR(255),
     is_blocked BOOLEAN NOT NULL DEFAULT FALSE,
     nom VARCHAR(100),
@@ -57,12 +69,8 @@ CREATE TABLE users (
 );
 
 -- Utilisateur Manager (mot de passe en clair: "manager")
-INSERT INTO users (email, password, nom, prenom, id_role, failed_attempts, is_blocked) VALUES
-    ('manager@gmail.com', 'manager', 'Manager', 'Admin', 2, 0, false);
-
--- Utilisateur Admin (mot de passe en clair: "admin")
-INSERT INTO users (email, password, nom, prenom, id_role, failed_attempts, is_blocked) VALUES
-    ('admin@gmail.com', 'admin', 'Admin', 'System', 3, 0, false);
+INSERT INTO users (email, password, nom, prenom, id_role, is_blocked) VALUES
+    ('manager@gmail.com', 'manager', 'Manager', 'Admin', 2, false);
 
 -- ===========================================
 -- TABLE SESSIONS
@@ -95,10 +103,6 @@ CREATE TABLE signalements (
     user_id INTEGER REFERENCES users(id) ON DELETE SET NULL
 );
 
--- Quelques signalements de test
-INSERT INTO signalements (description, latitude, longitude, status, avancement, surface_m2, budget, id_entreprise) VALUES
-    ('Nid de poule route principale Analakely', -18.9137, 47.5255, 'NOUVEAU', 0, 15.5, 500000, 1),
-    ('Fissures profondes RN7 km 15', -18.8792, 47.5079, 'EN_COURS', 50, 45.0, 1500000, 2);
 
 -- ===========================================
 -- INDEX POUR PERFORMANCE

@@ -14,6 +14,9 @@ const FIREBASE_CONFIG = {
 const AUTH_URL = `https://identitytoolkit.googleapis.com/v1/accounts`
 const FIRESTORE_URL = `https://firestore.googleapis.com/v1/projects/${FIREBASE_CONFIG.projectId}/databases/(default)/documents`
 
+// URL pour le backend PostgreSQL
+const BACKEND_URL = 'http://localhost:8080'
+
 export interface FirebaseAuthResponse {
   kind: string
   localId: string
@@ -37,9 +40,14 @@ export interface FirestoreUserData {
   nom: string
   prenom: string
   role: string
-  firebaseUid: string
+  password: string
   postgresId: number
   isBlocked: boolean
+  failedAttempts: number
+}
+
+export interface FirestoreConfigData {
+  maxAttempts: number
 }
 
 class FirebaseService {
@@ -54,35 +62,35 @@ class FirebaseService {
   }
 
   /**
-   * Connexion avec email/password via Firebase Auth REST API
+   * Connexion via Firestore (vérification directe email/password dans Firestore)
+   * Car les users sont créés dans Firestore, pas dans Firebase Auth
    */
   async signIn(email: string, password: string): Promise<FirebaseUser> {
-    try {
-      const response = await axios.post<FirebaseAuthResponse>(
-        `${AUTH_URL}:signInWithPassword?key=${FIREBASE_CONFIG.apiKey}`,
-        {
-          email,
-          password,
-          returnSecureToken: true,
-        }
-      )
-
-      const user: FirebaseUser = {
-        uid: response.data.localId,
-        email: response.data.email,
-        idToken: response.data.idToken,
-        refreshToken: response.data.refreshToken,
-      }
-
-      this.currentUser = user
-      localStorage.setItem('firebase_user', JSON.stringify(user))
-      localStorage.setItem('firebase_token', user.idToken)
-
-      return user
-    } catch (error: any) {
-      const errorMessage = this.parseFirebaseError(error)
-      throw new Error(errorMessage)
+    // Chercher l'utilisateur par email dans Firestore
+    const userData = await this.getUserDataByEmail(email)
+    
+    if (!userData) {
+      throw new Error('Aucun compte trouvé avec cet email')
     }
+    
+    // Vérifier le mot de passe
+    if (userData.password !== password) {
+      throw new Error('Mot de passe incorrect')
+    }
+    
+    // Login réussi - créer un pseudo FirebaseUser
+    const user: FirebaseUser = {
+      uid: String(userData.postgresId),
+      email: userData.email,
+      idToken: `firestore_${userData.postgresId}_${Date.now()}`,
+      refreshToken: '',
+    }
+    
+    this.currentUser = user
+    localStorage.setItem('firebase_user', JSON.stringify(user))
+    localStorage.setItem('firebase_token', user.idToken)
+    
+    return user
   }
 
   /**
@@ -121,41 +129,99 @@ class FirebaseService {
    * Rafraîchir le token d'authentification
    */
   async refreshToken(): Promise<string> {
-    if (!this.currentUser?.refreshToken) {
-      throw new Error('No refresh token available')
+    if (!this.currentUser) {
+      throw new Error('No user logged in')
     }
+    // Pour Firestore-based auth, on régénère juste un nouveau token
+    const newToken = `firestore_${this.currentUser.uid}_${Date.now()}`
+    this.currentUser.idToken = newToken
+    localStorage.setItem('firebase_user', JSON.stringify(this.currentUser))
+    localStorage.setItem('firebase_token', newToken)
+    return newToken
+  }
 
+  /**
+   * Récupérer les données utilisateur depuis Firestore (après authentification)
+   */
+  async getUserDataFromFirestore(email: string): Promise<FirestoreUserData | null> {
+    return this.getUserDataByEmail(email)
+  }
+
+  /**
+   * Récupérer la configuration (max_attempts) depuis Firestore
+   */
+  async getConfigurationFromFirestore(): Promise<FirestoreConfigData> {
     try {
-      const response = await axios.post(
-        `https://securetoken.googleapis.com/v1/token?key=${FIREBASE_CONFIG.apiKey}`,
-        {
-          grant_type: 'refresh_token',
-          refresh_token: this.currentUser.refreshToken,
-        }
+      const response = await axios.get(
+        `${FIRESTORE_URL}/configuration/max_attempts`
       )
-
-      const newToken = response.data.id_token
-      this.currentUser.idToken = newToken
-      localStorage.setItem('firebase_user', JSON.stringify(this.currentUser))
-      localStorage.setItem('firebase_token', newToken)
-
-      return newToken
+      
+      if (response.data && response.data.fields) {
+        const fields = response.data.fields
+        return {
+          maxAttempts: parseInt(fields.valeur?.stringValue || '3'),
+        }
+      }
+      
+      return { maxAttempts: 3 } // Valeur par défaut
     } catch (error) {
-      this.signOut()
-      throw new Error('Session expired. Please login again.')
+      console.error('Error fetching configuration from Firestore:', error)
+      return { maxAttempts: 3 }
     }
   }
 
   /**
-   * Récupérer les données utilisateur depuis Firestore
+   * Mettre à jour les failedAttempts d'un utilisateur dans Firestore
+   * Utilise postgresId comme ID de document
    */
-  async getUserDataFromFirestore(email: string): Promise<FirestoreUserData | null> {
-    if (!this.currentUser?.idToken) {
-      throw new Error('Not authenticated')
-    }
-
+  async updateFailedAttempts(postgresId: number, failedAttempts: number): Promise<void> {
     try {
-      // Rechercher l'utilisateur par email dans la collection "users"
+      const docId = String(postgresId)
+      
+      await axios.patch(
+        `${FIRESTORE_URL}/users/${docId}?updateMask.fieldPaths=failedAttempts`,
+        {
+          fields: {
+            failedAttempts: { integerValue: String(failedAttempts) }
+          }
+        }
+      )
+      console.log(`Updated failedAttempts to ${failedAttempts} for postgresId=${postgresId}`)
+    } catch (error) {
+      console.error('Error updating failedAttempts in Firestore:', error)
+    }
+  }
+
+  /**
+   * Marquer un utilisateur comme bloqué dans Firestore
+   * Utilise postgresId comme ID de document
+   */
+  async blockUserInFirestore(postgresId: number): Promise<void> {
+    try {
+      const docId = String(postgresId)
+      
+      await axios.patch(
+        `${FIRESTORE_URL}/users/${docId}?updateMask.fieldPaths=isBlocked`,
+        {
+          fields: {
+            isBlocked: { booleanValue: true }
+          }
+        }
+      )
+      console.log(`User postgresId=${postgresId} blocked in Firestore`)
+    } catch (error) {
+      console.error('Error blocking user in Firestore:', error)
+    }
+  }
+
+  /**
+   * Récupérer les données utilisateur par email (sans authentification)
+   * Utilisé avant le login pour vérifier si le compte est bloqué
+   * Fait une query sur la collection users pour trouver par email
+   */
+  async getUserDataByEmail(email: string): Promise<FirestoreUserData | null> {
+    try {
+      // Query pour trouver l'utilisateur par email
       const response = await axios.post(
         `${FIRESTORE_URL}:runQuery`,
         {
@@ -170,14 +236,9 @@ class FirebaseService {
             },
             limit: 1,
           },
-        },
-        {
-          headers: {
-            Authorization: `Bearer ${this.currentUser.idToken}`,
-          },
         }
       )
-
+      
       if (response.data && response.data.length > 0 && response.data[0].document) {
         const fields = response.data[0].document.fields
         return {
@@ -185,15 +246,16 @@ class FirebaseService {
           nom: fields.nom?.stringValue || '',
           prenom: fields.prenom?.stringValue || '',
           role: fields.role?.stringValue || 'USER',
-          firebaseUid: fields.firebaseUid?.stringValue || '',
+          password: fields.password?.stringValue || '',
           postgresId: parseInt(fields.postgresId?.integerValue || '0'),
           isBlocked: fields.isBlocked?.booleanValue || false,
+          failedAttempts: parseInt(fields.failedAttempts?.integerValue || '0'),
         }
       }
-
+      
       return null
     } catch (error) {
-      console.error('Error fetching user data from Firestore:', error)
+      console.error('Error fetching user data by email:', error)
       return null
     }
   }

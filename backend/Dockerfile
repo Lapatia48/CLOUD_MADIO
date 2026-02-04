@@ -5,6 +5,7 @@ COPY pom.xml .
 # On télécharge les dépendances d'abord pour mettre en cache cette couche
 RUN mvn dependency:go-offline
 COPY src ./src
+# Force rebuild: 2026-02-04-v2
 RUN mvn clean package -DskipTests
 
 # Étape 2 : Runtime
