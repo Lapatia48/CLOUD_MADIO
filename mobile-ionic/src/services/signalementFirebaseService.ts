@@ -38,35 +38,37 @@ export interface FirebaseSignalement {
   // Champs optionnels
   description?: string    // TEXT (nullable)
   status: 'NOUVEAU' | 'EN_COURS' | 'TERMINE'  // VARCHAR(20) DEFAULT 'NOUVEAU'
+  avancement?: number     // Pourcentage: 0=nouveau, 50=en cours, 100=terminé
   surfaceM2?: number      // DECIMAL(10,2) (nullable)
   budget?: number         // DECIMAL(15,2) (nullable)
+  photoBase64?: string    // Photo en base64 (ajoutée depuis mobile)
+  photoUrl?: string       // URL cloud après traitement par le web
   
   // Références (pour sync avec PostgreSQL)
   userId?: number         // INT REFERENCES users(id) - ID PostgreSQL
   userEmail: string       // Pour identifier l'utilisateur
   firebaseUid: string     // UID Firebase de l'utilisateur
   idEntreprise?: number   // INT REFERENCES entreprises(id) (nullable)
+  entrepriseNom?: string  // Nom de l'entreprise (dénormalisé pour affichage)
   
   // Métadonnées
   dateSignalement: string // TIMESTAMP DEFAULT CURRENT_TIMESTAMP - ISO format
   syncedToPostgres: boolean // Flag de synchronisation
   postgresId?: number     // ID après sync vers PostgreSQL
+  updatedAt?: string      // Date de dernière modification
 }
 
 /**
- * Interface pour création (champs requis seulement)
- * Respecte les contraintes PostgreSQL
+ * Interface pour création depuis mobile (champs simples)
  */
 export interface CreateSignalementRequest {
   // Champs obligatoires (NOT NULL)
   latitude: number        // DOUBLE PRECISION NOT NULL
   longitude: number       // DOUBLE PRECISION NOT NULL
   
-  // Champs optionnels
+  // Champs optionnels depuis mobile
   description?: string    // TEXT
-  surfaceM2?: number      // DECIMAL(10,2)
-  budget?: number         // DECIMAL(15,2)
-  idEntreprise?: number   // INT REFERENCES entreprises(id)
+  photoBase64?: string    // Photo en base64
 }
 
 /**
@@ -103,38 +105,27 @@ class SignalementFirebaseService {
       return { success: false, error: 'Longitude invalide (obligatoire)' }
     }
 
-    // Construire le document Firestore avec dateSignalement = maintenant
-    const signalement: FirebaseSignalement = {
-      latitude: data.latitude,
-      longitude: data.longitude,
-      description: data.description || '',
-      status: 'NOUVEAU',
-      surfaceM2: data.surfaceM2 || 0,
-      budget: data.budget || 0,
-      idEntreprise: data.idEntreprise, // FK vers entreprises(id)
-      userEmail: currentUser.email,
-      firebaseUid: currentUser.uid,
-      dateSignalement: new Date().toISOString(), // TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-      syncedToPostgres: false,
-    }
+    // Construire le document Firestore (simplifié pour mobile)
+    const now = new Date().toISOString()
 
     // Convertir en format Firestore
-    const firestoreDoc = {
+    const firestoreDoc: { fields: Record<string, any> } = {
       fields: {
-        latitude: { doubleValue: signalement.latitude },
-        longitude: { doubleValue: signalement.longitude },
-        description: { stringValue: signalement.description },
-        status: { stringValue: signalement.status },
-        surfaceM2: { doubleValue: signalement.surfaceM2 },
-        budget: { doubleValue: signalement.budget },
-        idEntreprise: signalement.idEntreprise 
-          ? { integerValue: signalement.idEntreprise.toString() } 
-          : { nullValue: null },
-        userEmail: { stringValue: signalement.userEmail },
-        firebaseUid: { stringValue: signalement.firebaseUid },
-        dateSignalement: { timestampValue: signalement.dateSignalement },
-        syncedToPostgres: { booleanValue: signalement.syncedToPostgres },
+        latitude: { doubleValue: data.latitude },
+        longitude: { doubleValue: data.longitude },
+        description: { stringValue: data.description || '' },
+        status: { stringValue: 'NOUVEAU' },
+        avancement: { integerValue: '0' },
+        userEmail: { stringValue: currentUser.email },
+        firebaseUid: { stringValue: currentUser.uid },
+        dateSignalement: { timestampValue: now },
+        syncedToPostgres: { booleanValue: false },
       }
+    }
+
+    // Ajouter la photo si présente
+    if (data.photoBase64) {
+      firestoreDoc.fields.photoBase64 = { stringValue: data.photoBase64 }
     }
 
     try {
@@ -334,15 +325,20 @@ class SignalementFirebaseService {
       longitude: f.longitude?.doubleValue || 0,
       description: f.description?.stringValue || '',
       status: (f.status?.stringValue as 'NOUVEAU' | 'EN_COURS' | 'TERMINE') || 'NOUVEAU',
+      avancement: f.avancement?.integerValue ? parseInt(f.avancement.integerValue) : 0,
       surfaceM2: f.surfaceM2?.doubleValue || 0,
       budget: f.budget?.doubleValue || 0,
+      photoBase64: f.photoBase64?.stringValue || undefined,
+      photoUrl: f.photoUrl?.stringValue || undefined,
       userEmail: f.userEmail?.stringValue || '',
       firebaseUid: f.firebaseUid?.stringValue || '',
+      idEntreprise: f.idEntreprise?.integerValue ? parseInt(f.idEntreprise.integerValue) : undefined,
+      entrepriseNom: f.entrepriseNom?.stringValue || undefined,
       dateSignalement: f.dateSignalement?.timestampValue || new Date().toISOString(),
       syncedToPostgres: f.syncedToPostgres?.booleanValue || false,
       postgresId: f.postgresId?.integerValue ? parseInt(f.postgresId.integerValue) : undefined,
       userId: f.userId?.integerValue ? parseInt(f.userId.integerValue) : undefined,
-      entrepriseId: f.entrepriseId?.integerValue ? parseInt(f.entrepriseId.integerValue) : undefined,
+      updatedAt: f.updatedAt?.timestampValue || undefined,
     }
   }
 }

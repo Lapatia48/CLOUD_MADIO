@@ -1,16 +1,14 @@
+/**
+ * HTTP Client - Non utilisé (l'app fonctionne uniquement avec Firebase)
+ * Ce fichier est conservé pour compatibilité mais n'est plus utilisé.
+ */
+
 import axios from 'axios'
 
+// Instance vide - l'app mobile n'utilise plus le backend
 export const http = axios.create({
-  baseURL: 'http://localhost:8080',
+  baseURL: '',
   headers: { 'Content-Type': 'application/json' }
-})
-
-http.interceptors.request.use((config) => {
-  const token = localStorage.getItem('token')
-  if (token) {
-    config.headers.Authorization = `Bearer ${token}`
-  }
-  return config
 })
 
 export function getApiErrorMessage(err: unknown): string {

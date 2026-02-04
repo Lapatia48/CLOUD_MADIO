@@ -182,9 +182,7 @@ const MainDashboard = () => {
   return (
     <div className="main-dashboard">
       <div className="map-section">
-        <div className={`connection-badge ${isOnline ? 'online' : 'offline'}`}>
-          {isOnline ? '🟢 En ligne' : '🔴 Hors ligne'}
-        </div>
+
 
         <MapContainer center={DEFAULT_CENTER} zoom={13} className="map-container">
           <TileLayer url={tileUrl} attribution="&copy; OpenStreetMap" />

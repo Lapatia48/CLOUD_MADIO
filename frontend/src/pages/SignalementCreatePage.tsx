@@ -156,9 +156,7 @@ const SignalementCreatePage = () => {
   return (
     <div className="signalement-create-container">
       <div className="signalement-map">
-        <div className={`connection-status ${isOnline ? 'online' : 'offline'}`}>
-          {isOnline ? '🟢 En ligne' : '🔴 Hors ligne (carte locale)'}
-        </div>
+
         <MapContainer center={DEFAULT_CENTER} zoom={13} className="map">
           <TileLayer
             url={tileUrl}

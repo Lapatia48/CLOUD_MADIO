@@ -34,6 +34,16 @@ public class Signalement {
     @Builder.Default
     private String status = "NOUVEAU"; // 'NOUVEAU', 'EN_COURS', 'TERMINE'
     
+    @Column
+    @Builder.Default
+    private Integer avancement = 0; // 0%, 50%, 100% correspondant à NOUVEAU, EN_COURS, TERMINE
+    
+    @Column(name = "photo_base64", columnDefinition = "TEXT")
+    private String photoBase64; // Photo en base64 depuis le mobile
+    
+    @Column(name = "photo_url")
+    private String photoUrl; // URL de la photo si stockée dans un cloud
+    
     @Column(name = "surface_m2", precision = 10, scale = 2)
     private BigDecimal surfaceM2;
     

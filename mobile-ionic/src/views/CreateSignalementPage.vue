@@ -4,7 +4,7 @@
     <ion-header>
       <ion-toolbar color="primary">
         <ion-buttons slot="start">
-          <ion-back-button default-href="/map" />
+          <ion-back-button default-href="/home" />
         </ion-buttons>
         <ion-title>➕ Nouveau Signalement</ion-title>
       </ion-toolbar>
@@ -23,50 +23,45 @@
             <ion-item class="form-item">
               <ion-textarea 
                 v-model="description" 
-                label="Description" 
+                label="Description du problème *" 
                 label-placement="floating" 
                 :rows="3"
-                placeholder="Décrivez le problème..."
+                placeholder="Décrivez le problème routier..."
                 class="custom-input"
               />
-            </ion-item>
-            <ion-item class="form-item">
-              <ion-input 
-                v-model="surfaceM2" 
-                type="number" 
-                label="Surface (m²)" 
-                label-placement="floating"
-                placeholder="Ex: 50"
-                class="custom-input"
-              />
-            </ion-item>
-            <ion-item class="form-item">
-              <ion-input 
-                v-model="budget" 
-                type="number" 
-                label="Budget estimé (Ar)" 
-                label-placement="floating"
-                placeholder="Ex: 500000"
-                class="custom-input"
-              />
-            </ion-item>
-            <!-- Entreprise responsable (optionnel) -->
-            <ion-item class="form-item">
-              <ion-select 
-                v-model="idEntreprise" 
-                label="Entreprise responsable" 
-                label-placement="floating"
-                placeholder="Sélectionner (optionnel)"
-                interface="action-sheet"
-                class="custom-input"
-              >
-                <ion-select-option :value="undefined">Aucune</ion-select-option>
-                <ion-select-option v-for="e in entreprises" :key="e.id" :value="e.id">
-                  {{ e.nom }}
-                </ion-select-option>
-              </ion-select>
             </ion-item>
           </ion-list>
+        </ion-card-content>
+      </ion-card>
+
+      <!-- Photo Card -->
+      <ion-card class="photo-card">
+        <ion-card-header>
+          <ion-card-title>
+            <ion-icon :icon="cameraOutline"></ion-icon> Photo
+          </ion-card-title>
+          <ion-card-subtitle>Prenez une photo du problème</ion-card-subtitle>
+        </ion-card-header>
+        <ion-card-content>
+          <!-- Photo preview -->
+          <div v-if="photoBase64" class="photo-preview">
+            <img :src="photoBase64" alt="Photo du signalement" />
+            <ion-button fill="clear" color="danger" size="small" @click="removePhoto" class="remove-photo-btn">
+              <ion-icon :icon="trashOutline"></ion-icon>
+            </ion-button>
+          </div>
+          
+          <!-- Photo actions -->
+          <div class="photo-actions">
+            <ion-button expand="block" fill="outline" @click="takePhoto">
+              <ion-icon :icon="cameraOutline" slot="start"></ion-icon>
+              {{ photoBase64 ? 'Reprendre la photo' : 'Prendre une photo' }}
+            </ion-button>
+            <ion-button expand="block" fill="outline" color="secondary" @click="pickFromGallery">
+              <ion-icon :icon="imageOutline" slot="start"></ion-icon>
+              Galerie
+            </ion-button>
+          </div>
         </ion-card-content>
       </ion-card>
 
@@ -74,9 +69,9 @@
       <ion-card class="map-card">
         <ion-card-header>
           <ion-card-title>
-            <ion-icon :icon="locationOutline"></ion-icon> Emplacement
+            <ion-icon :icon="locationOutline"></ion-icon> Emplacement *
           </ion-card-title>
-          <ion-card-subtitle>Cliquez sur la carte pour sélectionner</ion-card-subtitle>
+          <ion-card-subtitle>Cliquez sur la carte pour sélectionner la position</ion-card-subtitle>
         </ion-card-header>
         <ion-card-content class="map-card-content">
           <div id="create-map" class="mini-map"></div>
@@ -111,8 +106,9 @@
         <ion-button expand="block" color="primary" @click="handleSubmit" :disabled="loading" class="submit-btn">
           <ion-icon :icon="cloudUploadOutline" slot="start" v-if="!loading"></ion-icon>
           <ion-spinner v-if="loading" name="crescent"></ion-spinner>
-          {{ loading ? 'Création en cours...' : 'Créer le signalement' }}
+          {{ loading ? 'Envoi en cours...' : 'Envoyer le signalement' }}
         </ion-button>
+        <p class="info-text">📱 Le signalement sera envoyé vers Firebase et traité par les managers</p>
       </div>
     </ion-content>
   </ion-page>
@@ -123,47 +119,83 @@ import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { 
   IonPage, IonHeader, IonToolbar, IonTitle, IonContent, IonButtons, 
-  IonBackButton, IonList, IonItem, IonInput, IonTextarea, IonButton, 
+  IonBackButton, IonList, IonItem, IonTextarea, IonButton, 
   IonCard, IonCardHeader, IonCardTitle, IonCardSubtitle, IonCardContent,
-  IonIcon, IonSpinner, IonSelect, IonSelectOption, toastController
+  IonIcon, IonSpinner, toastController
 } from '@ionic/vue'
-import { createOutline, locationOutline, checkmarkCircleOutline, alertCircleOutline, cloudUploadOutline } from 'ionicons/icons'
+import { createOutline, locationOutline, checkmarkCircleOutline, alertCircleOutline, cloudUploadOutline, cameraOutline, imageOutline, trashOutline } from 'ionicons/icons'
+import { Camera, CameraResultType, CameraSource } from '@capacitor/camera'
 import L from 'leaflet'
 import signalementFirebaseService from '../services/signalementFirebaseService'
-
-// Interface entreprise pour PostgreSQL
-interface Entreprise {
-  id: number
-  nom: string
-  adresse?: string
-  telephone?: string
-  email?: string
-}
 
 const router = useRouter()
 
 const description = ref('')
-const surfaceM2 = ref('')
-const budget = ref('')
-const idEntreprise = ref<number | undefined>(undefined)
-const entreprises = ref<Entreprise[]>([])
 const position = ref<{ lat: number; lng: number } | null>(null)
+const photoBase64 = ref<string | null>(null)
 const loading = ref(false)
 const error = ref<string | null>(null)
 
 let marker: L.Marker | null = null
 
-onMounted(async () => {
-  // Charger la liste des entreprises depuis le backend
+// Prendre une photo avec la caméra
+async function takePhoto() {
   try {
-    const response = await fetch('http://localhost:8080/api/entreprises')
-    if (response.ok) {
-      entreprises.value = await response.json()
+    const photo = await Camera.getPhoto({
+      quality: 80,
+      allowEditing: false,
+      resultType: CameraResultType.Base64,
+      source: CameraSource.Camera,
+      width: 1024,
+      height: 1024,
+    })
+    
+    if (photo.base64String) {
+      photoBase64.value = `data:image/${photo.format};base64,${photo.base64String}`
     }
-  } catch (e) {
-    console.warn('Impossible de charger les entreprises:', e)
+  } catch (e: any) {
+    console.warn('Camera error:', e)
+    // Fallback si pas de caméra disponible
+    if (e.message?.includes('cancelled') || e.message?.includes('User')) {
+      return // L'utilisateur a annulé
+    }
+    const toast = await toastController.create({
+      message: '📷 Caméra non disponible sur cet appareil',
+      duration: 2000,
+      color: 'warning'
+    })
+    toast.present()
   }
-  
+}
+
+// Choisir depuis la galerie
+async function pickFromGallery() {
+  try {
+    const photo = await Camera.getPhoto({
+      quality: 80,
+      allowEditing: false,
+      resultType: CameraResultType.Base64,
+      source: CameraSource.Photos,
+      width: 1024,
+      height: 1024,
+    })
+    
+    if (photo.base64String) {
+      photoBase64.value = `data:image/${photo.format};base64,${photo.base64String}`
+    }
+  } catch (e: any) {
+    console.warn('Gallery error:', e)
+    if (e.message?.includes('cancelled') || e.message?.includes('User')) {
+      return
+    }
+  }
+}
+
+function removePhoto() {
+  photoBase64.value = null
+}
+
+onMounted(async () => {
   setTimeout(() => {
     const map = L.map('create-map').setView([-18.8792, 47.5079], 13)
 
@@ -184,7 +216,7 @@ onMounted(async () => {
 })
 
 async function handleSubmit() {
-  // Validation des contraintes (NOT NULL dans PostgreSQL)
+  // Validation
   if (!position.value) {
     error.value = 'Sélectionnez un emplacement sur la carte (obligatoire)'
     return
@@ -199,26 +231,24 @@ async function handleSubmit() {
   loading.value = true
 
   try {
-    // Créer le signalement dans Firebase avec idEntreprise et dateSignalement
+    // Créer le signalement dans Firebase avec photo
     const result = await signalementFirebaseService.createSignalement({
       description: description.value.trim(),
       latitude: position.value.lat,
       longitude: position.value.lng,
-      surfaceM2: parseFloat(surfaceM2.value) || undefined,
-      budget: parseFloat(budget.value) || undefined,
-      idEntreprise: idEntreprise.value // FK vers entreprises(id) - peut être undefined
+      photoBase64: photoBase64.value || undefined
     })
 
     if (result.success) {
       const toast = await toastController.create({
-        message: '🔥 Signalement créé dans Firebase!',
-        duration: 2000,
+        message: '🔥 Signalement envoyé! Les managers seront notifiés.',
+        duration: 3000,
         color: 'success'
       })
       toast.present()
       router.replace('/home')
     } else {
-      error.value = result.error || 'Erreur lors de la création'
+      error.value = result.error || 'Erreur lors de l\'envoi'
     }
   } catch (err: any) {
     error.value = err.message || 'Erreur de connexion'
@@ -246,6 +276,41 @@ async function handleSubmit() {
   --padding-start: 12px;
   --padding-end: 12px;
   border-radius: 8px;
+}
+
+.photo-card {
+  margin-bottom: 12px;
+}
+
+.photo-preview {
+  position: relative;
+  margin-bottom: 12px;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.photo-preview img {
+  width: 100%;
+  max-height: 200px;
+  object-fit: cover;
+  border-radius: 8px;
+}
+
+.remove-photo-btn {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  --background: rgba(255,255,255,0.9);
+  --border-radius: 50%;
+}
+
+.photo-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.photo-actions ion-button {
+  flex: 1;
 }
 
 .map-card {
@@ -314,5 +379,12 @@ async function handleSubmit() {
   --border-radius: 12px;
   height: 50px;
   font-weight: 600;
+}
+
+.info-text {
+  text-align: center;
+  color: #666;
+  font-size: 0.8rem;
+  margin-top: 12px;
 }
 </style>

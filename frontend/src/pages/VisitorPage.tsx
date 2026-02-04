@@ -112,9 +112,7 @@ const VisitorPage = () => {
           <h1>MADIO</h1>
           <span className="badge-visitor">Mode Visiteur</span>
         </div>
-        <div className={`connection-status ${isOnline ? 'online' : 'offline'}`}>
-          {isOnline ? '🟢 En ligne' : '🔴 Hors ligne'}
-        </div>
+
       </div>
 
       {/* Carte plein écran */}

@@ -14,6 +14,7 @@ import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.*;
+import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
@@ -42,7 +43,8 @@ public class SignalementSyncService {
     private final SignalementRepository signalementRepository;
     private final UserRepository userRepository;
     private final EntrepriseRepository entrepriseRepository;
-    private final RestTemplate restTemplate = new RestTemplate();
+    // Utiliser HttpComponentsClientHttpRequestFactory pour supporter PATCH
+    private final RestTemplate restTemplate = new RestTemplate(new HttpComponentsClientHttpRequestFactory());
     private final ObjectMapper objectMapper = new ObjectMapper();
 
     /**
@@ -107,8 +109,11 @@ public class SignalementSyncService {
                 signalement.setLatitude(dto.getLatitude());
                 signalement.setLongitude(dto.getLongitude());
                 signalement.setStatus(dto.getStatus() != null ? dto.getStatus() : "NOUVEAU");
+                signalement.setAvancement(dto.getAvancement() != null ? dto.getAvancement() : 0);
                 signalement.setSurfaceM2(dto.getSurfaceM2());
                 signalement.setBudget(dto.getBudget());
+                signalement.setPhotoBase64(dto.getPhotoBase64());
+                signalement.setPhotoUrl(dto.getPhotoUrl());
                 signalement.setEntreprise(entreprise);
                 signalement.setUser(user);
                 
@@ -232,9 +237,13 @@ public class SignalementSyncService {
             .longitude(getDoubleValue(fields, "longitude"))
             .description(getStringValue(fields, "description"))
             .status(getStringValue(fields, "status"))
+            .avancement(getIntegerValue(fields, "avancement"))
             .surfaceM2(getBigDecimalValue(fields, "surfaceM2"))
             .budget(getBigDecimalValue(fields, "budget"))
+            .photoBase64(getStringValue(fields, "photoBase64"))
+            .photoUrl(getStringValue(fields, "photoUrl"))
             .idEntreprise(getLongValue(fields, "idEntreprise"))
+            .entrepriseNom(getStringValue(fields, "entrepriseNom"))
             .userEmail(getStringValue(fields, "userEmail"))
             .firebaseUid(getStringValue(fields, "firebaseUid"))
             .dateSignalement(getTimestampValue(fields, "dateSignalement"))
@@ -247,6 +256,14 @@ public class SignalementSyncService {
     private String getStringValue(JsonNode fields, String fieldName) {
         JsonNode field = fields.get(fieldName);
         return field != null && field.has("stringValue") ? field.get("stringValue").asText() : null;
+    }
+    
+    private Integer getIntegerValue(JsonNode fields, String fieldName) {
+        JsonNode field = fields.get(fieldName);
+        if (field != null && field.has("integerValue")) {
+            return field.get("integerValue").asInt();
+        }
+        return null;
     }
 
     private Double getDoubleValue(JsonNode fields, String fieldName) {
@@ -322,5 +339,344 @@ public class SignalementSyncService {
         } catch (Exception e) {
             logger.warn("⚠️ Erreur marquer sync {}: {}", documentId, e.getMessage());
         }
+    }
+
+    /**
+     * Synchronise un signalement de PostgreSQL vers Firebase.
+     * Utilisé quand un manager met à jour un signalement (budget, entreprise, avancement).
+     * 
+     * Flux: Web (PostgreSQL) → Mobile (Firebase)
+     * IMPORTANT: On ne crée JAMAIS de nouveau signalement - on met à jour l'existant.
+     * Le signalement existe obligatoirement dans Firebase car c'est là qu'il est créé.
+     */
+    public Map<String, Object> syncSignalementToFirebase(Long signalementId) {
+        logger.info("=== Sync PostgreSQL → Firebase pour signalement {} ===", signalementId);
+        
+        Map<String, Object> result = new HashMap<>();
+        
+        try {
+            // 1. Récupérer le signalement de PostgreSQL
+            Optional<Signalement> optSignalement = signalementRepository.findById(signalementId);
+            if (optSignalement.isEmpty()) {
+                result.put("success", false);
+                result.put("error", "Signalement non trouvé dans PostgreSQL");
+                return result;
+            }
+            
+            Signalement signalement = optSignalement.get();
+            
+            // 2. Chercher le document Firebase correspondant par postgresId (priorité)
+            //    puis par coordonnées si pas trouvé
+            String firebaseDocId = findFirebaseDocumentByPostgresId(signalementId);
+            
+            if (firebaseDocId == null) {
+                // Fallback: chercher par coordonnées
+                logger.info("Pas trouvé par postgresId, recherche par coordonnées...");
+                firebaseDocId = findFirebaseDocumentByCoordinates(
+                    signalement.getLatitude(), 
+                    signalement.getLongitude()
+                );
+            }
+            
+            // 3. Si pas de document trouvé, c'est une erreur (le signalement doit venir de Firebase)
+            if (firebaseDocId == null) {
+                logger.error("Aucun document Firebase trouvé pour signalement {} - impossible de synchroniser", signalementId);
+                result.put("success", false);
+                result.put("error", "Aucun document Firebase correspondant trouvé. " +
+                    "Le signalement doit d'abord être créé depuis le mobile.");
+                return result;
+            }
+            
+            // 4. Mettre à jour le document Firebase existant
+            boolean updated = updateSignalementInFirebase(firebaseDocId, signalement);
+            
+            if (!updated) {
+                logger.error("Échec de la mise à jour du document Firebase {}", firebaseDocId);
+                result.put("success", false);
+                result.put("error", "Échec de la mise à jour du document Firebase");
+                return result;
+            }
+            
+            result.put("success", true);
+            result.put("signalementId", signalementId);
+            result.put("firebaseDocId", firebaseDocId);
+            result.put("message", "Signalement synchronisé vers Firebase avec succès");
+                
+        } catch (Exception e) {
+            logger.error("Erreur sync vers Firebase: {}", e.getMessage(), e);
+            result.put("success", false);
+            result.put("error", e.getMessage());
+        }
+        
+        return result;
+    }
+
+    /**
+     * Recherche un document Firebase par son postgresId
+     */
+    private String findFirebaseDocumentByPostgresId(Long postgresId) {
+        String url = firebaseConfig.getFirestoreBaseUrl() + "/signalements";
+        
+        try {
+            ResponseEntity<String> response = restTemplate.getForEntity(url, String.class);
+            JsonNode root = objectMapper.readTree(response.getBody());
+            JsonNode documents = root.get("documents");
+            
+            if (documents != null && documents.isArray()) {
+                for (JsonNode doc : documents) {
+                    JsonNode fields = doc.get("fields");
+                    if (fields != null) {
+                        Long docPostgresId = getLongValue(fields, "postgresId");
+                        
+                        if (docPostgresId != null && docPostgresId.equals(postgresId)) {
+                            String fullName = doc.get("name").asText();
+                            String docId = fullName.substring(fullName.lastIndexOf('/') + 1);
+                            logger.info("Document Firebase trouvé par postgresId={}: {}", postgresId, docId);
+                            return docId;
+                        }
+                    }
+                }
+            }
+            logger.warn("Aucun document Firebase trouvé avec postgresId={}", postgresId);
+        } catch (Exception e) {
+            logger.error("Erreur recherche Firebase par postgresId: {}", e.getMessage());
+        }
+        
+        return null;
+    }
+
+    /**
+     * Recherche un document Firebase par coordonnées GPS
+     */
+    private String findFirebaseDocumentByCoordinates(Double latitude, Double longitude) {
+        String url = firebaseConfig.getFirestoreBaseUrl() + "/signalements";
+        
+        try {
+            ResponseEntity<String> response = restTemplate.getForEntity(url, String.class);
+            JsonNode root = objectMapper.readTree(response.getBody());
+            JsonNode documents = root.get("documents");
+            
+            if (documents != null && documents.isArray()) {
+                for (JsonNode doc : documents) {
+                    JsonNode fields = doc.get("fields");
+                    if (fields != null) {
+                        Double lat = getDoubleValue(fields, "latitude");
+                        Double lng = getDoubleValue(fields, "longitude");
+                        
+                        // Comparer avec tolérance (environ 10m)
+                        if (lat != null && lng != null &&
+                            Math.abs(lat - latitude) < 0.0001 && 
+                            Math.abs(lng - longitude) < 0.0001) {
+                            String fullName = doc.get("name").asText();
+                            return fullName.substring(fullName.lastIndexOf('/') + 1);
+                        }
+                    }
+                }
+            }
+        } catch (Exception e) {
+            logger.error("Erreur recherche Firebase: {}", e.getMessage());
+        }
+        
+        return null;
+    }
+
+    /**
+     * Crée un nouveau signalement dans Firebase
+     */
+    private String createSignalementInFirebase(Signalement signalement) {
+        String url = firebaseConfig.getFirestoreBaseUrl() + "/signalements";
+        
+        Map<String, Object> fields = buildFirebaseFields(signalement);
+        Map<String, Object> document = Map.of("fields", fields);
+        
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        HttpEntity<Map<String, Object>> entity = new HttpEntity<>(document, headers);
+        
+        try {
+            ResponseEntity<String> response = restTemplate.postForEntity(url, entity, String.class);
+            JsonNode root = objectMapper.readTree(response.getBody());
+            String fullName = root.get("name").asText();
+            String docId = fullName.substring(fullName.lastIndexOf('/') + 1);
+            logger.info("✅ Signalement créé dans Firebase: {}", docId);
+            return docId;
+        } catch (Exception e) {
+            logger.error("Erreur création Firebase: {}", e.getMessage());
+            return null;
+        }
+    }
+
+    /**
+     * Met à jour un signalement existant dans Firebase
+     * Note: On utilise PUT au lieu de PATCH car RestTemplate ne supporte pas PATCH par défaut
+     * @return true si succès, false si le document n'existe pas ou erreur
+     */
+    private boolean updateSignalementInFirebase(String documentId, Signalement signalement) {
+        String getUrl = firebaseConfig.getFirestoreBaseUrl() + "/signalements/" + documentId;
+        
+        try {
+            // 1. D'abord vérifier si le document existe
+            ResponseEntity<String> getResponse;
+            try {
+                getResponse = restTemplate.getForEntity(getUrl, String.class);
+            } catch (org.springframework.web.client.HttpClientErrorException.NotFound e) {
+                logger.warn("Document Firebase {} n'existe pas (404)", documentId);
+                return false; // Le document n'existe pas, retourner false pour déclencher la création
+            }
+            
+            JsonNode existingDoc = objectMapper.readTree(getResponse.getBody());
+            JsonNode existingFields = existingDoc.get("fields");
+            
+            // 2. Construire le nouveau document en préservant les champs existants
+            Map<String, Object> fields = new HashMap<>();
+            
+            // Préserver les champs originaux du mobile
+            if (existingFields != null) {
+                // Latitude/Longitude (obligatoires)
+                if (existingFields.has("latitude")) {
+                    fields.put("latitude", Map.of("doubleValue", getDoubleValue(existingFields, "latitude")));
+                }
+                if (existingFields.has("longitude")) {
+                    fields.put("longitude", Map.of("doubleValue", getDoubleValue(existingFields, "longitude")));
+                }
+                // User info
+                if (existingFields.has("userEmail")) {
+                    fields.put("userEmail", Map.of("stringValue", getStringValue(existingFields, "userEmail")));
+                }
+                if (existingFields.has("firebaseUid")) {
+                    fields.put("firebaseUid", Map.of("stringValue", getStringValue(existingFields, "firebaseUid")));
+                }
+                // Photo
+                if (existingFields.has("photoBase64")) {
+                    String photo = getStringValue(existingFields, "photoBase64");
+                    if (photo != null && !photo.isEmpty()) {
+                        fields.put("photoBase64", Map.of("stringValue", photo));
+                    }
+                }
+                if (existingFields.has("photoUrl")) {
+                    String photoUrl = getStringValue(existingFields, "photoUrl");
+                    if (photoUrl != null && !photoUrl.isEmpty()) {
+                        fields.put("photoUrl", Map.of("stringValue", photoUrl));
+                    }
+                }
+                // Date de création
+                if (existingFields.has("dateSignalement")) {
+                    JsonNode dateNode = existingFields.get("dateSignalement");
+                    if (dateNode.has("timestampValue")) {
+                        fields.put("dateSignalement", Map.of("timestampValue", dateNode.get("timestampValue").asText()));
+                    } else if (dateNode.has("stringValue")) {
+                        fields.put("dateSignalement", Map.of("stringValue", dateNode.get("stringValue").asText()));
+                    }
+                }
+            }
+            
+            // 3. Mettre à jour avec les données de PostgreSQL (manager)
+            // Status
+            fields.put("status", Map.of("stringValue", signalement.getStatus() != null ? signalement.getStatus() : "NOUVEAU"));
+            
+            // Avancement
+            int avancement = signalement.getAvancement() != null ? signalement.getAvancement() : 0;
+            if (avancement == 0) {
+                if ("EN_COURS".equals(signalement.getStatus())) avancement = 50;
+                else if ("TERMINE".equals(signalement.getStatus())) avancement = 100;
+            }
+            fields.put("avancement", Map.of("integerValue", String.valueOf(avancement)));
+            
+            // Budget
+            if (signalement.getBudget() != null) {
+                fields.put("budget", Map.of("doubleValue", signalement.getBudget().doubleValue()));
+            }
+            
+            // Surface
+            if (signalement.getSurfaceM2() != null) {
+                fields.put("surfaceM2", Map.of("doubleValue", signalement.getSurfaceM2().doubleValue()));
+            }
+            
+            // Entreprise
+            if (signalement.getEntreprise() != null) {
+                fields.put("entrepriseNom", Map.of("stringValue", signalement.getEntreprise().getNom()));
+                fields.put("idEntreprise", Map.of("integerValue", String.valueOf(signalement.getEntreprise().getId())));
+            }
+            
+            // Description
+            if (signalement.getDescription() != null) {
+                fields.put("description", Map.of("stringValue", signalement.getDescription()));
+            }
+            
+            // PostgreSQL ID
+            fields.put("postgresId", Map.of("integerValue", String.valueOf(signalement.getId())));
+            
+            // Flags de sync
+            fields.put("syncedToPostgres", Map.of("booleanValue", true));
+            fields.put("syncedFromPostgres", Map.of("booleanValue", true));
+            
+            // Timestamp de mise à jour
+            fields.put("updatedAt", Map.of("timestampValue", java.time.Instant.now().toString()));
+            
+            // 4. Envoyer avec PATCH (met à jour les champs spécifiés)
+            Map<String, Object> document = Map.of("fields", fields);
+            
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_JSON);
+            HttpEntity<Map<String, Object>> entity = new HttpEntity<>(document, headers);
+            
+            // PATCH avec updateMask pour mettre à jour tous les champs
+            restTemplate.exchange(getUrl, HttpMethod.PATCH, entity, String.class);
+            logger.info("✅ Signalement {} mis à jour dans Firebase (PATCH)", documentId);
+            return true;
+            
+        } catch (Exception e) {
+            logger.error("Erreur update Firebase: {}", e.getMessage(), e);
+            return false;
+        }
+    }
+
+    /**
+     * Construit les champs Firestore pour un signalement
+     */
+    private Map<String, Object> buildFirebaseFields(Signalement signalement) {
+        Map<String, Object> fields = new HashMap<>();
+        
+        fields.put("latitude", Map.of("doubleValue", signalement.getLatitude()));
+        fields.put("longitude", Map.of("doubleValue", signalement.getLongitude()));
+        
+        if (signalement.getDescription() != null) {
+            fields.put("description", Map.of("stringValue", signalement.getDescription()));
+        }
+        
+        fields.put("status", Map.of("stringValue", signalement.getStatus() != null ? signalement.getStatus() : "NOUVEAU"));
+        
+        int avancement = 0;
+        if ("EN_COURS".equals(signalement.getStatus())) avancement = 50;
+        else if ("TERMINE".equals(signalement.getStatus())) avancement = 100;
+        fields.put("avancement", Map.of("integerValue", String.valueOf(avancement)));
+        
+        if (signalement.getBudget() != null) {
+            fields.put("budget", Map.of("doubleValue", signalement.getBudget().doubleValue()));
+        }
+        
+        if (signalement.getSurfaceM2() != null) {
+            fields.put("surfaceM2", Map.of("doubleValue", signalement.getSurfaceM2().doubleValue()));
+        }
+        
+        if (signalement.getEntreprise() != null) {
+            fields.put("entrepriseNom", Map.of("stringValue", signalement.getEntreprise().getNom()));
+            fields.put("idEntreprise", Map.of("integerValue", String.valueOf(signalement.getEntreprise().getId())));
+        }
+        
+        if (signalement.getUser() != null) {
+            fields.put("userEmail", Map.of("stringValue", signalement.getUser().getEmail()));
+        }
+        
+        fields.put("dateSignalement", Map.of("timestampValue", 
+            signalement.getDateSignalement() != null ? 
+                signalement.getDateSignalement().toString() + "Z" : 
+                java.time.Instant.now().toString()));
+        
+        fields.put("syncedToPostgres", Map.of("booleanValue", true));
+        fields.put("postgresId", Map.of("integerValue", String.valueOf(signalement.getId())));
+        fields.put("syncedFromPostgres", Map.of("booleanValue", true));
+        
+        return fields;
     }
 }

@@ -1,0 +1,160 @@
+================================================================================
+                    CLOUD MADIO - GUIDE DE LANCEMENT
+================================================================================
+
+📁 PREREQUIS
+-------------
+- Docker Desktop installé et démarré
+- Se placer dans le dossier du projet:
+  cd "L:\cours\leçons\S5\Rojo\CLOUD_MADIO"
+
+================================================================================
+
+🚀 DEMARRAGE RAPIDE (Recommandé)
+---------------------------------
+
+# Lancer tous les conteneurs (build + start)
+docker compose up -d --build
+
+================================================================================
+
+🔄 REINITIALISATION COMPLETE (Reset total)
+-------------------------------------------
+
+# Étape 1: Arrêter et supprimer conteneurs + volumes (efface la BDD)
+docker compose down -v
+
+# Étape 2: Reconstruire et relancer
+docker compose up -d --build
+
+================================================================================
+
+📋 COMMANDES UTILES
+--------------------
+
+# Voir les conteneurs en cours
+docker compose ps
+
+# Voir les logs de tous les services
+docker compose logs -f
+
+# Voir les logs d'un service spécifique
+docker compose logs -f backend
+docker compose logs -f frontend
+docker compose logs -f db
+docker compose logs -f mobile-ionic
+docker compose logs -f tileserver
+
+# Arrêter tous les conteneurs (sans supprimer les volumes)
+docker compose down
+
+# Redémarrer un service spécifique
+docker compose restart backend
+docker compose restart frontend
+
+# Reconstruire un seul service
+docker compose up -d --build backend
+docker compose up -d --build frontend
+
+================================================================================
+
+🌐 URLS D'ACCES
+----------------
+
+| Service         | URL                          | Description                |
+|-----------------|------------------------------|----------------------------|
+| Frontend Web    | http://localhost:3002        | Application React Manager  |
+| Backend API     | http://localhost:8080        | API Spring Boot            |
+| Mobile Ionic    | http://localhost:8100        | Preview mobile Ionic/Vue   |
+| TileServer      | http://localhost:8085        | Serveur de tuiles carte    |
+| PostgreSQL      | localhost:5432               | Base de données            |
+
+================================================================================
+
+🔑 IDENTIFIANTS
+----------------
+
+PostgreSQL:
+  - Host: localhost (ou db depuis Docker)
+  - Port: 5432
+  - Database: cloud_db
+  - User: user_cloud
+  - Password: password_cloud
+
+Web Manager Login:
+  - Email: manager@gmail.com
+  - Password: manager
+
+Firebase:
+  - Project: cloud-s5-91071
+  - Mode: Public (pas d'auth requise pour lecture)
+
+================================================================================
+
+📱 WORKFLOW COMPLET
+--------------------
+
+1. MOBILE: Créer signalement
+   - Ouvrir http://localhost:8100
+   - Se connecter avec Firebase
+   - Créer un signalement avec photo + position GPS
+   → Envoyé vers Firebase
+
+2. WEB MANAGER: Sync et Traitement
+   - Ouvrir http://localhost:3002
+   - Login: admin@gmail.com / manager
+   - Cliquer "Sync Firebase" (importe les signalements)
+   - Cliquer sur un signalement pour détails
+   - Assigner: entreprise, avancement (0%/50%/100%), budget
+   - Cliquer "Sync vers Firebase" pour pousser les changements
+
+3. MOBILE: Voir les mises à jour
+   - Rafraîchir la carte
+   - Les signalements montrent l'avancement et l'entreprise assignée
+
+================================================================================
+
+🐛 DEPANNAGE
+-------------
+
+# Si un conteneur ne démarre pas
+docker compose logs <nom-service>
+
+# Si la BDD est corrompue
+docker compose down -v
+docker compose up -d --build
+
+# Si le build échoue
+docker compose build --no-cache
+
+# Vérifier l'espace disque Docker
+docker system df
+
+# Nettoyer les images/conteneurs non utilisés
+docker system prune -a
+
+================================================================================
+
+📊 SERVICES ET PORTS
+---------------------
+
++-------------------+     +-------------------+     +-------------------+
+|   react_web       |     |   java_backend    |     |   postgres_db     |
+|   (Frontend)      |---->|   (Spring Boot)   |---->|   (PostgreSQL)    |
+|   :3002           |     |   :8080           |     |   :5432           |
++-------------------+     +-------------------+     +-------------------+
+                                 |
+                                 v
+                    +------------------------+
+                    |   Firebase Firestore   |
+                    |   (cloud-s5-91071)     |
+                    +------------------------+
+                                 ^
+                                 |
++-------------------+     +-------------------+
+|   ionic_mobile    |     |   tileserver      |
+|   (Mobile App)    |     |   (Map Tiles)     |
+|   :8100           |     |   :8085           |
++-------------------+     +-------------------+
+
+================================================================================

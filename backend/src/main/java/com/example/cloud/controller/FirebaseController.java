@@ -56,6 +56,18 @@ public class FirebaseController {
         return ResponseEntity.ok(result);
     }
 
+    @PostMapping("/sync/signalement/{id}")
+    @Operation(summary = "Synchroniser un signalement PostgreSQL vers Firebase",
+               description = "Met à jour le signalement dans Firebase avec les données du manager (budget, entreprise, avancement)")
+    public ResponseEntity<Map<String, Object>> syncSignalementToFirebase(@PathVariable Long id) {
+        Map<String, Object> result = signalementSyncService.syncSignalementToFirebase(id);
+        if (result.get("success") != null && (Boolean) result.get("success")) {
+            return ResponseEntity.ok(result);
+        } else {
+            return ResponseEntity.badRequest().body(result);
+        }
+    }
+
     @GetMapping("/status/{userId}")
     @Operation(summary = "Vérifier le statut de synchronisation d'un utilisateur")
     public ResponseEntity<Map<String, Object>> checkSyncStatus(@PathVariable Long userId) {

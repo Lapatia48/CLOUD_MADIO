@@ -267,3 +267,212 @@
 .btn-cancel:hover {
   background: rgba(231, 76, 60, 0.8);
 }
+
+/* Photo du signalement */
+.photo-section {
+  position: absolute;
+  bottom: 20px;
+  left: 20px;
+  background: white;
+  padding: 15px;
+  border-radius: 12px;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+  max-width: 300px;
+  z-index: 1000;
+}
+
+.photo-section h4 {
+  margin: 0 0 10px;
+  font-size: 0.9rem;
+  color: #2c3e50;
+}
+
+.signalement-photo {
+  width: 100%;
+  max-height: 200px;
+  object-fit: cover;
+  border-radius: 8px;
+}
+
+/* Message de notification */
+.message {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 18px;
+  border-radius: 10px;
+  margin-bottom: 20px;
+  font-weight: 500;
+  animation: slideDown 0.3s ease;
+}
+
+@keyframes slideDown {
+  from { 
+    opacity: 0; 
+    transform: translateY(-10px); 
+  }
+  to { 
+    opacity: 1; 
+    transform: translateY(0); 
+  }
+}
+
+.message.success {
+  background: linear-gradient(135deg, rgba(39, 174, 96, 0.9), rgba(33, 154, 82, 0.9));
+  color: white;
+}
+
+.message.error {
+  background: linear-gradient(135deg, rgba(231, 76, 60, 0.9), rgba(192, 57, 43, 0.9));
+  color: white;
+}
+
+.message .close-btn {
+  background: none;
+  border: none;
+  color: white;
+  font-size: 1.5rem;
+  cursor: pointer;
+  padding: 0;
+  line-height: 1;
+  opacity: 0.8;
+}
+
+.message .close-btn:hover {
+  opacity: 1;
+}
+
+/* Barre de progression */
+.progress-section {
+  margin-bottom: 25px;
+  padding: 20px;
+  background: rgba(255,255,255,0.1);
+  border-radius: 14px;
+}
+
+.progress-section > label {
+  display: block;
+  font-size: 0.9rem;
+  opacity: 0.8;
+  margin-bottom: 10px;
+}
+
+.progress-bar {
+  height: 12px;
+  background: rgba(255,255,255,0.2);
+  border-radius: 10px;
+  overflow: hidden;
+  margin-bottom: 8px;
+}
+
+.progress-fill {
+  height: 100%;
+  border-radius: 10px;
+  transition: width 0.5s ease, background-color 0.3s ease;
+}
+
+.progress-label {
+  font-size: 1.2rem;
+  font-weight: 700;
+}
+
+/* Section Manager */
+.manager-section {
+  margin-top: 25px;
+  padding-top: 20px;
+  border-top: 2px solid rgba(255,255,255,0.2);
+}
+
+.manager-section h3 {
+  margin: 0 0 15px;
+  font-size: 1.1rem;
+  color: #f39c12;
+}
+
+.manager-actions {
+  display: flex;
+  gap: 10px;
+}
+
+.manager-actions .btn-edit {
+  flex: 1;
+}
+
+.btn-firebase {
+  flex: 1;
+  padding: 14px;
+  background: linear-gradient(135deg, #ff9800, #f57c00);
+  color: white;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  font-size: 1rem;
+  font-weight: 600;
+  transition: all 0.3s;
+}
+
+.btn-firebase:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 15px rgba(255, 152, 0, 0.4);
+}
+
+.btn-firebase:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Boutons d'avancement */
+.avancement-buttons {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.avancement-btn {
+  flex: 1;
+  min-width: 100px;
+  padding: 12px 8px;
+  border: 2px solid rgba(255,255,255,0.3);
+  border-radius: 10px;
+  background: rgba(255,255,255,0.1);
+  color: white;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+
+.avancement-btn:hover {
+  background: rgba(255,255,255,0.2);
+}
+
+.avancement-btn.active {
+  border-color: white;
+  transform: scale(1.02);
+}
+
+.avancement-btn.active.nouveau {
+  background: rgba(231, 76, 60, 0.5);
+  border-color: #e74c3c;
+}
+
+.avancement-btn.active.en-cours {
+  background: rgba(243, 156, 18, 0.5);
+  border-color: #f39c12;
+}
+
+.avancement-btn.active.termine {
+  background: rgba(39, 174, 96, 0.5);
+  border-color: #27ae60;
+}
+
+/* Hint pour la sync */
+.sync-hint {
+  margin-top: 15px;
+  padding: 12px;
+  background: rgba(52, 152, 219, 0.2);
+  border-radius: 8px;
+  font-size: 0.85rem;
+  color: rgba(255,255,255,0.9);
+  text-align: center;
+}

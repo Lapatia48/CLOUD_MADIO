@@ -63,8 +63,21 @@
             <div class="status-dot" :style="{ backgroundColor: getStatusColor(sig.status) }" slot="start"></div>
             <ion-label>
               <h3>{{ sig.description?.slice(0, 35) || 'Signalement' }}...</h3>
-              <p>{{ getStatusLabel(sig.status) }} • {{ formatDate(sig.dateSignalement) }}</p>
+              <p>
+                {{ getStatusLabel(sig.status) }} 
+                <span v-if="sig.avancement !== undefined"> • {{ sig.avancement }}%</span>
+                • {{ formatDate(sig.dateSignalement) }}
+              </p>
+              <p v-if="sig.entrepriseNom" class="entreprise-info">
+                🏢 {{ sig.entrepriseNom }}
+              </p>
             </ion-label>
+            <!-- Barre d'avancement mini -->
+            <div slot="end" class="mini-progress" v-if="sig.avancement !== undefined">
+              <div class="progress-bar-mini">
+                <div class="progress-fill-mini" :style="{ width: sig.avancement + '%', backgroundColor: getStatusColor(sig.status) }"></div>
+              </div>
+            </div>
           </ion-item>
         </ion-list>
         
@@ -224,10 +237,24 @@ function addMarkersToMap() {
         fillOpacity: 0.9
       })
       
+      // Construire le tooltip avec avancement et entreprise
+      const avancementBar = s.avancement !== undefined 
+        ? `<div style="margin-top:5px;background:#eee;border-radius:4px;overflow:hidden;height:8px;">
+             <div style="width:${s.avancement}%;height:100%;background:${getStatusColor(s.status)};"></div>
+           </div>
+           <small>Avancement: ${s.avancement}%</small>`
+        : ''
+      
+      const entrepriseInfo = s.entrepriseNom 
+        ? `<br><small>🏢 ${s.entrepriseNom}</small>` 
+        : ''
+      
       const tooltipContent = `
-        <div style="min-width: 120px;">
+        <div style="min-width: 150px;">
           <strong>${s.description?.slice(0, 25) || 'Signalement'}</strong>
           <br><span style="color: ${getStatusColor(s.status)}">${getStatusLabel(s.status)}</span>
+          ${avancementBar}
+          ${entrepriseInfo}
           <br><small>📅 ${formatDate(s.dateSignalement)}</small>
         </div>
       `
@@ -440,6 +467,32 @@ onUnmounted(() => {
 
 .empty-state p {
   margin-bottom: 16px;
+}
+
+/* Info entreprise */
+.entreprise-info {
+  font-size: 0.8rem !important;
+  color: #3498db !important;
+  margin-top: 4px !important;
+}
+
+/* Mini barre de progression */
+.mini-progress {
+  width: 50px;
+}
+
+.progress-bar-mini {
+  width: 100%;
+  height: 6px;
+  background: #ecf0f1;
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.progress-fill-mini {
+  height: 100%;
+  border-radius: 3px;
+  transition: width 0.3s ease;
 }
 
 /* Animation spin */

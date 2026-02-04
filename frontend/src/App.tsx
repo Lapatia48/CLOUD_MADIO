@@ -30,11 +30,11 @@ function App() {
       {/* Auth - création de compte (sync vers Firebase) */}
       <Route path="/register" element={<RegisterPage />} />
       
-      {/* Rediriger /login vers accueil */}
-      <Route path="/login" element={<Navigate to="/" replace />} />
+      {/* Rediriger /login vers login manager */}
+      <Route path="/login" element={<Navigate to="/manager-login" replace />} />
 
-      {/* Routes protégées - User */}
-      <Route element={<ProtectedRoute />}>
+      {/* Routes Manager - signalements */}
+      <Route element={<ProtectedRoute allowedRoles={['ADMIN', 'MANAGER']} />}>
         <Route path="/signalement/new" element={<SignalementCreatePage />} />
         <Route path="/signalement/:id" element={<SignalementDetailPage />} />
       </Route>

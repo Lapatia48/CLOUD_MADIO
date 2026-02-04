@@ -5,27 +5,33 @@ type ProtectedRouteProps = {
 }
 
 const ProtectedRoute = ({ allowedRoles }: ProtectedRouteProps) => {
+  // Vérifier d'abord si un manager est connecté
+  const storedManager = localStorage.getItem('manager')
   const storedUser = localStorage.getItem('user')
 
-  if (!storedUser) {
-    // Pas connecté -> rediriger vers login
-    return <Navigate to="/login" replace />
+  // Si ni user ni manager n'est connecté
+  if (!storedUser && !storedManager) {
+    return <Navigate to="/manager-login" replace />
   }
 
   try {
-    const user = JSON.parse(storedUser) as { role: string }
+    // Priorité au manager
+    const userData = storedManager 
+      ? JSON.parse(storedManager) as { role: string }
+      : JSON.parse(storedUser!) as { role: string }
 
     // Si des rôles sont requis, vérifier que l'utilisateur a le bon rôle
-    if (allowedRoles && !allowedRoles.includes(user.role)) {
-      return <Navigate to="/user" replace />
+    if (allowedRoles && !allowedRoles.includes(userData.role)) {
+      return <Navigate to="/" replace />
     }
 
     // Utilisateur autorisé
     return <Outlet />
   } catch {
-    // Erreur parsing -> rediriger vers login
+    // Erreur parsing -> rediriger vers login manager
     localStorage.removeItem('user')
-    return <Navigate to="/login" replace />
+    localStorage.removeItem('manager')
+    return <Navigate to="/manager-login" replace />
   }
 }
 

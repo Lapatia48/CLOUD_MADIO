@@ -85,17 +85,20 @@ CREATE TABLE signalements (
     latitude DOUBLE PRECISION NOT NULL,
     longitude DOUBLE PRECISION NOT NULL,
     status VARCHAR(20) DEFAULT 'NOUVEAU',
+    avancement INTEGER DEFAULT 0,
     surface_m2 DECIMAL(10,2),
     budget DECIMAL(15,2),
+    photo_base64 TEXT,
+    photo_url VARCHAR(500),
     id_entreprise INTEGER REFERENCES entreprises(id) ON DELETE SET NULL,
     date_signalement TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     user_id INTEGER REFERENCES users(id) ON DELETE SET NULL
 );
 
 -- Quelques signalements de test
-INSERT INTO signalements (description, latitude, longitude, status, surface_m2, budget, id_entreprise) VALUES
-    ('Nid de poule route principale Analakely', -18.9137, 47.5255, 'NOUVEAU', 15.5, 500000, 1),
-    ('Fissures profondes RN7 km 15', -18.8792, 47.5079, 'EN_COURS', 45.0, 1500000, 2);
+INSERT INTO signalements (description, latitude, longitude, status, avancement, surface_m2, budget, id_entreprise) VALUES
+    ('Nid de poule route principale Analakely', -18.9137, 47.5255, 'NOUVEAU', 0, 15.5, 500000, 1),
+    ('Fissures profondes RN7 km 15', -18.8792, 47.5079, 'EN_COURS', 50, 45.0, 1500000, 2);
 
 -- ===========================================
 -- INDEX POUR PERFORMANCE

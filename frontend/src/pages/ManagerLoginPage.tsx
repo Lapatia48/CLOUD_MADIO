@@ -4,7 +4,7 @@ import '../assets/css/ManagerLogin.css';
 
 const ManagerLoginPage = () => {
   const navigate = useNavigate();
-  const [email, setEmail] = useState('admin@gmail.com');
+  const [email, setEmail] = useState('manager@gmail.com');
   const [password, setPassword] = useState('manager');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);

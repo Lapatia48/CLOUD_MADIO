@@ -28,7 +28,18 @@ public class SignalementRequest {
     
     private Long entrepriseId;
     
+    private Long idEntreprise; // Alias pour entrepriseId (utilisé par le frontend)
+    
     private Long userId;
     
     private String status;
+    
+    private Integer avancement; // 0, 50, ou 100
+    
+    private String photoBase64; // Photo en base64
+    
+    // Helper pour obtenir l'ID entreprise (supporte les deux noms)
+    public Long getEffectiveEntrepriseId() {
+        return entrepriseId != null ? entrepriseId : idEntreprise;
+    }
 }

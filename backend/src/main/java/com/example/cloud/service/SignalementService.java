@@ -87,10 +87,21 @@ public class SignalementService {
             signalement.setStatus(request.getStatus());
         }
         
-        // Mettre à jour l'entreprise si fournie
-        if (request.getEntrepriseId() != null) {
-            Entreprise entreprise = entrepriseRepository.findById(request.getEntrepriseId())
-                    .orElseThrow(() -> new RuntimeException("Entreprise non trouvée avec l'id: " + request.getEntrepriseId()));
+        // Avancement (0%, 50%, 100%)
+        if (request.getAvancement() != null) {
+            signalement.setAvancement(request.getAvancement());
+        }
+        
+        // Photo en base64
+        if (request.getPhotoBase64() != null) {
+            signalement.setPhotoBase64(request.getPhotoBase64());
+        }
+        
+        // Mettre à jour l'entreprise si fournie (supporte entrepriseId ou idEntreprise)
+        Long effectiveEntrepriseId = request.getEffectiveEntrepriseId();
+        if (effectiveEntrepriseId != null) {
+            Entreprise entreprise = entrepriseRepository.findById(effectiveEntrepriseId)
+                    .orElseThrow(() -> new RuntimeException("Entreprise non trouvée avec l'id: " + effectiveEntrepriseId));
             signalement.setEntreprise(entreprise);
         }
         
@@ -132,6 +143,7 @@ public class SignalementService {
                 .latitude(signalement.getLatitude())
                 .longitude(signalement.getLongitude())
                 .status(signalement.getStatus())
+                .avancement(signalement.getAvancement())
                 .surfaceM2(signalement.getSurfaceM2())
                 .budget(signalement.getBudget())
                 .entrepriseId(signalement.getEntreprise() != null ? signalement.getEntreprise().getId() : null)
@@ -139,6 +151,8 @@ public class SignalementService {
                 .dateSignalement(signalement.getDateSignalement())
                 .userId(signalement.getUser() != null ? signalement.getUser().getId() : null)
                 .userEmail(signalement.getUser() != null ? signalement.getUser().getEmail() : null)
+                .photoBase64(signalement.getPhotoBase64())
+                .photoUrl(signalement.getPhotoUrl())
                 .build();
     }
 }

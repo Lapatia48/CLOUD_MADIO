@@ -19,6 +19,7 @@ public class SignalementResponse {
     private Double latitude;
     private Double longitude;
     private String status;
+    private Integer avancement; // 0, 50, 100
     private BigDecimal surfaceM2;
     private BigDecimal budget;
     private Long entrepriseId;
@@ -26,4 +27,6 @@ public class SignalementResponse {
     private LocalDateTime dateSignalement;
     private Long userId;
     private String userEmail;
+    private String photoBase64; // Photo en base64
+    private String photoUrl; // URL si stocké dans le cloud
 }

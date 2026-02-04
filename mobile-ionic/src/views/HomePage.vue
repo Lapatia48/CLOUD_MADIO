@@ -20,16 +20,16 @@
           </ion-card-header>
           <ion-card-content>
             <p>Connectez-vous pour signaler et suivre les problèmes routiers.</p>
+            <div v-if="!isOnline" class="offline-warning">
+              🔴 Connexion Internet requise pour se connecter
+            </div>
             <div class="action-buttons">
-              <ion-button expand="block" router-link="/login">
+              <ion-button expand="block" router-link="/login" :disabled="!isOnline">
                 <ion-icon :icon="logInOutline" slot="start"></ion-icon>
                 Se connecter
               </ion-button>
-              <ion-button expand="block" fill="outline" router-link="/register">
-                <ion-icon :icon="personAddOutline" slot="start"></ion-icon>
-                Créer un compte
-              </ion-button>
             </div>
+            <p class="info-hint">💡 Les comptes sont créés par les managers via l'app web</p>
           </ion-card-content>
         </ion-card>
       </div>
@@ -102,7 +102,7 @@ import {
   IonButton, IonIcon, IonCard, IonCardHeader, IonCardTitle, 
   IonCardSubtitle, IonCardContent, IonChip, IonAvatar, IonFab, IonFabButton 
 } from '@ionic/vue'
-import { logInOutline, personAddOutline, addCircleOutline, listOutline, logOutOutline, refreshOutline } from 'ionicons/icons'
+import { logInOutline, addCircleOutline, listOutline, logOutOutline, refreshOutline } from 'ionicons/icons'
 import L from 'leaflet'
 import { useAuthStore } from '../stores/auth'
 import signalementFirebaseService, { type FirebaseSignalement } from '../services/signalementFirebaseService'
@@ -121,8 +121,10 @@ const router = useRouter()
 const authStore = useAuthStore()
 
 const isOffline = ref(!navigator.onLine)
+const isOnline = computed(() => !isOffline.value)
 const isLoading = ref(false)
-const isAuthenticated = computed(() => !!localStorage.getItem('firebase_token') || !!localStorage.getItem('token'))
+// Utiliser le store auth qui est réactif + vérification localStorage en fallback
+const isAuthenticated = computed(() => authStore.isAuthenticated || !!localStorage.getItem('firebase_token') || !!localStorage.getItem('token'))
 const signalements = ref<DisplaySignalement[]>([])
 
 const userName = computed(() => {
@@ -523,5 +525,25 @@ onUnmounted(() => {
     font-size: 0.7rem;
     margin: 2px 0;
   }
+}
+
+/* Alerte offline et info */
+.offline-warning {
+  background: #fff3cd;
+  border: 1px solid #ffc107;
+  color: #856404;
+  padding: 10px 14px;
+  border-radius: 8px;
+  margin-bottom: 12px;
+  text-align: center;
+  font-size: 0.85rem;
+}
+
+.info-hint {
+  text-align: center;
+  color: #6c757d;
+  font-size: 0.8rem;
+  margin-top: 12px;
+  font-style: italic;
 }
 </style>

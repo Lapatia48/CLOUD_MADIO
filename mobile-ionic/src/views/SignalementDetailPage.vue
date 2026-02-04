@@ -1,34 +1,47 @@
-<template>
+﻿<template>
   <ion-page>
     <ion-header>
       <ion-toolbar color="primary">
         <ion-buttons slot="start">
           <ion-back-button default-href="/map" />
         </ion-buttons>
-        <ion-title>Détail Signalement</ion-title>
+        <ion-title>Detail Signalement</ion-title>
       </ion-toolbar>
     </ion-header>
 
     <ion-content class="detail-content">
-      <!-- Loading -->
       <div v-if="loading" class="loading-state">
         <ion-spinner name="crescent" color="primary" />
         <p>Chargement...</p>
       </div>
 
-      <!-- Not Found -->
       <div v-else-if="!signalement" class="not-found-state">
         <ion-icon :icon="alertCircleOutline" class="not-found-icon" />
-        <h2>Signalement non trouvé</h2>
+        <h2>Signalement non trouve</h2>
         <ion-button @click="router.push('/map')">Retour</ion-button>
       </div>
 
-      <!-- Detail Content -->
       <template v-else>
-        <!-- Mini Map -->
+        <div v-if="signalement.photoBase64 || signalement.photoUrl" class="photo-section">
+          <img :src="getPhotoSrc()" alt="Photo du signalement" class="signalement-photo" />
+        </div>
+
         <div class="detail-map" id="detail-map"></div>
 
-        <!-- Info Card -->
+        <ion-card class="progress-card" v-if="signalement.avancement !== undefined">
+          <ion-card-content>
+            <div class="progress-header">
+              <span class="progress-label">Avancement</span>
+              <span class="progress-value" :style="{ color: getStatusColor(signalement.status) }">
+                {{ signalement.avancement }}%
+              </span>
+            </div>
+            <div class="progress-bar">
+              <div class="progress-fill" :style="{ width: signalement.avancement + '%', backgroundColor: getStatusColor(signalement.status) }"></div>
+            </div>
+          </ion-card-content>
+        </ion-card>
+
         <ion-card class="info-card">
           <ion-card-header>
             <ion-badge :color="getStatusBadgeColor(signalement.status)">
@@ -43,7 +56,7 @@
                 <ion-icon :icon="calendarOutline" slot="start" color="primary" />
                 <ion-label>
                   <p>Date</p>
-                  <h3>{{ formatDate(signalement.dateSignalement || signalement.date_signalement) }}</h3>
+                  <h3>{{ formatDate(signalement.dateSignalement) }}</h3>
                 </ion-label>
               </ion-item>
 
@@ -51,7 +64,7 @@
                 <ion-icon :icon="resizeOutline" slot="start" color="success" />
                 <ion-label>
                   <p>Surface</p>
-                  <h3>{{ signalement.surfaceM2 ? `${signalement.surfaceM2} m²` : 'Non renseignée' }}</h3>
+                  <h3>{{ signalement.surfaceM2 ? signalement.surfaceM2 + ' m2' : 'Non renseignee' }}</h3>
                 </ion-label>
               </ion-item>
 
@@ -59,7 +72,7 @@
                 <ion-icon :icon="cashOutline" slot="start" color="warning" />
                 <ion-label>
                   <p>Budget</p>
-                  <h3>{{ signalement.budget ? `${signalement.budget.toLocaleString()} Ar` : 'Non renseigné' }}</h3>
+                  <h3>{{ signalement.budget ? signalement.budget.toLocaleString() + ' Ar' : 'Non renseigne' }}</h3>
                 </ion-label>
               </ion-item>
 
@@ -67,14 +80,14 @@
                 <ion-icon :icon="businessOutline" slot="start" color="tertiary" />
                 <ion-label>
                   <p>Entreprise</p>
-                  <h3>{{ signalement.entreprise?.nom || signalement.entrepriseNom || 'Aucune' }}</h3>
+                  <h3>{{ signalement.entrepriseNom || 'Aucune' }}</h3>
                 </ion-label>
               </ion-item>
 
               <ion-item>
                 <ion-icon :icon="locationOutline" slot="start" color="danger" />
                 <ion-label>
-                  <p>Coordonnées GPS</p>
+                  <p>Coordonnees GPS</p>
                   <h3>{{ signalement.latitude.toFixed(6) }}, {{ signalement.longitude.toFixed(6) }}</h3>
                 </ion-label>
               </ion-item>
@@ -82,60 +95,12 @@
           </ion-card-content>
         </ion-card>
 
-        <!-- Admin Section -->
-        <ion-card v-if="isAdmin" class="admin-card">
-          <ion-card-header>
-            <ion-card-title>
-              <ion-icon :icon="settingsOutline" /> Administration
-            </ion-card-title>
-          </ion-card-header>
-
+        <ion-card class="info-message-card">
           <ion-card-content>
-            <template v-if="!isEditing">
-              <ion-button expand="block" color="secondary" @click="startEditing">
-                <ion-icon :icon="createOutline" slot="start" />
-                Modifier le signalement
-              </ion-button>
-            </template>
-
-            <template v-else>
-              <div class="edit-form">
-                <ion-item>
-                  <ion-label position="stacked">Description</ion-label>
-                  <ion-textarea v-model="editForm.description" :rows="3" />
-                </ion-item>
-
-                <ion-item>
-                  <ion-label position="stacked">Status</ion-label>
-                  <ion-select v-model="editForm.status" interface="popover">
-                    <ion-select-option value="NOUVEAU">🔴 Nouveau</ion-select-option>
-                    <ion-select-option value="EN_COURS">🟠 En cours</ion-select-option>
-                    <ion-select-option value="TERMINE">🟢 Terminé</ion-select-option>
-                  </ion-select>
-                </ion-item>
-
-                <ion-item>
-                  <ion-label position="stacked">Surface (m²)</ion-label>
-                  <ion-input v-model="editForm.surfaceM2" type="number" placeholder="Ex: 150" />
-                </ion-item>
-
-                <ion-item>
-                  <ion-label position="stacked">Budget (Ar)</ion-label>
-                  <ion-input v-model="editForm.budget" type="number" placeholder="Ex: 500000" />
-                </ion-item>
-
-                <div class="edit-actions">
-                  <ion-button expand="block" color="success" @click="saveEdit" :disabled="saving">
-                    <ion-icon :icon="saveOutline" slot="start" />
-                    {{ saving ? 'Enregistrement...' : 'Enregistrer' }}
-                  </ion-button>
-                  <ion-button expand="block" color="medium" @click="cancelEditing">
-                    <ion-icon :icon="closeOutline" slot="start" />
-                    Annuler
-                  </ion-button>
-                </div>
-              </div>
-            </template>
+            <div class="info-message">
+              <ion-icon :icon="informationCircleOutline" color="primary" />
+              <p>Les mises a jour (budget, entreprise, avancement) sont effectuees par les managers via l'application web</p>
+            </div>
           </ion-card-content>
         </ion-card>
       </template>
@@ -144,20 +109,19 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted, computed } from 'vue'
+import { ref, onMounted, onUnmounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import {
   IonPage, IonHeader, IonToolbar, IonTitle, IonContent, IonButtons, IonBackButton,
   IonCard, IonCardHeader, IonCardTitle, IonCardContent, IonList, IonItem, IonLabel,
-  IonIcon, IonBadge, IonSpinner, IonButton, IonTextarea, IonInput, IonSelect, IonSelectOption
+  IonIcon, IonBadge, IonSpinner, IonButton
 } from '@ionic/vue'
 import {
   alertCircleOutline, calendarOutline, resizeOutline, cashOutline,
-  businessOutline, locationOutline, settingsOutline, createOutline,
-  saveOutline, closeOutline
+  businessOutline, locationOutline, informationCircleOutline
 } from 'ionicons/icons'
 import L from 'leaflet'
-import { http } from '../api/http'
+import signalementFirebaseService from '../services/signalementFirebaseService'
 
 interface Signalement {
   id: number
@@ -165,53 +129,45 @@ interface Signalement {
   latitude: number
   longitude: number
   status: string
+  avancement?: number
   surfaceM2?: number | null
   budget?: number | null
+  photoBase64?: string
+  photoUrl?: string
   dateSignalement?: string
-  date_signalement?: string
-  entreprise?: { id: number; nom: string } | null
   entrepriseNom?: string
-  user?: { id: number; email: string; nom?: string; prenom?: string } | null
 }
 
 const route = useRoute()
 const router = useRouter()
-
 const loading = ref(true)
 const signalement = ref<Signalement | null>(null)
-const isEditing = ref(false)
-const saving = ref(false)
-const editForm = ref({
-  description: '',
-  status: '',
-  surfaceM2: '',
-  budget: '',
-})
-
 let map: L.Map | null = null
-
-const currentUser = computed(() => {
-  const user = localStorage.getItem('user')
-  if (user) {
-    try {
-      return JSON.parse(user)
-    } catch { return null }
-  }
-  return null
-})
-
-const isAdmin = computed(() => {
-  const user = currentUser.value
-  return user?.role === 'ADMIN' || user?.id_role === 3
-})
 
 function getStatusLabel(status: string) {
   switch (status) {
-    case 'NOUVEAU': return '🔴 Nouveau'
-    case 'EN_COURS': return '🟠 En cours'
-    case 'TERMINE': return '🟢 Terminé'
+    case 'NOUVEAU': return 'Nouveau'
+    case 'EN_COURS': return 'En cours'
+    case 'TERMINE': return 'Termine'
     default: return status
   }
+}
+
+function getStatusColor(status: string) {
+  switch (status) {
+    case 'NOUVEAU': return '#e74c3c'
+    case 'EN_COURS': return '#f39c12'
+    case 'TERMINE': return '#27ae60'
+    default: return '#3498db'
+  }
+}
+
+function getPhotoSrc(): string {
+  if (signalement.value?.photoBase64) {
+    if (signalement.value.photoBase64.startsWith('data:')) return signalement.value.photoBase64
+    return 'data:image/jpeg;base64,' + signalement.value.photoBase64
+  }
+  return signalement.value?.photoUrl || ''
 }
 
 function getStatusBadgeColor(status: string) {
@@ -225,58 +181,32 @@ function getStatusBadgeColor(status: string) {
 
 function formatDate(dateStr?: string) {
   if (!dateStr) return 'N/A'
-  return new Date(dateStr).toLocaleDateString('fr-FR', {
-    day: '2-digit',
-    month: 'long',
-    year: 'numeric',
-  })
-}
-
-function startEditing() {
-  if (!signalement.value) return
-  editForm.value = {
-    description: signalement.value.description || '',
-    status: signalement.value.status || 'NOUVEAU',
-    surfaceM2: signalement.value.surfaceM2?.toString() || '',
-    budget: signalement.value.budget?.toString() || '',
-  }
-  isEditing.value = true
-}
-
-function cancelEditing() {
-  isEditing.value = false
-}
-
-async function saveEdit() {
-  if (!signalement.value) return
-  saving.value = true
-
-  try {
-    const response = await http.put(`/api/signalements/${signalement.value.id}`, {
-      description: editForm.value.description,
-      status: editForm.value.status,
-      latitude: signalement.value.latitude,
-      longitude: signalement.value.longitude,
-      surfaceM2: editForm.value.surfaceM2 ? parseFloat(editForm.value.surfaceM2) : null,
-      budget: editForm.value.budget ? parseFloat(editForm.value.budget) : null,
-    })
-
-    signalement.value = response.data
-    isEditing.value = false
-    alert('✅ Signalement modifié avec succès !')
-  } catch (error) {
-    console.error('Erreur modification:', error)
-    alert('❌ Erreur lors de la modification')
-  } finally {
-    saving.value = false
-  }
+  return new Date(dateStr).toLocaleDateString('fr-FR', { day: '2-digit', month: 'long', year: 'numeric' })
 }
 
 async function fetchSignalement() {
-  const id = route.params.id
+  const documentId = route.params.id as string
   try {
-    const response = await http.get(`/api/signalements/${id}`)
-    signalement.value = response.data
+    const allSignalements = await signalementFirebaseService.getAllSignalements()
+    const found = allSignalements.find(s => s.documentId === documentId)
+    if (found) {
+      signalement.value = {
+        id: found.postgresId || 0,
+        description: found.description,
+        latitude: found.latitude,
+        longitude: found.longitude,
+        status: found.status,
+        avancement: found.avancement,
+        surfaceM2: found.surfaceM2,
+        budget: found.budget,
+        photoBase64: found.photoBase64,
+        photoUrl: found.photoUrl,
+        dateSignalement: found.dateSignalement,
+        entrepriseNom: found.entrepriseNom,
+      }
+    } else {
+      signalement.value = null
+    }
   } catch (error) {
     console.error('Erreur:', error)
     signalement.value = null
@@ -287,133 +217,44 @@ async function fetchSignalement() {
 
 function initMap() {
   if (!signalement.value) return
-
   setTimeout(() => {
     const mapContainer = document.getElementById('detail-map')
     if (!mapContainer) return
-
     map = L.map('detail-map').setView([signalement.value!.latitude, signalement.value!.longitude], 15)
-
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      attribution: '&copy; OpenStreetMap'
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '&copy; OpenStreetMap' }).addTo(map)
+    L.circleMarker([signalement.value!.latitude, signalement.value!.longitude], {
+      radius: 12, fillColor: getStatusColor(signalement.value!.status), color: '#fff', weight: 3, fillOpacity: 0.9
     }).addTo(map)
-
-    L.marker([signalement.value!.latitude, signalement.value!.longitude]).addTo(map)
   }, 100)
 }
 
-onMounted(async () => {
-  await fetchSignalement()
-  if (signalement.value) {
-    initMap()
-  }
-})
-
-onUnmounted(() => {
-  if (map) {
-    map.remove()
-    map = null
-  }
-})
+onMounted(async () => { await fetchSignalement(); initMap() })
+onUnmounted(() => { if (map) { map.remove(); map = null } })
 </script>
 
 <style scoped>
 @import 'leaflet/dist/leaflet.css';
-
-.detail-content {
-  --background: #f0f2f5;
-}
-
-.loading-state,
-.not-found-state {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  height: 100%;
-  color: #7f8c8d;
-}
-
-.not-found-icon {
-  font-size: 5rem;
-  color: #e74c3c;
-  margin-bottom: 20px;
-}
-
-.detail-map {
-  height: 200px;
-  width: 100%;
-}
-
-.info-card {
-  margin: 15px;
-  border-radius: 16px;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
-}
-
-.info-card ion-card-header {
-  padding-bottom: 10px;
-}
-
-.info-card ion-badge {
-  margin-bottom: 10px;
-}
-
-.info-card ion-card-title {
-  font-size: 1.2rem;
-  color: #2c3e50;
-}
-
-.info-card ion-item {
-  --background: #f8f9fa;
-  --border-radius: 10px;
-  margin-bottom: 8px;
-}
-
-.info-card ion-item p {
-  color: #7f8c8d;
-  font-size: 0.8rem;
-}
-
-.info-card ion-item h3 {
-  color: #2c3e50;
-  font-size: 1rem;
-  font-weight: 600;
-  margin: 4px 0 0;
-}
-
-/* Admin Card */
-.admin-card {
-  margin: 15px;
-  border-radius: 16px;
-  border-top: 4px solid #9b59b6;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
-}
-
-.admin-card ion-card-title {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  color: #9b59b6;
-  font-size: 1.1rem;
-}
-
-.edit-form ion-item {
-  --background: white;
-  margin-bottom: 12px;
-  border-radius: 10px;
-  border: 1px solid #e0e0e0;
-}
-
-.edit-actions {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  margin-top: 15px;
-}
-
-.edit-actions ion-button {
-  --border-radius: 10px;
-  font-weight: 600;
-}
+.detail-content { --padding-start: 0; --padding-end: 0; --padding-top: 0; --background: #f5f6fa; }
+.loading-state, .not-found-state { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; color: #7f8c8d; }
+.not-found-icon { font-size: 5rem; color: #e74c3c; margin-bottom: 20px; }
+.photo-section { width: 100%; max-height: 250px; overflow: hidden; }
+.signalement-photo { width: 100%; height: 250px; object-fit: cover; }
+.detail-map { height: 200px; width: 100%; }
+.progress-card { margin: 15px; margin-bottom: 0; border-radius: 16px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+.progress-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+.progress-label { font-size: 0.9rem; color: #7f8c8d; }
+.progress-value { font-size: 1.2rem; font-weight: 700; }
+.progress-bar { height: 12px; background: #ecf0f1; border-radius: 6px; overflow: hidden; }
+.progress-fill { height: 100%; border-radius: 6px; transition: width 0.5s ease; }
+.info-card { margin: 15px; border-radius: 16px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+.info-card ion-card-header { padding-bottom: 10px; }
+.info-card ion-badge { margin-bottom: 10px; }
+.info-card ion-card-title { font-size: 1.2rem; color: #2c3e50; }
+.info-card ion-item { --background: #f8f9fa; --border-radius: 10px; margin-bottom: 8px; }
+.info-card ion-item p { color: #7f8c8d; font-size: 0.8rem; }
+.info-card ion-item h3 { color: #2c3e50; font-size: 1rem; font-weight: 600; margin: 4px 0 0; }
+.info-message-card { margin: 15px; border-radius: 16px; background: rgba(52,152,219,0.1); }
+.info-message { display: flex; align-items: flex-start; gap: 10px; }
+.info-message ion-icon { font-size: 1.5rem; flex-shrink: 0; }
+.info-message p { margin: 0; font-size: 0.85rem; color: #2c3e50; }
 </style>

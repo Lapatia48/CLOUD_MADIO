@@ -174,9 +174,7 @@ const UserDashboard = () => {
     <div className="dashboard-container">
       {/* Carte à gauche */}
       <div className="map-section">
-        <div className={`connection-indicator ${isOnline ? 'online' : 'offline'}`}>
-          {isOnline ? '🟢 En ligne' : '🔴 Hors ligne'}
-        </div>
+
 
         <MapContainer center={DEFAULT_CENTER} zoom={13} className="map-container">
           <TileLayer
