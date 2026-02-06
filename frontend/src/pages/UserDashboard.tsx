@@ -6,7 +6,6 @@ import 'leaflet/dist/leaflet.css';
 import markerIcon2x from 'leaflet/dist/images/marker-icon-2x.png';
 import markerIcon from 'leaflet/dist/images/marker-icon.png';
 import markerShadow from 'leaflet/dist/images/marker-shadow.png';
-import '../assets/UserDashboard.css';
 
 type UserInfo = {
   userId: number;
@@ -171,12 +170,12 @@ const UserDashboard = () => {
     : '&copy; Carte locale (TileServer-GL)';
 
   return (
-    <div className="dashboard-container">
+    <div className="dashboard-container" style={{ display: 'flex', height: '100vh', width: '100%' }}>
       {/* Carte à gauche */}
-      <div className="map-section">
+      <div className="map-section" style={{ flex: 1, height: '100%', position: 'relative' }}>
 
 
-        <MapContainer center={DEFAULT_CENTER} zoom={13} className="map-container">
+        <MapContainer center={DEFAULT_CENTER} zoom={13} className="map-container" style={{ height: '100%', width: '100%' }}>
           <TileLayer
             url={tileUrl}
             attribution={tileAttribution}

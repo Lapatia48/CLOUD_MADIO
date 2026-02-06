@@ -6,7 +6,6 @@ import 'leaflet/dist/leaflet.css';
 import markerIcon2x from 'leaflet/dist/images/marker-icon-2x.png';
 import markerIcon from 'leaflet/dist/images/marker-icon.png';
 import markerShadow from 'leaflet/dist/images/marker-shadow.png';
-import '../assets/css/MainDashboard.css';
 
 type Manager = {
   id: number;
@@ -180,11 +179,11 @@ const MainDashboard = () => {
     : 'http://localhost:8085/styles/basic/{z}/{x}/{y}.png';
 
   return (
-    <div className="main-dashboard">
-      <div className="map-section">
+    <div className="main-dashboard" style={{ display: 'flex', height: '100vh', width: '100%' }}>
+      <div className="map-section" style={{ flex: 1, height: '100%', position: 'relative' }}>
 
 
-        <MapContainer center={DEFAULT_CENTER} zoom={13} className="map-container">
+        <MapContainer center={DEFAULT_CENTER} zoom={13} className="map-container" style={{ height: '100%', width: '100%' }}>
           <TileLayer url={tileUrl} attribution="&copy; OpenStreetMap" />
           
           {signalements.map((sig) => (

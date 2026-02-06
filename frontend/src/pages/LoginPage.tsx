@@ -1,6 +1,5 @@
 import { useState, useEffect, type FormEvent } from 'react'
 import { Link, useNavigate, useLocation } from 'react-router-dom'
-import '../assets/css/Auth.css'
 
 export default function LoginPage() {
   const navigate = useNavigate()

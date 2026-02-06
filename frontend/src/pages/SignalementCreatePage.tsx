@@ -6,7 +6,6 @@ import 'leaflet/dist/leaflet.css';
 import markerIcon2x from 'leaflet/dist/images/marker-icon-2x.png';
 import markerIcon from 'leaflet/dist/images/marker-icon.png';
 import markerShadow from 'leaflet/dist/images/marker-shadow.png';
-import '../assets/css/SignalementCreate.css';
 
 const defaultIconPrototype = L.Icon.Default.prototype as unknown as { _getIconUrl?: () => void };
 if (defaultIconPrototype._getIconUrl) {
@@ -154,10 +153,10 @@ const SignalementCreatePage = () => {
     : 'http://localhost:8085/data/antananarivo/{z}/{x}/{y}.pbf';
 
   return (
-    <div className="signalement-create-container">
-      <div className="signalement-map">
+    <div className="signalement-create-container" style={{ display: 'flex', height: '100vh', width: '100%' }}>
+      <div className="signalement-map" style={{ flex: 1, height: '100%', position: 'relative' }}>
 
-        <MapContainer center={DEFAULT_CENTER} zoom={13} className="map">
+        <MapContainer center={DEFAULT_CENTER} zoom={13} className="map" style={{ height: '100%', width: '100%' }}>
           <TileLayer
             url={tileUrl}
             attribution="&copy; OpenStreetMap contributors"

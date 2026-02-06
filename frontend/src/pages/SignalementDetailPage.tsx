@@ -6,7 +6,6 @@ import 'leaflet/dist/leaflet.css';
 import markerIcon2x from 'leaflet/dist/images/marker-icon-2x.png';
 import markerIcon from 'leaflet/dist/images/marker-icon.png';
 import markerShadow from 'leaflet/dist/images/marker-shadow.png';
-import '../assets/css/SignalementDetail.css';
 
 // Fix Leaflet icons
 const defaultIconPrototype = L.Icon.Default.prototype as unknown as { _getIconUrl?: () => void };
@@ -261,13 +260,14 @@ const SignalementDetailPage = () => {
   const photoSrc = getPhotoSrc();
 
   return (
-    <div className="detail-page">
+    <div className="detail-page" style={{ display: 'flex', height: '100vh', width: '100%' }}>
       {/* Carte à gauche */}
-      <div className="detail-map">
+      <div className="detail-map" style={{ flex: 1, height: '100%', position: 'relative' }}>
         <MapContainer
           center={[signalement.latitude, signalement.longitude]}
           zoom={15}
           className="map"
+          style={{ height: '100%', width: '100%' }}
           scrollWheelZoom={true}
         >
           <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />

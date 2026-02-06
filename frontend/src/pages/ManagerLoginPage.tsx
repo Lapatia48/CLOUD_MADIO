@@ -1,6 +1,5 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import '../assets/css/ManagerLogin.css';
 
 const ManagerLoginPage = () => {
   const navigate = useNavigate();

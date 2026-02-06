@@ -1,5 +1,4 @@
 import { useNavigate } from 'react-router-dom';
-import '../assets/css/AccountManagement.css';
 
 const AccountManagementPage = () => {
   const navigate = useNavigate();

@@ -6,7 +6,6 @@ import 'leaflet/dist/leaflet.css';
 import markerIcon2x from 'leaflet/dist/images/marker-icon-2x.png';
 import markerIcon from 'leaflet/dist/images/marker-icon.png';
 import markerShadow from 'leaflet/dist/images/marker-shadow.png';
-import '../assets/css/VisitorPage.css';
 
 type Entreprise = { id: number; nom: string; };
 
@@ -101,7 +100,7 @@ const VisitorPage = () => {
     : 'http://localhost:8085/styles/basic/{z}/{x}/{y}.png';
 
   return (
-    <div className="visitor-page">
+    <div className="visitor-page" style={{ height: '100vh', width: '100%', display: 'flex', flexDirection: 'column' }}>
       {/* Header flottant */}
       <div className="visitor-header">
         <button className="btn-back" onClick={() => navigate('/')}>
@@ -116,14 +115,14 @@ const VisitorPage = () => {
       </div>
 
       {/* Carte plein écran */}
-      <div className="map-fullscreen">
+      <div className="map-fullscreen" style={{ flex: 1, position: 'relative' }}>
         {loading ? (
           <div className="loading-overlay">
             <div className="spinner"></div>
             <p>Chargement de la carte...</p>
           </div>
         ) : (
-          <MapContainer center={DEFAULT_CENTER} zoom={13} className="map-container">
+          <MapContainer center={DEFAULT_CENTER} zoom={13} className="map-container" style={{ height: '100%', width: '100%' }}>
             <TileLayer url={tileUrl} attribution="&copy; OpenStreetMap" />
             
             {signalements.map((sig) => (
