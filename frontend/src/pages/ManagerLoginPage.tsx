@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import styles from './ManagerLoginPage.module.css';
 
 const ManagerLoginPage = () => {
   const navigate = useNavigate();
@@ -50,26 +51,30 @@ const ManagerLoginPage = () => {
   };
 
   return (
-    <div className="manager-login-page">
-      <div className="login-container">
-        <button className="btn-back" onClick={() => navigate('/')}>
+    <div className={styles.managerLoginPage}>
+      <div className={styles.loginContainer}>
+        <button className={styles.btnBack} onClick={() => navigate('/')}>
           ← Retour
         </button>
 
-        <div className="login-header">
-          <span className="login-icon">👨‍💼</span>
-          <h1>Espace Manager</h1>
-          <p>Connectez-vous pour accéder à la gestion</p>
+        <div className={styles.loginHeader}>
+          <div className={styles.loginIcon}>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+              <circle cx="12" cy="7" r="4"/>
+            </svg>
+          </div>
+          <h1>Manager</h1>
         </div>
 
-        <form onSubmit={handleLogin} className="login-form">
+        <form onSubmit={handleLogin} className={styles.loginForm}>
           {error && (
-            <div className="error-message">
-              ⚠️ {error}
+            <div className={styles.errorMessage}>
+              {error}
             </div>
           )}
 
-          <div className="form-group">
+          <div className={styles.formGroup}>
             <label htmlFor="email">Email</label>
             <input
               type="email"
@@ -82,7 +87,7 @@ const ManagerLoginPage = () => {
             />
           </div>
 
-          <div className="form-group">
+          <div className={styles.formGroup}>
             <label htmlFor="password">Mot de passe</label>
             <input
               type="password"
@@ -97,30 +102,20 @@ const ManagerLoginPage = () => {
 
           <button 
             type="submit" 
-            className="btn-submit"
+            className={styles.btnSubmit}
             disabled={loading}
           >
-            {loading ? '⏳ Connexion...' : '🔐 Se connecter'}
+            {loading ? 'Connexion...' : 'Se connecter'}
           </button>
 
           <button 
             type="button" 
-            className="btn-register"
+            className={styles.btnRegister}
             onClick={() => navigate('/register')}
           >
-            📝 Créer un compte utilisateur mobile
+            Créer un compte utilisateur
           </button>
         </form>
-
-        <div className="login-footer">
-          <p>Accès réservé aux gestionnaires autorisés</p>
-          <p className="info-text">💡 Créez des comptes pour les utilisateurs de l'app mobile</p>
-        </div>
-      </div>
-
-      {/* Background */}
-      <div className="login-bg">
-        <div className="bg-gradient"></div>
       </div>
     </div>
   );
