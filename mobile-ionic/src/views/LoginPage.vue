@@ -137,12 +137,45 @@ async function handleLogin() {
 </script>
 
 <style scoped>
-.login-container { max-width: 400px; margin: 0 auto; padding-top: 40px; }
-h1 { text-align: center; margin-bottom: 10px; }
-ion-button { margin-top: 16px; }
+.login-container {
+  max-width: 420px;
+  margin: 0 auto;
+  padding-top: 40px;
+}
+
+h1 {
+  text-align: center;
+  margin-bottom: 10px;
+  color: #1B3A5C;
+  font-weight: 700;
+  font-size: 1.6rem;
+}
+
+ion-content {
+  --background: #F5EFE6;
+}
+
+ion-item {
+  --background: #FFFFFF;
+  --border-radius: 10px;
+  --border-color: rgba(74, 144, 217, 0.12);
+  margin-bottom: 8px;
+  box-shadow: 0 2px 8px rgba(27, 58, 92, 0.06);
+}
+
+ion-button {
+  margin-top: 16px;
+  --border-radius: 10px;
+  --background: #1B3A5C;
+  --background-hover: #2E5C8A;
+  font-weight: 600;
+  height: 48px;
+  letter-spacing: 0.3px;
+}
+
 .firebase-badge {
   text-align: center;
-  background: linear-gradient(135deg, #ff9800, #f57c00);
+  background: linear-gradient(135deg, #4A90D9, #2E5C8A);
   color: white;
   padding: 8px 16px;
   border-radius: 20px;
@@ -150,32 +183,39 @@ ion-button { margin-top: 16px; }
   font-weight: 500;
   margin-bottom: 20px;
 }
+
 .info-text {
   text-align: center;
-  color: #666;
+  color: #5A7A9A;
   font-size: 0.85rem;
   margin-top: 20px;
-  padding: 10px;
-  background: #f5f5f5;
-  border-radius: 8px;
+  padding: 12px 14px;
+  background: #FFFFFF;
+  border-radius: 10px;
+  border: 1px solid rgba(74, 144, 217, 0.1);
+  box-shadow: 0 2px 8px rgba(27, 58, 92, 0.05);
 }
+
 .status-chip {
   margin-right: 8px;
   font-size: 0.7rem;
 }
+
 .offline-alert {
   display: flex;
   align-items: center;
   gap: 10px;
-  background: #fff3cd;
-  border: 1px solid #ffc107;
-  color: #856404;
+  background: #FFF8E1;
+  border: 1px solid #E6943A;
+  color: #8B6914;
   padding: 12px 16px;
-  border-radius: 8px;
+  border-radius: 10px;
   margin-bottom: 16px;
 }
+
 .offline-alert ion-icon {
   font-size: 24px;
+  color: #E6943A;
 }
 
 /* Styles pour le modal de compte bloqué */
@@ -185,37 +225,48 @@ ion-button { margin-top: 16px; }
   align-items: center;
   padding: 2rem;
   text-align: center;
+  background: #F5EFE6;
+  min-height: 100%;
 }
+
 .blocked-icon {
   font-size: 4rem;
   margin-bottom: 1rem;
 }
+
 .blocked-modal-content h2 {
-  color: #e74c3c;
+  color: #D94B4B;
   margin-bottom: 1rem;
+  font-weight: 700;
 }
+
 .blocked-modal-content p {
-  color: #666;
+  color: #5A7A9A;
   margin-bottom: 1.5rem;
   line-height: 1.6;
 }
+
 .blocked-info {
   display: flex;
   align-items: flex-start;
   gap: 10px;
-  background: #f0f0f0;
+  background: #FFFFFF;
   padding: 1rem;
-  border-radius: 8px;
+  border-radius: 10px;
   margin-bottom: 1.5rem;
   text-align: left;
+  border: 1px solid rgba(74, 144, 217, 0.12);
+  box-shadow: 0 2px 8px rgba(27, 58, 92, 0.06);
 }
+
 .blocked-info ion-icon {
   font-size: 24px;
-  color: #3498db;
+  color: #4A90D9;
   flex-shrink: 0;
 }
+
 .blocked-info span {
   font-size: 0.9rem;
-  color: #555;
+  color: #5A7A9A;
 }
 </style>

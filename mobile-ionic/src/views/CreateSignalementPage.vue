@@ -261,8 +261,42 @@ async function handleSubmit() {
 <style scoped>
 @import 'leaflet/dist/leaflet.css';
 
+/* Page background */
+ion-content {
+  --background: #F5EFE6;
+}
+
+/* Global card style - web theme */
+ion-card {
+  border-radius: 14px;
+  box-shadow: 0 2px 12px rgba(27, 58, 92, 0.08);
+  border: 1px solid rgba(74, 144, 217, 0.1);
+  overflow: hidden;
+  margin: 12px 16px;
+  background: #FFFFFF;
+}
+
+ion-card-header {
+  background: linear-gradient(135deg, #1B3A5C, #2E5C8A);
+  padding: 14px 16px;
+}
+
+ion-card-title {
+  color: #FFFFFF !important;
+  font-size: 1rem;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+ion-card-subtitle {
+  color: #D6E8F7 !important;
+  font-size: 0.8rem;
+  margin-top: 4px;
+}
+
 .form-card {
-  margin-bottom: 12px;
+  margin-bottom: 4px;
 }
 
 .form-item {
@@ -272,49 +306,58 @@ async function handleSubmit() {
 }
 
 .custom-input {
-  --background: var(--ion-color-light);
-  --padding-start: 12px;
-  --padding-end: 12px;
-  border-radius: 8px;
+  --background: #F5EFE6;
+  --padding-start: 14px;
+  --padding-end: 14px;
+  border-radius: 10px;
+  border: 1px solid rgba(74, 144, 217, 0.15);
+  margin-top: 4px;
 }
 
 .photo-card {
-  margin-bottom: 12px;
+  margin-bottom: 4px;
 }
 
 .photo-preview {
   position: relative;
   margin-bottom: 12px;
-  border-radius: 8px;
+  border-radius: 10px;
   overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
 }
 
 .photo-preview img {
   width: 100%;
-  max-height: 200px;
+  max-height: 220px;
   object-fit: cover;
-  border-radius: 8px;
+  border-radius: 10px;
 }
 
 .remove-photo-btn {
   position: absolute;
   top: 8px;
   right: 8px;
-  --background: rgba(255,255,255,0.9);
+  --background: rgba(255,255,255,0.95);
   --border-radius: 50%;
+  --box-shadow: 0 2px 8px rgba(0,0,0,0.15);
 }
 
 .photo-actions {
   display: flex;
-  gap: 8px;
+  gap: 10px;
 }
 
 .photo-actions ion-button {
   flex: 1;
+  --border-radius: 10px;
+  --border-color: #1B3A5C;
+  --color: #1B3A5C;
+  font-weight: 500;
+  height: 44px;
 }
 
 .map-card {
-  margin-bottom: 12px;
+  margin-bottom: 4px;
 }
 
 .map-card-content {
@@ -322,14 +365,15 @@ async function handleSubmit() {
 }
 
 .mini-map {
-  height: 200px;
+  height: 220px;
   width: 100%;
-  border-radius: 0 0 8px 8px;
+  border-radius: 0 0 14px 14px;
 }
 
 .position-card {
-  background: linear-gradient(135deg, #d4edda, #c3e6cb);
-  margin-bottom: 12px;
+  background: linear-gradient(135deg, #D6E8F7, #FFFFFF);
+  margin-bottom: 4px;
+  border: 1px solid rgba(74, 144, 217, 0.2);
 }
 
 .position-info {
@@ -340,30 +384,32 @@ async function handleSubmit() {
 
 .position-info ion-icon {
   font-size: 28px;
+  color: #2E5C8A;
 }
 
 .position-info strong {
   display: block;
-  color: #155724;
+  color: #1B3A5C;
 }
 
 .position-info p {
   margin: 4px 0 0;
   font-size: 0.85rem;
-  color: #155724;
+  color: #2E5C8A;
   opacity: 0.8;
 }
 
 .error-card {
-  background: linear-gradient(135deg, #f8d7da, #f5c6cb);
-  margin-bottom: 12px;
+  background: linear-gradient(135deg, #FDE8E8, #FFFFFF);
+  margin-bottom: 4px;
+  border: 1px solid rgba(217, 75, 75, 0.2);
 }
 
 .error-info {
   display: flex;
   align-items: center;
   gap: 12px;
-  color: #721c24;
+  color: #D94B4B;
 }
 
 .error-info ion-icon {
@@ -371,20 +417,25 @@ async function handleSubmit() {
 }
 
 .submit-section {
-  margin-top: 16px;
-  margin-bottom: 24px;
+  margin: 20px 16px 32px;
 }
 
 .submit-btn {
-  --border-radius: 12px;
-  height: 50px;
+  --border-radius: 14px;
+  --background: linear-gradient(135deg, #1B3A5C, #2E5C8A);
+  --background-hover: #2E5C8A;
+  height: 54px;
   font-weight: 600;
+  font-size: 1rem;
+  letter-spacing: 0.3px;
+  box-shadow: 0 4px 14px rgba(27, 58, 92, 0.25);
 }
 
 .info-text {
   text-align: center;
-  color: #666;
-  font-size: 0.8rem;
-  margin-top: 12px;
+  color: #5A7A9A;
+  font-size: 0.78rem;
+  margin-top: 14px;
+  font-style: italic;
 }
 </style>
