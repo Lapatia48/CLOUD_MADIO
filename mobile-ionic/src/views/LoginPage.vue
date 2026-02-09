@@ -1,52 +1,52 @@
 <!-- filepath: c:\Users\miari\Documents\MrRojoS5\cloudS5\cloudClean\CLOUD_MADIO\mobile-ionic\src\views\LoginPage.vue -->
 <template>
   <ion-page>
-    <ion-header>
-      <ion-toolbar color="primary">
-        <ion-title>🛣️ MADIO</ion-title>
+    <ion-content :fullscreen="true" class="login-page" :scroll-y="false">
+      <div class="login-bg">
+        <div class="login-card">
+          <div class="card-header">
+            <h1>🛣️ MADIO</h1>
+            <p class="subtitle">Gestion des routes</p>
+          </div>
 
-      </ion-toolbar>
-    </ion-header>
-    <ion-content class="ion-padding">
-      <div class="login-container">
-        <h1>Connexion</h1>
-        <p class="firebase-badge">🔥 Firebase</p>
-        
-        <!-- Alerte si hors ligne -->
-        <div v-if="!isOnline" class="offline-alert">
-          <ion-icon :icon="cloudOfflineOutline"></ion-icon>
-          <span>Connexion Internet requise pour se connecter</span>
+          <!-- Alerte si hors ligne -->
+          <div v-if="!isOnline" class="offline-alert">
+            <ion-icon :icon="cloudOfflineOutline"></ion-icon>
+            <span>Connexion Internet requise pour se connecter</span>
+          </div>
+
+          <div class="form-group">
+            <label>Email</label>
+            <input v-model="email" type="email" placeholder="votre@email.com" class="form-input" />
+          </div>
+          <div class="form-group">
+            <label>Mot de passe</label>
+            <input v-model="password" type="password" placeholder="Mot de passe" class="form-input" />
+          </div>
+
+          <button class="login-btn" @click="handleLogin" :disabled="loading || !isOnline">
+            <ion-spinner v-if="loading" name="crescent" color="light"></ion-spinner>
+            <span v-else>Se connecter</span>
+          </button>
+
+          <p class="info-text">
+            Utilisez vos identifiants créés depuis l'application web manager.
+          </p>
         </div>
-        
-        <ion-list>
-          <ion-item>
-            <ion-label position="floating">Email</ion-label>
-            <ion-input v-model="email" type="email"></ion-input>
-          </ion-item>
-          <ion-item>
-            <ion-label position="floating">Mot de passe</ion-label>
-            <ion-input v-model="password" type="password"></ion-input>
-          </ion-item>
-        </ion-list>
-        <ion-button expand="block" @click="handleLogin" :disabled="loading || !isOnline">
-          <ion-spinner v-if="loading" name="crescent"></ion-spinner>
-          <span v-else>Se connecter</span>
-        </ion-button>
-        <p class="info-text">
-          💡 Utilisez vos identifiants créés depuis l'application web manager.
-        </p>
       </div>
 
       <!-- Modal de compte bloqué -->
       <ion-modal :is-open="showBlockedModal" @did-dismiss="showBlockedModal = false">
         <ion-header>
           <ion-toolbar color="danger">
-            <ion-title>🔒 Compte Bloqué</ion-title>
+            <ion-title>Compte Bloqué</ion-title>
           </ion-toolbar>
         </ion-header>
         <ion-content class="ion-padding">
           <div class="blocked-modal-content">
-            <div class="blocked-icon">🚫</div>
+            <div class="blocked-icon-circle">
+              <ion-icon :icon="lockClosedOutline" class="blocked-lock-icon"></ion-icon>
+            </div>
             <h2>Accès Refusé</h2>
             <p>{{ blockedMessage }}</p>
             <div class="blocked-info">
@@ -66,8 +66,8 @@
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
-import { IonPage, IonHeader, IonToolbar, IonTitle, IonContent, IonList, IonItem, IonLabel, IonInput, IonButton, IonSpinner, IonIcon, IonModal, toastController } from '@ionic/vue'
-import { cloudOfflineOutline, informationCircleOutline } from 'ionicons/icons'
+import { IonPage, IonContent, IonButton, IonSpinner, IonIcon, IonModal, IonHeader, IonToolbar, IonTitle, toastController } from '@ionic/vue'
+import { cloudOfflineOutline, informationCircleOutline, lockClosedOutline } from 'ionicons/icons'
 import { useAuthStore, AccountBlockedError } from '@/stores/auth'
 
 const router = useRouter()
@@ -95,7 +95,7 @@ onUnmounted(() => {
 async function handleLogin() {
   if (!isOnline.value) {
     const toast = await toastController.create({ 
-      message: '🔴 Connexion Internet requise', 
+      message: 'Connexion Internet requise', 
       duration: 3000, 
       color: 'danger' 
     })
@@ -107,7 +107,7 @@ async function handleLogin() {
   try {
     await authStore.login(email.value, password.value)
     const toast = await toastController.create({ 
-      message: '🔥 Connexion Firebase réussie!', 
+      message: 'Connexion réussie !', 
       duration: 2000, 
       color: 'success' 
     })
@@ -137,70 +137,133 @@ async function handleLogin() {
 </script>
 
 <style scoped>
-.login-container {
-  max-width: 420px;
-  margin: 0 auto;
-  padding-top: 40px;
+/* ===== Full-page blue background ===== */
+.login-page {
+  --background: transparent;
 }
 
-h1 {
+.login-bg {
+  width: 100%;
+  min-height: 100vh;
+  background: linear-gradient(160deg, #1B3A5C 0%, #2E5C8A 50%, #4A90D9 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+}
+
+/* ===== White card ===== */
+.login-card {
+  width: 100%;
+  max-width: 400px;
+  background: #FFFFFF;
+  border-radius: 16px;
+  padding: 36px 32px 32px;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.25);
+}
+
+.card-header {
   text-align: center;
-  margin-bottom: 10px;
+  margin-bottom: 28px;
+}
+
+.card-header h1 {
+  margin: 0 0 6px;
+  font-size: 1.8rem;
+  font-weight: 800;
   color: #1B3A5C;
-  font-weight: 700;
-  font-size: 1.6rem;
+  letter-spacing: 1px;
 }
 
-ion-content {
-  --background: #F5EFE6;
+.card-header .subtitle {
+  margin: 0;
+  font-size: 0.85rem;
+  color: #5A7A9A;
+  font-weight: 400;
 }
 
-ion-item {
-  --background: #FFFFFF;
-  --border-radius: 10px;
-  --border-color: rgba(74, 144, 217, 0.12);
-  margin-bottom: 8px;
-  box-shadow: 0 2px 8px rgba(27, 58, 92, 0.06);
+/* ===== Form ===== */
+.form-group {
+  margin-bottom: 16px;
 }
 
-ion-button {
-  margin-top: 16px;
-  --border-radius: 10px;
-  --background: #1B3A5C;
-  --background-hover: #2E5C8A;
+.form-group label {
+  display: block;
+  font-size: 0.8rem;
   font-weight: 600;
-  height: 48px;
+  color: #1B3A5C;
+  margin-bottom: 6px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.form-input {
+  width: 100%;
+  padding: 12px 14px;
+  border: 1.5px solid #d4dce6;
+  border-radius: 10px;
+  font-size: 0.95rem;
+  color: #1B3A5C;
+  background: #F9FAFB;
+  outline: none;
+  transition: border-color 0.2s, box-shadow 0.2s;
+  box-sizing: border-box;
+}
+
+.form-input:focus {
+  border-color: #4A90D9;
+  box-shadow: 0 0 0 3px rgba(74, 144, 217, 0.15);
+  background: #FFFFFF;
+}
+
+.form-input::placeholder {
+  color: #a0b0c0;
+}
+
+/* ===== Login button ===== */
+.login-btn {
+  width: 100%;
+  padding: 14px;
+  margin-top: 8px;
+  border: none;
+  border-radius: 10px;
+  background: linear-gradient(135deg, #1B3A5C, #2E5C8A);
+  color: #FFFFFF;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity 0.2s, transform 0.1s;
   letter-spacing: 0.3px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 48px;
 }
 
-.firebase-badge {
-  text-align: center;
-  background: linear-gradient(135deg, #4A90D9, #2E5C8A);
-  color: white;
-  padding: 8px 16px;
-  border-radius: 20px;
-  font-size: 0.9rem;
-  font-weight: 500;
-  margin-bottom: 20px;
+.login-btn:hover:not(:disabled) {
+  opacity: 0.92;
 }
 
+.login-btn:active:not(:disabled) {
+  transform: scale(0.98);
+}
+
+.login-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* ===== Info text ===== */
 .info-text {
   text-align: center;
-  color: #5A7A9A;
-  font-size: 0.85rem;
-  margin-top: 20px;
-  padding: 12px 14px;
-  background: #FFFFFF;
-  border-radius: 10px;
-  border: 1px solid rgba(74, 144, 217, 0.1);
-  box-shadow: 0 2px 8px rgba(27, 58, 92, 0.05);
+  color: #7A8FA3;
+  font-size: 0.8rem;
+  margin-top: 18px;
+  margin-bottom: 0;
+  line-height: 1.5;
 }
 
-.status-chip {
-  margin-right: 8px;
-  font-size: 0.7rem;
-}
-
+/* ===== Offline alert ===== */
 .offline-alert {
   display: flex;
   align-items: center;
@@ -208,17 +271,19 @@ ion-button {
   background: #FFF8E1;
   border: 1px solid #E6943A;
   color: #8B6914;
-  padding: 12px 16px;
+  padding: 10px 14px;
   border-radius: 10px;
   margin-bottom: 16px;
+  font-size: 0.85rem;
 }
 
 .offline-alert ion-icon {
-  font-size: 24px;
+  font-size: 22px;
   color: #E6943A;
+  flex-shrink: 0;
 }
 
-/* Styles pour le modal de compte bloqué */
+/* ===== Blocked modal ===== */
 .blocked-modal-content {
   display: flex;
   flex-direction: column;
@@ -229,9 +294,20 @@ ion-button {
   min-height: 100%;
 }
 
-.blocked-icon {
-  font-size: 4rem;
+.blocked-icon-circle {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #D94B4B, #c0392b);
+  display: flex;
+  align-items: center;
+  justify-content: center;
   margin-bottom: 1rem;
+}
+
+.blocked-lock-icon {
+  font-size: 36px;
+  color: #FFFFFF;
 }
 
 .blocked-modal-content h2 {

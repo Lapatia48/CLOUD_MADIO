@@ -130,9 +130,9 @@ const UserDashboard = () => {
 
   const getStatusLabel = (status: string) => {
     switch (status) {
-      case 'NOUVEAU':     return '🔴 Nouveau';
-      case 'EN_COURS':    return '🟠 En cours';
-      case 'TERMINE':     return '🟢 Terminé';
+      case 'NOUVEAU':     return 'Nouveau';
+      case 'EN_COURS':    return 'En cours';
+      case 'TERMINE':     return 'Terminé';
       default:            return status;
     }
   };
@@ -230,7 +230,7 @@ const UserDashboard = () => {
       <div className="sidebar">
         {/* Infos utilisateur */}
         <div className="user-info">
-          <h2>👤 Mon Profil</h2>
+          <h2>Mon Profil</h2>
           {user ? (
             <div className="user-details">
               <p><strong>Email:</strong> {user.email}</p>
@@ -250,7 +250,7 @@ const UserDashboard = () => {
             onClick={() => navigate('/user/signalements/new')}
             type="button"
           >
-            ➕ Nouveau signalement
+            Nouveau signalement
           </button>
 
 
@@ -261,7 +261,7 @@ const UserDashboard = () => {
             disabled={syncing}
             type="button"
           >
-            {syncing ? '⏳ Synchronisation...' : '🔁 Synchroniser données'}
+            {syncing ? 'Synchronisation...' : 'Synchroniser données'}
           </button>
 
           {isAdmin && (
@@ -270,7 +270,7 @@ const UserDashboard = () => {
               onClick={() => navigate('/admin/blocked-users')}
               type="button"
             >
-              🚫 Utilisateurs bloqués
+              Utilisateurs bloqués
             </button>
           )}
 
@@ -279,13 +279,13 @@ const UserDashboard = () => {
             onClick={handleLogout}
             type="button"
           >
-            🚪 Déconnexion
+            Déconnexion
           </button>
         </div>
 
         {/* Liste des signalements */}
         <div className="signalements-list">
-          <h3>📋 Signalements ({signalements.length})</h3>
+          <h3>Signalements ({signalements.length})</h3>
           {signalements.length === 0 ? (
             <p className="empty">Aucun signalement pour le moment</p>
           ) : (

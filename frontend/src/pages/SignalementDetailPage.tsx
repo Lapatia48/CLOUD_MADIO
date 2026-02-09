@@ -155,16 +155,16 @@ const SignalementDetailPage = () => {
         const updated = await response.json();
         setSignalement(updated);
         setIsEditing(false);
-        setMessage({ type: 'success', text: '✅ Signalement mis à jour dans PostgreSQL!' });
+        setMessage({ type: 'success', text: 'Signalement mis à jour dans PostgreSQL !' });
         
         // Rafraîchir les données
         await fetchSignalement();
       } else {
-        setMessage({ type: 'error', text: '❌ Erreur lors de la modification' });
+        setMessage({ type: 'error', text: 'Erreur lors de la modification' });
       }
     } catch (error) {
       console.error('Erreur:', error);
-      setMessage({ type: 'error', text: '❌ Erreur de connexion' });
+      setMessage({ type: 'error', text: 'Erreur de connexion' });
     } finally {
       setSaving(false);
     }
@@ -183,14 +183,14 @@ const SignalementDetailPage = () => {
       });
 
       if (response.ok) {
-        setMessage({ type: 'success', text: '🔥 Synchronisé vers Firebase! Les utilisateurs mobiles verront les mises à jour.' });
+        setMessage({ type: 'success', text: 'Synchronisé vers Firebase ! Les utilisateurs mobiles verront les mises à jour.' });
       } else {
         const error = await response.text();
-        setMessage({ type: 'error', text: `❌ Erreur: ${error}` });
+        setMessage({ type: 'error', text: `Erreur : ${error}` });
       }
     } catch (error) {
       console.error('Erreur sync Firebase:', error);
-      setMessage({ type: 'error', text: '❌ Erreur de connexion à Firebase' });
+      setMessage({ type: 'error', text: 'Erreur de connexion à Firebase' });
     } finally {
       setSyncingFirebase(false);
     }
@@ -207,9 +207,9 @@ const SignalementDetailPage = () => {
 
   const getStatusLabel = (status: string) => {
     switch (status) {
-      case 'NOUVEAU': return '🔴 Nouveau (0%)';
-      case 'EN_COURS': return '🟠 En cours (50%)';
-      case 'TERMINE': return '🟢 Terminé (100%)';
+      case 'NOUVEAU': return 'Nouveau (0%)';
+      case 'EN_COURS': return 'En cours (50%)';
+      case 'TERMINE': return 'Terminé (100%)';
       default: return status;
     }
   };
@@ -243,14 +243,14 @@ const SignalementDetailPage = () => {
   };
 
   if (loading) {
-    return <div className="detail-page"><div className="loading">⏳ Chargement...</div></div>;
+    return <div className="detail-page"><div className="loading">Chargement...</div></div>;
   }
 
   if (!signalement) {
     return (
       <div className="detail-page">
         <div className="not-found">
-          <h2>😕 Signalement non trouvé</h2>
+          <h2>Signalement non trouvé</h2>
           <button onClick={() => navigate('/manager')}>Retour à la carte</button>
         </div>
       </div>
@@ -289,7 +289,7 @@ const SignalementDetailPage = () => {
         {/* Photo du signalement (si disponible) */}
         {photoSrc && (
           <div className="photo-section">
-            <h4>📷 Photo du problème</h4>
+            <h4>Photo du problème</h4>
             <img src={photoSrc} alt="Photo du signalement" className="signalement-photo" />
           </div>
         )}
@@ -333,7 +333,7 @@ const SignalementDetailPage = () => {
 
         <div className="detail-info">
           <div className="info-card">
-            <span className="info-icon">📅</span>
+            <span className="info-icon"></span>
             <div>
               <label>Date de signalement</label>
               <strong>{formatDate(signalement.dateSignalement)}</strong>
@@ -341,7 +341,7 @@ const SignalementDetailPage = () => {
           </div>
 
           <div className="info-card">
-            <span className="info-icon">📐</span>
+            <span className="info-icon"></span>
             <div>
               <label>Surface</label>
               <strong>{signalement.surfaceM2 ? `${signalement.surfaceM2} m²` : 'Non renseignée'}</strong>
@@ -349,7 +349,7 @@ const SignalementDetailPage = () => {
           </div>
 
           <div className="info-card">
-            <span className="info-icon">💰</span>
+            <span className="info-icon"></span>
             <div>
               <label>Budget</label>
               <strong>{signalement.budget ? `${signalement.budget.toLocaleString()} Ar` : 'Non renseigné'}</strong>
@@ -357,7 +357,7 @@ const SignalementDetailPage = () => {
           </div>
 
           <div className="info-card">
-            <span className="info-icon">🏢</span>
+            <span className="info-icon"></span>
             <div>
               <label>Entreprise assignée</label>
               <strong>{signalement.entreprise?.nom || 'Aucune'}</strong>
@@ -365,7 +365,7 @@ const SignalementDetailPage = () => {
           </div>
 
           <div className="info-card">
-            <span className="info-icon">📍</span>
+            <span className="info-icon"></span>
             <div>
               <label>Coordonnées GPS</label>
               <strong>{signalement.latitude.toFixed(6)}, {signalement.longitude.toFixed(6)}</strong>
@@ -374,7 +374,7 @@ const SignalementDetailPage = () => {
 
           {signalement.user && (
             <div className="info-card">
-              <span className="info-icon">👤</span>
+              <span className="info-icon"></span>
               <div>
                 <label>Signalé par</label>
                 <strong>{signalement.user.email}</strong>
@@ -385,19 +385,19 @@ const SignalementDetailPage = () => {
 
         {/* Section Manager - Modification */}
         <div className="manager-section">
-          <h3>🔧 Gestion du signalement</h3>
+          <h3>Gestion du signalement</h3>
           
           {!isEditing ? (
             <div className="manager-actions">
               <button className="btn-edit" onClick={() => setIsEditing(true)}>
-                ✏️ Modifier
+                Modifier
               </button>
               <button 
                 className="btn-firebase" 
                 onClick={syncToFirebase}
                 disabled={syncingFirebase}
               >
-                {syncingFirebase ? '⏳ Sync...' : '🔥 Sync vers Firebase'}
+                {syncingFirebase ? 'Sync...' : 'Sync vers Firebase'}
               </button>
             </div>
           ) : (
@@ -419,21 +419,21 @@ const SignalementDetailPage = () => {
                     className={`avancement-btn ${editForm.avancement === 0 ? 'active nouveau' : ''}`}
                     onClick={() => handleAvancementChange(0)}
                   >
-                    🔴 Nouveau (0%)
+                    Nouveau (0%)
                   </button>
                   <button 
                     type="button"
                     className={`avancement-btn ${editForm.avancement === 50 ? 'active en-cours' : ''}`}
                     onClick={() => handleAvancementChange(50)}
                   >
-                    🟠 En cours (50%)
+                    En cours (50%)
                   </button>
                   <button 
                     type="button"
                     className={`avancement-btn ${editForm.avancement === 100 ? 'active termine' : ''}`}
                     onClick={() => handleAvancementChange(100)}
                   >
-                    🟢 Terminé (100%)
+                    Terminé (100%)
                   </button>
                 </div>
               </div>
@@ -474,15 +474,15 @@ const SignalementDetailPage = () => {
 
               <div className="edit-actions">
                 <button className="btn-save" onClick={handleSaveEdit} disabled={saving}>
-                  {saving ? '⏳ Enregistrement...' : '💾 Enregistrer'}
+                  {saving ? 'Enregistrement...' : 'Enregistrer'}
                 </button>
                 <button className="btn-cancel" onClick={() => setIsEditing(false)}>
-                  ❌ Annuler
+                  Annuler
                 </button>
               </div>
 
               <p className="sync-hint">
-                💡 Après enregistrement, cliquez sur "Sync vers Firebase" pour notifier les utilisateurs mobiles
+                Après enregistrement, cliquez sur "Sync vers Firebase" pour notifier les utilisateurs mobiles
               </p>
             </div>
           )}

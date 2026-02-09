@@ -95,7 +95,7 @@ const ManageAccountsPage = () => {
       
       await http.put(`/api/users/${editModal.user.id}`, payload);
       
-      setMessage({ type: 'success', text: '✅ Utilisateur modifié et synchronisé avec Firebase!' });
+      setMessage({ type: 'success', text: 'Utilisateur modifié et synchronisé avec Firebase !' });
       await fetchUsers();
       setTimeout(closeEditModal, 1500);
     } catch (error: any) {
@@ -113,7 +113,7 @@ const ManageAccountsPage = () => {
     try {
       await http.delete(`/api/users/${deleteModal.user.id}`);
       
-      setMessage({ type: 'success', text: '✅ Utilisateur supprimé (PostgreSQL et Firebase)!' });
+      setMessage({ type: 'success', text: 'Utilisateur supprimé (PostgreSQL et Firebase) !' });
       await fetchUsers();
       setTimeout(closeDeleteModal, 1500);
     } catch (error: any) {
@@ -128,7 +128,7 @@ const ManageAccountsPage = () => {
     setProcessing(true);
     try {
       await http.post(`/api/users/${user.id}/unblock`);
-      setMessage({ type: 'success', text: `✅ ${user.email} débloqué et synchronisé vers Firebase!` });
+      setMessage({ type: 'success', text: `${user.email} débloqué et synchronisé vers Firebase !` });
       await fetchUsers();
     } catch (error) {
       console.error('Erreur déblocage:', error);
@@ -149,7 +149,7 @@ const ManageAccountsPage = () => {
       if (data.success) {
         setMessage({ 
           type: 'success', 
-          text: `🔥 Sync Firebase → PostgreSQL: ${data.updated} utilisateurs mis à jour` 
+          text: `Sync Firebase → PostgreSQL : ${data.updated} utilisateurs mis à jour` 
         });
         await fetchUsers();
       } else {
@@ -166,13 +166,13 @@ const ManageAccountsPage = () => {
     <div className="manage-accounts">
       <div className="header">
         <button className="btn-back" onClick={() => navigate('/accounts')}>← Retour</button>
-        <h1>📋 Liste des utilisateurs</h1>
+        <h1>Liste des utilisateurs</h1>
         <button 
           className="btn-sync" 
           onClick={handleSyncFromFirebase}
           disabled={processing}
         >
-          🔄 Sync Firebase
+          Sync Firebase
         </button>
       </div>
 
@@ -218,7 +218,7 @@ const ManageAccountsPage = () => {
                   <td>
                     <div className="action-buttons">
                       <button className="btn-action btn-edit" onClick={() => openEditModal(user)}>
-                        ✏️ Modifier
+                        Modifier
                       </button>
                       {user.blocked && (
                         <button 
@@ -226,11 +226,11 @@ const ManageAccountsPage = () => {
                           onClick={() => handleUnblock(user)}
                           disabled={processing}
                         >
-                          🔓 Débloquer
+                          Débloquer
                         </button>
                       )}
                       <button className="btn-action btn-delete" onClick={() => openDeleteModal(user)}>
-                        🗑️ Supprimer
+                        Supprimer
                       </button>
                     </div>
                   </td>
@@ -245,7 +245,7 @@ const ManageAccountsPage = () => {
       {editModal.isOpen && editModal.user && (
         <div className="modal-overlay" onClick={closeEditModal}>
           <div className="modal-content" onClick={e => e.stopPropagation()}>
-            <h2>✏️ Modifier l'utilisateur</h2>
+            <h2>Modifier l'utilisateur</h2>
             <p style={{ color: 'rgba(255,255,255,0.6)', marginBottom: '1.5rem' }}>
               {editModal.user.email}
             </p>
@@ -299,7 +299,7 @@ const ManageAccountsPage = () => {
             <div className="modal-buttons">
               <button className="btn-cancel" onClick={closeEditModal}>Annuler</button>
               <button className="btn-confirm" onClick={handleSaveEdit} disabled={processing}>
-                {processing ? '⏳...' : '💾 Sauvegarder'}
+                {processing ? '...' : 'Sauvegarder'}
               </button>
             </div>
           </div>
@@ -310,12 +310,12 @@ const ManageAccountsPage = () => {
       {deleteModal.isOpen && deleteModal.user && (
         <div className="modal-overlay" onClick={closeDeleteModal}>
           <div className="modal-content" onClick={e => e.stopPropagation()}>
-            <h2>🗑️ Supprimer l'utilisateur</h2>
+            <h2>Supprimer l'utilisateur</h2>
             <p style={{ color: 'rgba(255,255,255,0.8)', margin: '1rem 0' }}>
               Êtes-vous sûr de vouloir supprimer <strong>{deleteModal.user.email}</strong> ?
             </p>
             <p style={{ color: '#e74c3c', fontSize: '0.9rem' }}>
-              ⚠️ Cette action est irréversible. L'utilisateur sera supprimé de PostgreSQL et Firebase.
+              Cette action est irréversible. L'utilisateur sera supprimé de PostgreSQL et Firebase.
             </p>
 
             {message && (
@@ -327,7 +327,7 @@ const ManageAccountsPage = () => {
             <div className="modal-buttons">
               <button className="btn-cancel" onClick={closeDeleteModal}>Annuler</button>
               <button className="btn-confirm btn-confirm-delete" onClick={handleDelete} disabled={processing}>
-                {processing ? '⏳...' : '🗑️ Supprimer'}
+                {processing ? '...' : 'Supprimer'}
               </button>
             </div>
           </div>

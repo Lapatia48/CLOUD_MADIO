@@ -223,6 +223,45 @@ class SignalementFirebaseService {
   }
 
   /**
+   * Récupérer les signalements de l'utilisateur courant AVEC documentId
+   */
+  async getMySignalementsWithIds(): Promise<Array<FirebaseSignalement & { documentId: string }>> {
+    const token = firebaseService.getIdToken()
+    const currentUser = firebaseService.getCurrentUser()
+    
+    if (!token || !currentUser) {
+      console.warn('Non authentifié')
+      return []
+    }
+
+    try {
+      const response = await axios.post(
+        `${FIRESTORE_URL}:runQuery`,
+        {
+          structuredQuery: {
+            from: [{ collectionId: 'signalements' }],
+            where: {
+              fieldFilter: {
+                field: { fieldPath: 'firebaseUid' },
+                op: 'EQUAL',
+                value: { stringValue: currentUser.uid },
+              },
+            },
+            orderBy: [
+              { field: { fieldPath: 'dateSignalement' }, direction: 'DESCENDING' }
+            ],
+          },
+        }
+      )
+
+      return this.parseSignalementsListWithIds(response.data)
+    } catch (error) {
+      console.error('Erreur récupération mes signalements avec IDs:', error)
+      return []
+    }
+  }
+
+  /**
    * Récupérer tous les signalements non synchronisés (pour le backend)
    */
   async getUnsyncedSignalements(): Promise<Array<FirebaseSignalement & { documentId: string }>> {

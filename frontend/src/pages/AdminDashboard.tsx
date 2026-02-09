@@ -83,7 +83,7 @@ const AdminDashboard = () => {
         
         setSyncMessage({
           type: 'success',
-          text: `✅ Synchronisation terminée! ${successCount} signalement(s) importé(s), ${failedCount} échec(s) sur ${total} total.`
+          text: `Synchronisation terminée ! ${successCount} signalement(s) importé(s), ${failedCount} échec(s) sur ${total} total.`
         });
         
         // Rafraîchir les données
@@ -91,14 +91,14 @@ const AdminDashboard = () => {
       } else {
         setSyncMessage({
           type: 'error',
-          text: `❌ Erreur: ${result.error || 'Échec de la synchronisation'}`
+          text: `Erreur : ${result.error || 'Échec de la synchronisation'}`
         });
       }
     } catch (error) {
       console.error('Erreur sync Firebase:', error);
       setSyncMessage({
         type: 'error',
-        text: `❌ Erreur de connexion au serveur`
+        text: `Erreur de connexion au serveur`
       });
     } finally {
       setSyncingFirebase(false);
@@ -137,17 +137,17 @@ const AdminDashboard = () => {
     <div className="admin-dashboard">
       <div className="admin-header">
         <button className="btn-back" onClick={() => navigate('/')}>← Retour</button>
-        <h1>📊 Dashboard Admin</h1>
+        <h1>Dashboard Admin</h1>
         <div className="header-buttons">
           <button 
             className="btn-firebase-sync" 
             onClick={syncFromFirebase}
             disabled={syncingFirebase}
           >
-            {syncingFirebase ? '🔄 Synchronisation...' : '🔥 Sync Firebase → PostgreSQL'}
+            {syncingFirebase ? 'Synchronisation...' : 'Sync Firebase → PostgreSQL'}
           </button>
           <button className="btn-users" onClick={() => navigate('/admin/users')}>
-            👥 Gestion Utilisateurs & Firebase
+            Gestion Utilisateurs & Firebase
           </button>
         </div>
       </div>
@@ -182,7 +182,7 @@ const AdminDashboard = () => {
 
       {/* Filtres */}
       <div className="filters">
-        <h3>🔍 Filtres</h3>
+        <h3>Filtres</h3>
         <div className="filter-row">
           <div className="filter-group">
             <label>Statut</label>
@@ -227,7 +227,7 @@ const AdminDashboard = () => {
 
       {/* Tableau */}
       <div className="table-container">
-        <h3>📋 Signalements ({filteredSignalements.length})</h3>
+        <h3>Signalements ({filteredSignalements.length})</h3>
         {loading ? (
           <p className="loading">Chargement...</p>
         ) : (

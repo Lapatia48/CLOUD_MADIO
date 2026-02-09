@@ -68,7 +68,7 @@ export default function LoginPage() {
           {successMessage && (
             <div className="success-message">
               {successMessage}
-              <p className="firebase-note">📱 Vous pouvez aussi vous connecter sur l'app mobile!</p>
+              <p className="firebase-note">Vous pouvez aussi vous connecter sur l'app mobile !</p>
             </div>
           )}
 
@@ -97,7 +97,7 @@ export default function LoginPage() {
           {error && <div className="error-message">{error}</div>}
 
           <button type="submit" className="btn-submit" disabled={loading}>
-            {loading ? '⏳ Connexion...' : '🔐 Se connecter'}
+            {loading ? 'Connexion...' : 'Se connecter'}
           </button>
 
           <div className="auth-footer">

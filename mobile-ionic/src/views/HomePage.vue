@@ -3,9 +3,9 @@
   <ion-page>
     <ion-header>
       <ion-toolbar color="primary">
-        <ion-title>🛣️ MADIO</ion-title>
+        <ion-title>MADIO</ion-title>
         <ion-chip slot="end" :color="isOffline ? 'danger' : 'success'" class="status-chip">
-          {{ isOffline ? '🔴 Offline' : '🟢 Online' }}
+          {{ isOffline ? 'Offline' : 'Online' }}
         </ion-chip>
       </ion-toolbar>
     </ion-header>
@@ -15,13 +15,13 @@
       <div v-if="!isAuthenticated" class="guest-overlay">
         <ion-card class="welcome-card">
           <ion-card-header>
-            <ion-card-title>👋 Bienvenue sur MADIO !</ion-card-title>
+            <ion-card-title>Bienvenue sur MADIO</ion-card-title>
             <ion-card-subtitle>Gestion des routes d'Antananarivo</ion-card-subtitle>
           </ion-card-header>
           <ion-card-content>
             <p>Connectez-vous pour signaler et suivre les problèmes routiers.</p>
             <div v-if="!isOnline" class="offline-warning">
-              🔴 Connexion Internet requise pour se connecter
+              Connexion Internet requise pour se connecter
             </div>
             <div class="action-buttons">
               <ion-button expand="block" router-link="/login" :disabled="!isOnline">
@@ -29,7 +29,7 @@
                 Se connecter
               </ion-button>
             </div>
-            <p class="info-hint">💡 Les comptes sont créés par les managers via l'app web</p>
+            <p class="info-hint">Les comptes sont créés par les managers via l'app web</p>
           </ion-card-content>
         </ion-card>
       </div>
@@ -40,7 +40,7 @@
         
         <!-- Légende flottante -->
         <div class="legend-floating">
-          <div class="legend-title">📊 Signalements</div>
+          <div class="legend-title">Signalements</div>
           <div class="legend-item">
             <span class="dot" style="background: #e74c3c;"></span>
             <span>Nouveaux ({{ statsNouveau }})</span>
@@ -190,9 +190,9 @@ function getStatusColor(status: string) {
 
 function getStatusLabel(status: string) {
   switch (status) {
-    case 'NOUVEAU': return '🔴 Nouveau'
-    case 'EN_COURS': return '🟠 En cours'
-    case 'TERMINE': return '🟢 Terminé'
+    case 'NOUVEAU': return 'Nouveau'
+    case 'EN_COURS': return 'En cours'
+    case 'TERMINE': return 'Terminé'
     default: return status
   }
 }
@@ -248,8 +248,8 @@ function addMarkersToMap() {
         <div style="min-width: 150px;">
           <strong>${s.description?.slice(0, 30) || 'Signalement'}</strong>
           <br><span style="color: ${getStatusColor(s.status)}">${getStatusLabel(s.status)}</span>
-          <br><small>📅 ${s.dateSignalement ? new Date(s.dateSignalement).toLocaleDateString('fr-FR') : 'N/A'}</small>
-          ${s.userEmail ? `<br><small>👤 ${s.userEmail}</small>` : ''}
+          <br><small>${s.dateSignalement ? new Date(s.dateSignalement).toLocaleDateString('fr-FR') : 'N/A'}</small>
+          ${s.userEmail ? `<br><small>${s.userEmail}</small>` : ''}
         </div>
       `
       

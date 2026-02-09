@@ -125,7 +125,7 @@ const MainDashboard = () => {
         
         setSyncMessage({
           type: 'success',
-          text: `✅ ${successCount} importé(s), ${skipped} ignoré(s), ${failedCount} échec(s) sur ${total} dans Firebase`
+          text: `${successCount} importé(s), ${skipped} ignoré(s), ${failedCount} échec(s) sur ${total} dans Firebase`
         });
         
         // Rafraîchir les signalements sur la carte
@@ -133,14 +133,14 @@ const MainDashboard = () => {
       } else {
         setSyncMessage({
           type: 'error',
-          text: `❌ Erreur: ${result.error || 'Échec de la synchronisation'}`
+          text: `Erreur : ${result.error || 'Échec de la synchronisation'}`
         });
       }
     } catch (error) {
       console.error('Erreur sync Firebase:', error);
       setSyncMessage({
         type: 'error',
-        text: `❌ Erreur de connexion au serveur`
+        text: `Erreur de connexion au serveur`
       });
     } finally {
       setSyncingFirebase(false);
@@ -158,9 +158,9 @@ const MainDashboard = () => {
 
   const getStatusLabel = (status: string) => {
     switch (status) {
-      case 'NOUVEAU': return '🔴 Nouveau';
-      case 'EN_COURS': return '🟠 En cours';
-      case 'TERMINE': return '🟢 Terminé';
+      case 'NOUVEAU': return 'Nouveau';
+      case 'EN_COURS': return 'En cours';
+      case 'TERMINE': return 'Terminé';
       default: return status;
     }
   };
@@ -207,19 +207,19 @@ const MainDashboard = () => {
                     <span>{getStatusLabel(sig.status)}</span>
                   </div>
                   <div className="tooltip-row">
-                    <span>📅 {formatDate(sig)}</span>
+                    <span>{formatDate(sig)}</span>
                   </div>
                   {getSurface(sig) && (
                     <div className="tooltip-row">
-                      <span>📐 {getSurface(sig)} m²</span>
+                      <span>{getSurface(sig)} m²</span>
                     </div>
                   )}
                   <div className="tooltip-row">
-                    <span>💰 {formatBudget(sig.budget)}</span>
+                    <span>{formatBudget(sig.budget)}</span>
                   </div>
                   {sig.entreprise && (
                     <div className="tooltip-row">
-                      <span>🏢 {sig.entreprise.nom}</span>
+                      <span>{sig.entreprise.nom}</span>
                     </div>
                   )}
                 </div>
@@ -238,13 +238,13 @@ const MainDashboard = () => {
         {/* Infos Manager connecté */}
         {manager && (
           <div className="manager-info">
-            <div className="manager-avatar">👨‍💼</div>
+            <div className="manager-avatar"></div>
             <div className="manager-details">
               <strong>{manager.nom || manager.email}</strong>
               <small>Manager</small>
             </div>
             <button className="btn-logout" onClick={handleLogout} title="Se déconnecter">
-              🚪
+              
             </button>
           </div>
         )}
@@ -259,7 +259,7 @@ const MainDashboard = () => {
 
         {/* Section principale - Gestionnaire */}
         <div className="manager-card">
-          <div className="manager-icon">🔄</div>
+          <div className="manager-icon"></div>
           <p>Synchronisation Firebase</p>
           <small>Importez les signalements depuis l'application mobile</small>
         </div>
@@ -272,25 +272,25 @@ const MainDashboard = () => {
             onClick={() => void syncFromFirebase()}
             disabled={syncingFirebase}
           >
-            {syncingFirebase ? '⏳ Synchronisation...' : '🔥 Synchroniser Firebase → PostgreSQL'}
+            {syncingFirebase ? 'Synchronisation...' : 'Synchroniser Firebase → PostgreSQL'}
           </button>
 
 
 
           {/* Gestion des comptes (menu complet) */}
           <button className="btn btn-outline" onClick={() => navigate('/accounts')}>
-            👥 Gestion des comptes
+            Gestion des comptes
           </button>
 
           {/* Accès Admin */}
           <button className="btn btn-admin" onClick={() => navigate('/admin')}>
-            📊 Dashboard Admin
+            Dashboard Admin
           </button>
         </div>
 
         {/* Stats signalements */}
         <div className="stats-section">
-          <h3>📊 Statistiques</h3>
+          <h3>Statistiques</h3>
           <div className="stats-grid">
             <div className="stat-item">
               <span className="stat-num">{signalements.length}</span>
@@ -313,7 +313,7 @@ const MainDashboard = () => {
 
         {/* Liste signalements */}
         <div className="signalements-list">
-          <h3>📋 Signalements récents ({signalements.length})</h3>
+          <h3>Signalements récents ({signalements.length})</h3>
           {signalements.length === 0 ? (
             <p className="empty">Aucun signalement. Cliquez sur "Synchroniser Firebase" pour importer.</p>
           ) : (

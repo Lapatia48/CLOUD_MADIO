@@ -6,7 +6,7 @@
         <ion-buttons slot="start">
           <ion-back-button default-href="/home" />
         </ion-buttons>
-        <ion-title>➕ Nouveau Signalement</ion-title>
+        <ion-title>Nouveau Signalement</ion-title>
       </ion-toolbar>
     </ion-header>
 
@@ -108,7 +108,7 @@
           <ion-spinner v-if="loading" name="crescent"></ion-spinner>
           {{ loading ? 'Envoi en cours...' : 'Envoyer le signalement' }}
         </ion-button>
-        <p class="info-text">📱 Le signalement sera envoyé vers Firebase et traité par les managers</p>
+        <p class="info-text">Le signalement sera envoyé et traité par les managers</p>
       </div>
     </ion-content>
   </ion-page>
@@ -160,7 +160,7 @@ async function takePhoto() {
       return // L'utilisateur a annulé
     }
     const toast = await toastController.create({
-      message: '📷 Caméra non disponible sur cet appareil',
+      message: 'Caméra non disponible sur cet appareil',
       duration: 2000,
       color: 'warning'
     })
@@ -241,7 +241,7 @@ async function handleSubmit() {
 
     if (result.success) {
       const toast = await toastController.create({
-        message: '🔥 Signalement envoyé! Les managers seront notifiés.',
+        message: 'Signalement envoyé avec succès !',
         duration: 3000,
         color: 'success'
       })

@@ -5,7 +5,7 @@
         <ion-buttons slot="start">
           <ion-back-button default-href="/map" />
         </ion-buttons>
-        <ion-title>🚫 Utilisateurs Bloqués</ion-title>
+        <ion-title>Utilisateurs Bloqués</ion-title>
       </ion-toolbar>
     </ion-header>
 
@@ -49,7 +49,7 @@
               <h2>{{ user.prenom || '' }} {{ user.nom || user.email }}</h2>
               <p>{{ user.email }}</p>
               <p class="attempts-text">
-                🔴 {{ user.failedAttempts || 0 }} tentatives échouées
+                {{ user.failedAttempts || 0 }} tentatives échouées
               </p>
             </ion-label>
             <ion-button 
@@ -130,10 +130,10 @@ async function handleUnblock(user: User) {
   try {
     await http.post(`/api/users/${user.id}/unblock`)
     users.value = users.value.filter(u => u.id !== user.id)
-    alert(`✅ ${user.prenom || user.email} a été débloqué !`)
+    alert(`${user.prenom || user.email} a été débloqué.`)
   } catch (err) {
     console.error('Erreur:', err)
-    alert('❌ Erreur lors du déblocage')
+    alert('Erreur lors du déblocage')
   } finally {
     unblocking.value = null
   }

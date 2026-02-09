@@ -6,9 +6,9 @@
         <ion-buttons slot="start">
           <ion-back-button default-href="/home" />
         </ion-buttons>
-        <ion-title>📋 Mes Signalements</ion-title>
+        <ion-title>Mes Signalements</ion-title>
         <ion-chip slot="end" :color="isOffline ? 'danger' : 'success'" class="status-chip">
-          {{ isOffline ? '🔴' : '🟢' }}
+          {{ isOffline ? 'Off' : 'On' }}
         </ion-chip>
       </ion-toolbar>
     </ion-header>
@@ -36,15 +36,15 @@
         <div class="stats-floating">
           <div class="stat-item nouveau">
             <span class="num">{{ statsNouveau }}</span>
-            <span class="label">🔴</span>
+            <span class="label dot-label nouveau-dot"></span>
           </div>
           <div class="stat-item en-cours">
             <span class="num">{{ statsEnCours }}</span>
-            <span class="label">🟠</span>
+            <span class="label dot-label encours-dot"></span>
           </div>
           <div class="stat-item termine">
             <span class="num">{{ statsTermine }}</span>
-            <span class="label">🟢</span>
+            <span class="label dot-label termine-dot"></span>
           </div>
         </div>
       </div>
@@ -52,7 +52,7 @@
       <!-- Liste des signalements (scrollable) -->
       <div class="list-section">
         <div class="list-header">
-          <h3>📋 Mes signalements ({{ signalements.length }})</h3>
+          <h3>Mes signalements ({{ signalements.length }})</h3>
           <ion-button fill="clear" size="small" @click="refreshSignalements" :disabled="isLoading">
             <ion-icon :icon="refreshOutline" :class="{ 'spin': isLoading }"></ion-icon>
           </ion-button>
@@ -69,7 +69,7 @@
                 • {{ formatDate(sig.dateSignalement) }}
               </p>
               <p v-if="sig.entrepriseNom" class="entreprise-info">
-                🏢 {{ sig.entrepriseNom }}
+                {{ sig.entrepriseNom }}
               </p>
             </ion-label>
             <!-- Barre d'avancement mini -->
@@ -160,9 +160,9 @@ function getStatusColor(status: string) {
 
 function getStatusLabel(status: string) {
   switch (status) {
-    case 'NOUVEAU': return '🔴 Nouveau'
-    case 'EN_COURS': return '🟠 En cours'
-    case 'TERMINE': return '🟢 Terminé'
+    case 'NOUVEAU': return 'Nouveau'
+    case 'EN_COURS': return 'En cours'
+    case 'TERMINE': return 'Terminé'
     default: return status
   }
 }
@@ -196,20 +196,9 @@ async function refreshSignalements() {
 
 async function fetchMySignalements() {
   try {
-    // Récupérer uniquement MES signalements depuis Firebase
-    const mySignalements = await signalementFirebaseService.getMySignalements()
-    
-    // Ajouter documentId (on doit récupérer avec IDs)
-    const firebaseUid = localStorage.getItem('firebaseUid')
-    if (!firebaseUid) {
-      console.warn('Pas de firebaseUid trouvé')
-      signalements.value = []
-      return
-    }
-    
-    // Utiliser getAllSignalements et filtrer par firebaseUid de l'utilisateur
-    const allSigs = await signalementFirebaseService.getAllSignalements()
-    signalements.value = allSigs.filter(s => s.firebaseUid === firebaseUid) as MySignalement[]
+    // Récupérer uniquement MES signalements depuis Firebase (filtrés côté serveur par firebaseUid)
+    const mySigs = await signalementFirebaseService.getMySignalementsWithIds()
+    signalements.value = mySigs as MySignalement[]
     
     console.log('Mes signalements Firebase:', signalements.value.length)
     addMarkersToMap()
@@ -246,7 +235,7 @@ function addMarkersToMap() {
         : ''
       
       const entrepriseInfo = s.entrepriseNom 
-        ? `<br><small>🏢 ${s.entrepriseNom}</small>` 
+        ? `<br><small>${s.entrepriseNom}</small>` 
         : ''
       
       const tooltipContent = `
@@ -255,7 +244,7 @@ function addMarkersToMap() {
           <br><span style="color: ${getStatusColor(s.status)}">${getStatusLabel(s.status)}</span>
           ${avancementBar}
           ${entrepriseInfo}
-          <br><small>📅 ${formatDate(s.dateSignalement)}</small>
+          <br><small>${formatDate(s.dateSignalement)}</small>
         </div>
       `
       
@@ -411,6 +400,20 @@ onUnmounted(() => {
 .stat-item .label {
   font-size: 0.8rem;
 }
+
+/* Colored dots replacing emojis in stats */
+.dot-label::before {
+  content: '';
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  margin-right: 4px;
+  vertical-align: middle;
+}
+.nouveau-dot::before { background: #e74c3c; }
+.encours-dot::before { background: #f39c12; }
+.termine-dot::before { background: #27ae60; }
 
 .stat-item.nouveau .num { color: #e74c3c; }
 .stat-item.en-cours .num { color: #f39c12; }

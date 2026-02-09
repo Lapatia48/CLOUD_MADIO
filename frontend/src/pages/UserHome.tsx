@@ -69,7 +69,7 @@ export default function UserHome() {
           textDecoration: 'none',
           borderRadius: '4px'
         }}>
-          🗺️ Voir la carte
+          Voir la carte
         </Link>
         <Link
           to="/user/signalements/new"

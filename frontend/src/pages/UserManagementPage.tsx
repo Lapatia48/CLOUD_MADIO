@@ -72,7 +72,7 @@ const UserManagementPage = () => {
       if (response.data.success) {
         setSyncMessage({ 
           type: 'success', 
-          text: `✅ Synchronisation réussie! Firebase UID: ${response.data.firebaseUid}` 
+          text: `Synchronisation réussie ! Firebase UID: ${response.data.firebaseUid}` 
         });
         // Rafraîchir la liste des utilisateurs
         await fetchUsers();
@@ -81,11 +81,11 @@ const UserManagementPage = () => {
           closeSyncModal();
         }, 2000);
       } else {
-        setSyncMessage({ type: 'error', text: `❌ ${response.data.message}` });
+        setSyncMessage({ type: 'error', text: `${response.data.message}` });
       }
     } catch (error: any) {
       const errorMessage = error.response?.data?.message || error.message || 'Erreur de synchronisation';
-      setSyncMessage({ type: 'error', text: `❌ ${errorMessage}` });
+      setSyncMessage({ type: 'error', text: `${errorMessage}` });
     } finally {
       setSyncing(false);
     }
@@ -104,7 +104,7 @@ const UserManagementPage = () => {
     <div className="user-management">
       <div className="header">
         <button className="btn-back" onClick={() => navigate('/')}>← Retour</button>
-        <h1>👥 Gestion des Utilisateurs</h1>
+        <h1>Gestion des Utilisateurs</h1>
       </div>
 
       <div className="stats-row">
@@ -157,18 +157,18 @@ const UserManagementPage = () => {
                   </td>
                   <td>
                     {user.isBlocked ? (
-                      <span className="status-badge blocked">🔒 Bloqué</span>
+                      <span className="status-badge blocked">Bloqué</span>
                     ) : (
-                      <span className="status-badge active">✅ Actif</span>
+                      <span className="status-badge active">Actif</span>
                     )}
                   </td>
                   <td>
                     {user.firebaseUid ? (
                       <span className="firebase-badge synced" title={user.firebaseUid}>
-                        🔥 Synchronisé
+                        Synchronisé
                       </span>
                     ) : (
-                      <span className="firebase-badge not-synced">⚪ Non sync</span>
+                      <span className="firebase-badge not-synced">Non sync</span>
                     )}
                   </td>
                   <td className="actions">
@@ -178,7 +178,7 @@ const UserManagementPage = () => {
                         onClick={() => openSyncModal(user)}
                         title="Synchroniser vers Firebase"
                       >
-                        🔄 Sync Firebase
+                        Sync Firebase
                       </button>
                     )}
                     {user.isBlocked ? (
@@ -186,14 +186,14 @@ const UserManagementPage = () => {
                         className="btn-unblock" 
                         onClick={() => handleBlockUser(user.id, false)}
                       >
-                        🔓 Débloquer
+                        Débloquer
                       </button>
                     ) : (
                       <button 
                         className="btn-block" 
                         onClick={() => handleBlockUser(user.id, true)}
                       >
-                        🔒 Bloquer
+                        Bloquer
                       </button>
                     )}
                   </td>
@@ -208,7 +208,7 @@ const UserManagementPage = () => {
       {syncModal.isOpen && syncModal.user && (
         <div className="modal-overlay" onClick={closeSyncModal}>
           <div className="modal-content" onClick={e => e.stopPropagation()}>
-            <h2>🔥 Synchroniser vers Firebase</h2>
+            <h2>Synchroniser vers Firebase</h2>
             <p>
               Utilisateur: <strong>{syncModal.user.email}</strong>
             </p>
@@ -247,7 +247,7 @@ const UserManagementPage = () => {
                 onClick={handleSyncUser}
                 disabled={syncing || !password}
               >
-                {syncing ? '⏳ Synchronisation...' : '🔄 Synchroniser'}
+                {syncing ? 'Synchronisation...' : 'Synchroniser'}
               </button>
             </div>
           </div>

@@ -174,7 +174,7 @@ const SignalementCreatePage = () => {
           )}
         </MapContainer>
         <div className="map-hint">
-          👆 Cliquez sur la carte pour marquer l'emplacement du problème
+          Cliquez sur la carte pour marquer l'emplacement du problème
         </div>
       </div>
 
@@ -183,7 +183,7 @@ const SignalementCreatePage = () => {
           ← Retour
         </button>
 
-        <h1>📍 Nouveau Signalement</h1>
+        <h1>Nouveau Signalement</h1>
 
         {error && <div className="error-message">{error}</div>}
 
@@ -260,7 +260,7 @@ const SignalementCreatePage = () => {
             <label>Coordonnées sélectionnées</label>
             {latitude !== null && longitude !== null ? (
               <div className="coords-display">
-                <span>📍 {latitude.toFixed(6)}, {longitude.toFixed(6)}</span>
+                <span>{latitude.toFixed(6)}, {longitude.toFixed(6)}</span>
               </div>
             ) : (
               <div className="coords-empty">
@@ -270,7 +270,7 @@ const SignalementCreatePage = () => {
           </div>
 
           <button type="submit" className="btn-submit" disabled={loading}>
-            {loading ? '⏳ Envoi en cours...' : '✓ Créer le signalement'}
+            {loading ? 'Envoi en cours...' : 'Créer le signalement'}
           </button>
         </form>
       </div>
