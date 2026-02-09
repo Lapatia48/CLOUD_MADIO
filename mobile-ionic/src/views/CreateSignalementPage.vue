@@ -11,6 +11,13 @@
     </ion-header>
 
     <ion-content class="ion-padding">
+      <!-- Wrapper container -->
+      <div class="form-wrapper">
+        <div class="form-wrapper-header">
+          <h2>Ajout de Signalement</h2>
+          <p>Remplissez les informations ci-dessous pour signaler un probleme routier</p>
+        </div>
+
       <!-- Form Card -->
       <ion-card class="form-card">
         <ion-card-header>
@@ -110,6 +117,7 @@
         </ion-button>
         <p class="info-text">Le signalement sera envoyé et traité par les managers</p>
       </div>
+      </div><!-- end form-wrapper -->
     </ion-content>
   </ion-page>
 </template>
@@ -261,42 +269,156 @@ async function handleSubmit() {
 <style scoped>
 @import 'leaflet/dist/leaflet.css';
 
+/* ============================================
+   CREATE SIGNALEMENT - MODERN CSS
+   Violet-Indigo Theme with Animations
+   ============================================ */
+
+/* CSS Variables */
+:root {
+  --primary-color: #4F46E5;
+  --primary-dark: #4338CA;
+  --primary-light: #818CF8;
+  --primary-pale: #E0E7FF;
+  --bg-page: #F8FAFC;
+  --bg-card: #FFFFFF;
+  --text-dark: #1E293B;
+  --text-muted: #64748B;
+  --text-light: #94A3B8;
+  --success: #10B981;
+  --success-dark: #059669;
+  --danger: #EF4444;
+  --danger-light: #FEE2E2;
+  --border-light: rgba(79, 70, 229, 0.08);
+  --shadow-card: 0 4px 24px rgba(79, 70, 229, 0.08);
+  --shadow-card-hover: 0 8px 32px rgba(79, 70, 229, 0.16);
+  --shadow-button: 0 4px 16px rgba(79, 70, 229, 0.3);
+  --radius-card: 16px;
+  --radius-btn: 12px;
+  --transition-fast: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-smooth: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
 /* Page background */
 ion-content {
-  --background: #F5EFE6;
+  --background: #FFFFFF;
 }
 
-/* Global card style - web theme */
-ion-card {
-  border-radius: 14px;
-  box-shadow: 0 2px 12px rgba(27, 58, 92, 0.08);
-  border: 1px solid rgba(74, 144, 217, 0.1);
+/* ---- Form Wrapper ---- */
+.form-wrapper {
+  background: linear-gradient(160deg, #1B3A5C 0%, #2E5C8A 100%);
+  border-radius: 18px;
+  border: none;
+  box-shadow:
+    0 8px 32px rgba(27, 58, 92, 0.3),
+    0 2px 8px rgba(0, 0, 0, 0.1);
+  margin: 50px 406px 86px;
+  padding: 2px 0 10px;
+  animation: fadeInUp 0.5s ease forwards;
+  position: relative;
   overflow: hidden;
-  margin: 12px 16px;
-  background: #FFFFFF;
 }
+
+.form-wrapper::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, var(--primary-light), #FFFFFF, var(--primary-light));
+}
+
+.form-wrapper-header {
+  text-align: center;
+  padding: 14px 16px 4px;
+}
+
+.form-wrapper-header h2 {
+  font-size: 1.15rem;
+  font-weight: 800;
+  color: #FFFFFF;
+  margin: 0 0 3px;
+  letter-spacing: -0.01em;
+}
+
+.form-wrapper-header p {
+  font-size: 0.75rem;
+  color: rgba(255, 255, 255, 0.7);
+  margin: 0;
+  line-height: 1.3;
+}
+
+/* ---- Global Card Styles ---- */
+ion-card {
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  border: none;
+  overflow: hidden;
+  margin: 6px 10px;
+  background: var(--bg-card);
+  transition: var(--transition-smooth);
+  opacity: 0;
+  animation: fadeInUp 0.5s ease forwards;
+}
+
+ion-card:hover {
+  box-shadow: var(--shadow-card-hover);
+  transform: translateY(-4px);
+  outline-color: var(--primary-dark);
+}
+
+/* Stagger card animations */
+.form-card { animation-delay: 0.05s; }
+.photo-card { animation-delay: 0.12s; }
+.map-card { animation-delay: 0.2s; }
+.position-card { animation-delay: 0.28s; }
+.error-card { animation-delay: 0.1s; }
 
 ion-card-header {
-  background: linear-gradient(135deg, #1B3A5C, #2E5C8A);
-  padding: 14px 16px;
+  background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-dark) 100%);
+  padding: 16px 18px;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Subtle shine effect on header */
+ion-card-header::after {
+  content: '';
+  position: absolute;
+  top: -50%;
+  right: -50%;
+  width: 100%;
+  height: 200%;
+  background: linear-gradient(
+    135deg,
+    transparent 40%,
+    rgba(255, 255, 255, 0.06) 50%,
+    transparent 60%
+  );
+  pointer-events: none;
 }
 
 ion-card-title {
   color: #FFFFFF !important;
   font-size: 1rem;
+  font-weight: 600;
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 10px;
+  letter-spacing: 0.02em;
 }
 
 ion-card-subtitle {
-  color: #D6E8F7 !important;
+  color: rgba(255, 255, 255, 0.75) !important;
   font-size: 0.8rem;
   margin-top: 4px;
+  letter-spacing: 0.01em;
 }
 
+/* ---- Form Card ---- */
 .form-card {
-  margin-bottom: 4px;
+  margin-bottom: 6px;
 }
 
 .form-item {
@@ -306,58 +428,94 @@ ion-card-subtitle {
 }
 
 .custom-input {
-  --background: #F5EFE6;
+  --background: #F1F5F9;
   --padding-start: 14px;
   --padding-end: 14px;
-  border-radius: 10px;
-  border: 1px solid rgba(74, 144, 217, 0.15);
+  border-radius: var(--radius-btn);
+  border: 2px solid transparent;
   margin-top: 4px;
+  transition: var(--transition-fast);
 }
 
+.custom-input:focus-within {
+  border-color: var(--primary-light);
+  --background: #FFFFFF;
+  box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.1);
+}
+
+/* ---- Photo Card ---- */
 .photo-card {
-  margin-bottom: 4px;
+  margin-bottom: 6px;
 }
 
 .photo-preview {
   position: relative;
-  margin-bottom: 12px;
-  border-radius: 10px;
+  margin-bottom: 14px;
+  border-radius: var(--radius-btn);
   overflow: hidden;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+  transition: var(--transition-smooth);
+}
+
+.photo-preview:hover {
+  transform: scale(1.02);
+  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.18);
 }
 
 .photo-preview img {
   width: 100%;
-  max-height: 220px;
+  max-height: 240px;
   object-fit: cover;
-  border-radius: 10px;
+  border-radius: var(--radius-btn);
+  display: block;
 }
 
 .remove-photo-btn {
   position: absolute;
-  top: 8px;
-  right: 8px;
-  --background: rgba(255,255,255,0.95);
+  top: 10px;
+  right: 10px;
+  --background: rgba(255, 255, 255, 0.95);
   --border-radius: 50%;
-  --box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+  --box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+  --color: var(--danger);
+  transition: var(--transition-fast);
+  width: 36px;
+  height: 36px;
+}
+
+.remove-photo-btn:hover {
+  --background: var(--danger);
+  --color: #FFFFFF;
+  transform: scale(1.1);
 }
 
 .photo-actions {
-  display: flex;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
   gap: 10px;
 }
 
 .photo-actions ion-button {
-  flex: 1;
-  --border-radius: 10px;
-  --border-color: #1B3A5C;
-  --color: #1B3A5C;
-  font-weight: 500;
-  height: 44px;
+  --border-radius: var(--radius-btn);
+  --border-color: var(--primary-color);
+  --color: var(--primary-color);
+  --border-width: 2px;
+  font-weight: 600;
+  height: 46px;
+  font-size: 0.85rem;
+  letter-spacing: 0.02em;
+  transition: var(--transition-fast);
 }
 
+.photo-actions ion-button:hover {
+  --background: var(--primary-pale);
+  --color: var(--primary-dark);
+  transform: translateY(-2px);
+}
+
+/* ---- Map Card ---- */
 .map-card {
-  margin-bottom: 4px;
+  margin-bottom: 6px;
 }
 
 .map-card-content {
@@ -365,77 +523,200 @@ ion-card-subtitle {
 }
 
 .mini-map {
-  height: 220px;
+  height: 240px;
   width: 100%;
-  border-radius: 0 0 14px 14px;
+  border-radius: 0 0 var(--radius-card) var(--radius-card);
 }
 
+/* Enhanced Leaflet Controls */
+.mini-map :deep(.leaflet-control-zoom) {
+  border: none !important;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.15) !important;
+  border-radius: 10px !important;
+  overflow: hidden;
+}
+
+.mini-map :deep(.leaflet-control-zoom a) {
+  background: var(--bg-card) !important;
+  color: var(--primary-color) !important;
+  width: 34px !important;
+  height: 34px !important;
+  line-height: 34px !important;
+  font-size: 16px !important;
+  border-bottom: 1px solid #E2E8F0 !important;
+  transition: var(--transition-fast);
+}
+
+.mini-map :deep(.leaflet-control-zoom a:hover) {
+  background: var(--primary-pale) !important;
+  color: var(--primary-dark) !important;
+}
+
+.mini-map :deep(.leaflet-control-attribution) {
+  background: rgba(255, 255, 255, 0.85) !important;
+  font-size: 9px !important;
+  border-radius: 6px 0 0 0;
+  padding: 2px 6px;
+}
+
+/* ---- Position Card ---- */
 .position-card {
-  background: linear-gradient(135deg, #D6E8F7, #FFFFFF);
-  margin-bottom: 4px;
-  border: 1px solid rgba(74, 144, 217, 0.2);
+  background: linear-gradient(135deg, #D1FAE5 0%, #ECFDF5 100%);
+  margin-bottom: 6px;
+  border: 1px solid rgba(16, 185, 129, 0.2);
+  animation-name: fadeInUp;
 }
 
 .position-info {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 14px;
 }
 
 .position-info ion-icon {
-  font-size: 28px;
-  color: #2E5C8A;
+  font-size: 30px;
+  color: var(--success-dark);
+  filter: drop-shadow(0 2px 4px rgba(16, 185, 129, 0.3));
 }
 
 .position-info strong {
   display: block;
-  color: #1B3A5C;
+  color: #065F46;
+  font-size: 0.95rem;
+  font-weight: 700;
 }
 
 .position-info p {
   margin: 4px 0 0;
-  font-size: 0.85rem;
-  color: #2E5C8A;
-  opacity: 0.8;
+  font-size: 0.82rem;
+  color: #047857;
+  opacity: 0.85;
+  font-family: 'SF Mono', 'Fira Code', monospace;
+  letter-spacing: 0.02em;
 }
 
+/* ---- Error Card ---- */
 .error-card {
-  background: linear-gradient(135deg, #FDE8E8, #FFFFFF);
-  margin-bottom: 4px;
-  border: 1px solid rgba(217, 75, 75, 0.2);
+  background: linear-gradient(135deg, var(--danger-light) 0%, #FFFFFF 100%);
+  margin-bottom: 6px;
+  border: 1px solid rgba(239, 68, 68, 0.25);
+  animation: fadeInUp 0.3s ease forwards, shake 0.4s ease 0.3s;
 }
 
 .error-info {
   display: flex;
   align-items: center;
   gap: 12px;
-  color: #D94B4B;
+  color: var(--danger);
+  font-weight: 500;
 }
 
 .error-info ion-icon {
-  font-size: 24px;
+  font-size: 26px;
+  flex-shrink: 0;
+  filter: drop-shadow(0 2px 4px rgba(239, 68, 68, 0.3));
 }
 
+/* ---- Submit Section ---- */
 .submit-section {
-  margin: 20px 16px 32px;
+  margin: 24px 16px 36px;
+  animation: fadeInUp 0.5s ease forwards;
+  animation-delay: 0.35s;
+  opacity: 0;
 }
 
 .submit-btn {
-  --border-radius: 14px;
-  --background: linear-gradient(135deg, #1B3A5C, #2E5C8A);
-  --background-hover: #2E5C8A;
-  height: 54px;
-  font-weight: 600;
+  --border-radius: var(--radius-card);
+  --background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-dark) 100%);
+  --background-hover: var(--primary-dark);
+  --background-activated: #3730A3;
+  height: 56px;
+  font-weight: 700;
   font-size: 1rem;
-  letter-spacing: 0.3px;
-  box-shadow: 0 4px 14px rgba(27, 58, 92, 0.25);
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  box-shadow: var(--shadow-button);
+  transition: var(--transition-smooth);
+}
+
+.submit-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 24px rgba(79, 70, 229, 0.4);
+}
+
+.submit-btn:active {
+  transform: translateY(0);
 }
 
 .info-text {
   text-align: center;
-  color: #5A7A9A;
+  color: var(--text-light);
   font-size: 0.78rem;
-  margin-top: 14px;
+  margin-top: 16px;
   font-style: italic;
+  letter-spacing: 0.01em;
+}
+
+/* ============================================
+   ANIMATIONS
+   ============================================ */
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  20% { transform: translateX(-6px); }
+  40% { transform: translateX(6px); }
+  60% { transform: translateX(-4px); }
+  80% { transform: translateX(4px); }
+}
+
+/* ============================================
+   RESPONSIVE
+   ============================================ */
+
+@media (max-width: 400px) {
+  ion-card {
+    margin: 10px 10px;
+  }
+
+  .photo-actions {
+    grid-template-columns: 1fr;
+  }
+
+  .mini-map {
+    height: 200px;
+  }
+
+  .submit-btn {
+    height: 50px;
+    font-size: 0.9rem;
+  }
+}
+
+@media (min-width: 768px) {
+  ion-card {
+    margin: 16px auto;
+    max-width: 600px;
+  }
+
+  .submit-section {
+    max-width: 600px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  .mini-map {
+    height: 300px;
+  }
 }
 </style>

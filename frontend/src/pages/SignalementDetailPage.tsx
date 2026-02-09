@@ -243,12 +243,12 @@ const SignalementDetailPage = () => {
   };
 
   if (loading) {
-    return <div className="detail-page"><div className="loading">Chargement...</div></div>;
+    return <div className="detail-page-wrapper"><div className="loading">Chargement...</div></div>;
   }
 
   if (!signalement) {
     return (
-      <div className="detail-page">
+      <div className="detail-page-wrapper">
         <div className="not-found">
           <h2>Signalement non trouvé</h2>
           <button onClick={() => navigate('/manager')}>Retour à la carte</button>
@@ -260,46 +260,47 @@ const SignalementDetailPage = () => {
   const photoSrc = getPhotoSrc();
 
   return (
-    <div className="detail-page" style={{ display: 'flex', height: '100vh', width: '100%' }}>
-      {/* Carte à gauche */}
-      <div className="detail-map" style={{ flex: 1, height: '100%', position: 'relative' }}>
-        <MapContainer
-          center={[signalement.latitude, signalement.longitude]}
-          zoom={15}
-          className="map"
-          style={{ height: '100%', width: '100%' }}
-          scrollWheelZoom={true}
-        >
-          <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
-          
-          <Circle
+    <div className="detail-page-wrapper">
+      <div className="detail-page-container">
+        {/* Carte à gauche */}
+        <div className="detail-map">
+          <MapContainer
             center={[signalement.latitude, signalement.longitude]}
-            radius={50}
-            pathOptions={{
-              color: getStatusColor(signalement.status),
-              fillColor: getStatusColor(signalement.status),
-              fillOpacity: 0.3,
-              weight: 3,
-            }}
-          />
-          
-          <Marker position={[signalement.latitude, signalement.longitude]} />
-        </MapContainer>
+            zoom={15}
+            className="map"
+            style={{ height: '100%', width: '100%' }}
+            scrollWheelZoom={true}
+          >
+            <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
+            
+            <Circle
+              center={[signalement.latitude, signalement.longitude]}
+              radius={50}
+              pathOptions={{
+                color: getStatusColor(signalement.status),
+                fillColor: getStatusColor(signalement.status),
+                fillOpacity: 0.3,
+                weight: 3,
+              }}
+            />
+            
+            <Marker position={[signalement.latitude, signalement.longitude]} />
+          </MapContainer>
 
-        {/* Photo du signalement (si disponible) */}
-        {photoSrc && (
-          <div className="photo-section">
-            <h4>Photo du problème</h4>
-            <img src={photoSrc} alt="Photo du signalement" className="signalement-photo" />
-          </div>
-        )}
-      </div>
+          {/* Photo du signalement (si disponible) */}
+          {photoSrc && (
+            <div className="photo-section">
+              <h4>Photo du problème</h4>
+              <img src={photoSrc} alt="Photo du signalement" className="signalement-photo" />
+            </div>
+          )}
+        </div>
 
-      {/* Panel de détails à droite */}
-      <div className="detail-panel">
-        <button className="btn-back" onClick={() => navigate('/manager')}>
-          ← Retour à la carte
-        </button>
+        {/* Panel de détails à droite */}
+        <div className="detail-panel">
+          <button className="btn-back" onClick={() => navigate('/manager')}>
+            ← Retour à la carte
+          </button>
 
         {/* Message */}
         {message && (
@@ -486,6 +487,7 @@ const SignalementDetailPage = () => {
               </p>
             </div>
           )}
+        </div>
         </div>
       </div>
     </div>
