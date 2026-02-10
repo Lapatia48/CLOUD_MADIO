@@ -309,12 +309,11 @@ onUnmounted(() => {
   font-size: 0.75rem;
 }
 
-/* Carte plein écran - ajustée pour sidebar gauche */
+/* Carte plein écran - mobile first, pleine largeur */
 .map-fullscreen {
   position: relative;
-  width: calc(100% - 200px);
-  height: calc(100vh - 56px);
-  margin-left: 200px;
+  width: 100%;
+  height: calc(100vh - 56px - 70px); /* hauteur moins header et bottom bar */
 }
 
 .map-container {
@@ -467,49 +466,44 @@ onUnmounted(() => {
   font-weight: 600;
 }
 
-/* Sidebar actions gauche - style web */
+/* Actions en barre du bas - mobile friendly */
 .bottom-actions {
   position: fixed;
-  top: 56px;
-  left: 0;
   bottom: 0;
-  width: 200px;
+  left: 0;
+  right: 0;
   display: flex;
-  flex-direction: column;
-  align-items: stretch;
+  flex-direction: row;
+  align-items: center;
   gap: 6px;
-  padding: 20px 14px;
+  padding: 8px 10px;
+  padding-bottom: max(8px, env(safe-area-inset-bottom));
   background: #FFFFFF;
-  border-right: 1px solid rgba(74, 144, 217, 0.12);
+  border-top: 1px solid rgba(74, 144, 217, 0.12);
   z-index: 1000;
-  box-shadow: 4px 0 20px rgba(27, 58, 92, 0.08);
+  box-shadow: 0 -4px 20px rgba(27, 58, 92, 0.08);
 }
 
 .action-btn {
-  width: 100%;
-  height: 48px;
+  flex: 1;
+  height: 44px;
   --border-radius: 10px;
-  font-size: 0.85rem;
+  font-size: 0.75rem;
   font-weight: 500;
   margin: 0;
-  --padding-start: 14px;
-  --padding-end: 14px;
-  display: flex;
-  align-items: center;
-  justify-content: flex-start;
-  text-align: left;
-  letter-spacing: -0.01em;
+  --padding-start: 6px;
+  --padding-end: 6px;
 }
 
 .action-btn ion-icon {
   font-size: 1.15rem;
-  margin-right: 8px;
+  margin-right: 4px;
 }
 
 /* FAB refresh */
 .refresh-fab {
-  margin-bottom: 20px;
-  margin-left: 210px;
+  margin-bottom: 80px;
+  margin-left: 10px;
 }
 
 .spin {
@@ -524,11 +518,20 @@ onUnmounted(() => {
 /* Responsive - mode paysage */
 @media (orientation: landscape) {
   .map-fullscreen {
-    height: calc(100vh - 56px);
+    height: calc(100vh - 56px - 60px);
+  }
+  
+  .bottom-actions {
+    padding: 6px 10px;
+  }
+  
+  .action-btn {
+    height: 38px;
+    font-size: 0.7rem;
   }
 }
 
-/* Téléphone en portrait - plus de hauteur pour la carte */
+/* Téléphone en portrait - légende compacte */
 @media (max-height: 700px) {
   .legend-floating {
     padding: 8px;
@@ -546,25 +549,50 @@ onUnmounted(() => {
   }
 }
 
-/* Petit écran mobile - sidebar plus compacte */
+/* Petit écran mobile */
 @media (max-width: 500px) {
   .bottom-actions {
-    width: 160px;
-    padding: 16px 10px;
+    gap: 4px;
+    padding: 6px 6px;
+    padding-bottom: max(6px, env(safe-area-inset-bottom));
   }
   
   .action-btn {
-    height: 44px;
-    font-size: 0.8rem;
+    height: 42px;
+    font-size: 0.7rem;
   }
-  
+
+  .user-floating-card {
+    padding: 6px 10px 6px 6px;
+  }
+
+  .user-info-mini strong {
+    font-size: 0.75rem;
+  }
+
+  .legend-floating {
+    min-width: 120px;
+    padding: 8px 10px;
+  }
+}
+
+/* Tablette / Desktop */
+@media (min-width: 768px) {
   .map-fullscreen {
-    width: calc(100% - 160px);
-    margin-left: 160px;
+    height: calc(100vh - 56px - 70px);
   }
-  
-  .refresh-fab {
-    margin-left: 168px;
+
+  .bottom-actions {
+    max-width: 600px;
+    margin: 0 auto;
+    left: 50%;
+    transform: translateX(-50%);
+    border-radius: 16px 16px 0 0;
+  }
+
+  .action-btn {
+    font-size: 0.85rem;
+    height: 48px;
   }
 }
 
