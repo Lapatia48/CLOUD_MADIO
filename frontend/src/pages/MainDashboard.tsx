@@ -273,7 +273,7 @@ const MainDashboard = () => {
           </button>
 
           <button className="btn btn-admin" onClick={() => navigate('/admin')}>
-            Dashboard Admin
+            Voir tous les signalements
           </button>
         </nav>
 

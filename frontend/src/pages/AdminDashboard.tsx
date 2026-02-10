@@ -146,9 +146,6 @@ const AdminDashboard = () => {
           >
             {syncingFirebase ? 'Synchronisation...' : 'Sync Firebase → PostgreSQL'}
           </button>
-          <button className="btn-users" onClick={() => navigate('/admin/users')}>
-            Gestion Utilisateurs & Firebase
-          </button>
         </div>
       </div>
 
