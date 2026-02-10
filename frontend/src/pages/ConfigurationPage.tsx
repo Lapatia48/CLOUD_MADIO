@@ -48,7 +48,7 @@ const ConfigurationPage = () => {
       setOriginalValue(maxAttempts);
       setMessage({ 
         type: 'success', 
-        text: `✅ Configuration mise à jour! Max attempts = ${maxAttempts} (synchronisé avec Firebase)` 
+        text: `Configuration mise à jour ! Max attempts = ${maxAttempts} (synchronisé avec Firebase)` 
       });
     } catch (error: any) {
       console.error('Erreur sauvegarde:', error);
@@ -67,7 +67,7 @@ const ConfigurationPage = () => {
     <div className="configuration-page">
       <div className="header">
         <button className="btn-back" onClick={() => navigate('/accounts')}>← Retour</button>
-        <h1>⚙️ Configuration</h1>
+        <h1>Configuration</h1>
       </div>
 
       <div className="config-content">
@@ -76,7 +76,7 @@ const ConfigurationPage = () => {
         ) : (
           <>
             <div className="config-card">
-              <h2>🔐 Tentatives de connexion</h2>
+              <h2>Tentatives de connexion</h2>
               <p>Nombre maximum de tentatives échouées avant le blocage automatique du compte</p>
               
               <div className="config-input-group">
@@ -97,7 +97,7 @@ const ConfigurationPage = () => {
                 onClick={handleSave}
                 disabled={saving || !hasChanges}
               >
-                {saving ? '⏳ Sauvegarde...' : '💾 Sauvegarder et synchroniser Firebase'}
+                {saving ? 'Sauvegarde...' : 'Sauvegarder et synchroniser Firebase'}
               </button>
 
               {message && (
@@ -108,7 +108,7 @@ const ConfigurationPage = () => {
             </div>
 
             <div className="config-card">
-              <h2>📱 Fonctionnement</h2>
+              <h2>Fonctionnement</h2>
               <p>Cette configuration est synchronisée avec Firebase et utilisée par l'application mobile.</p>
               <div className="option-features" style={{ marginTop: '1rem' }}>
                 <span>• L'app mobile compte les tentatives échouées</span>

@@ -31,7 +31,7 @@ export default function RegisterPage() {
         navigate('/manager', { 
           replace: true,
           state: { 
-            message: '✅ Compte créé et synchronisé avec Firebase!'
+            message: 'Compte créé et synchronisé avec Firebase !'
           }
         })
       } else {
@@ -105,8 +105,8 @@ export default function RegisterPage() {
           </button>
 
           <div className="firebase-info">
-            <p>🔥 Votre compte sera automatiquement synchronisé avec Firebase</p>
-            <p>📱 Vous pourrez vous connecter sur l'application mobile</p>
+            <p>Votre compte sera automatiquement synchronisé avec Firebase</p>
+            <p>Vous pourrez vous connecter sur l'application mobile</p>
           </div>
 
           <div className="auth-footer">

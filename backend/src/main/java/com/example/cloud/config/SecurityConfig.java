@@ -49,6 +49,8 @@ public class SecurityConfig {
                 .requestMatchers("/api/entreprises/**").permitAll() // Autoriser entreprises
                 .requestMatchers("/api/users/**").permitAll()
                 .requestMatchers("/api/configuration/**").permitAll() // Autoriser configuration
+                .requestMatchers("/api/niveau-signalement/**").permitAll() // Autoriser niveau signalement
+                .requestMatchers("/api/prix-metre-carre/**").permitAll() // Autoriser prix metre carre
                 .requestMatchers("/api/sync/**").permitAll()
                 .requestMatchers("/api/firebase/**").permitAll() // Autoriser endpoints Firebase
                 .anyRequest().authenticated())

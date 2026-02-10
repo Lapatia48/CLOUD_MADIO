@@ -60,7 +60,7 @@ const BlockedUsersPage = () => {
       
       if (response.ok) {
         setUsers(users.filter(u => u.id !== user.id));
-        alert(`✅ ${user.prenom || user.email} a été débloqué avec succès !`);
+        alert(`${user.prenom || user.email} a été débloqué avec succès !`);
       } else {
         const errData = await response.json().catch(() => ({}));
         alert(errData.message || 'Erreur lors du déblocage');
@@ -84,16 +84,16 @@ const BlockedUsersPage = () => {
           <button className="btn-back" onClick={() => navigate('/')}>
             ← Retour à la carte
           </button>
-          <h1>🚫 Utilisateurs Bloqués</h1>
+          <h1>Utilisateurs Bloqués</h1>
         </div>
 
-        {loading && <div className="loading">⏳ Chargement des utilisateurs...</div>}
+        {loading && <div className="loading">Chargement des utilisateurs...</div>}
         
         {error && <div className="error-message">{error}</div>}
 
         {!loading && !error && users.length === 0 && (
           <div className="empty-state">
-            <span className="empty-icon">✅</span>
+            <span className="empty-icon"></span>
             <p>Aucun utilisateur bloqué</p>
             <small>Tous les comptes sont actuellement actifs</small>
           </div>
@@ -110,7 +110,7 @@ const BlockedUsersPage = () => {
                   <strong>{user.prenom || ''} {user.nom || user.email}</strong>
                   <span className="email">{user.email}</span>
                   <span className="attempts">
-                    🔴 {getFailedAttempts(user)} tentatives de connexion échouées
+                    {getFailedAttempts(user)} tentatives de connexion échouées
                   </span>
                 </div>
                 <button 
@@ -118,7 +118,7 @@ const BlockedUsersPage = () => {
                   onClick={() => handleUnblock(user)}
                   disabled={unblocking === user.id}
                 >
-                  {unblocking === user.id ? '⏳...' : '✓ Débloquer'}
+                  {unblocking === user.id ? '...' : 'Débloquer'}
                 </button>
               </div>
             ))}

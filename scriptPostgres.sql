@@ -4,6 +4,8 @@
 -- ===========================================
 -- SUPPRESSION DES TABLES EXISTANTES
 -- ===========================================
+DROP TABLE IF EXISTS niveau_signalement CASCADE;
+DROP TABLE IF EXISTS prix_metre_carre CASCADE;
 DROP TABLE IF EXISTS signalements CASCADE;
 DROP TABLE IF EXISTS sessions CASCADE;
 DROP TABLE IF EXISTS users CASCADE;
@@ -105,9 +107,30 @@ CREATE TABLE signalements (
 
 
 -- ===========================================
+-- TABLE NIVEAU_SIGNALEMENT
+-- ===========================================
+CREATE TABLE niveau_signalement (
+    id SERIAL PRIMARY KEY,
+    id_signalement INTEGER UNIQUE NOT NULL REFERENCES signalements(id) ON DELETE CASCADE,
+    niveau INTEGER NOT NULL CHECK (niveau >= 1 AND niveau <= 10)
+);
+
+-- ===========================================
+-- TABLE PRIX_METRE_CARRE
+-- ===========================================
+CREATE TABLE prix_metre_carre (
+    id SERIAL PRIMARY KEY,
+    prix DECIMAL(15,2) NOT NULL
+);
+
+-- Insertion d'un prix par défaut
+INSERT INTO prix_metre_carre (prix) VALUES (50000.00);
+
+-- ===========================================
 -- INDEX POUR PERFORMANCE
 -- ===========================================
 CREATE INDEX idx_signalements_status ON signalements(status);
 CREATE INDEX idx_signalements_coords ON signalements(latitude, longitude);
 CREATE INDEX idx_users_email ON users(email);
 CREATE INDEX idx_sessions_token ON sessions(token);
+CREATE INDEX idx_niveau_signalement_id_signalement ON niveau_signalement(id_signalement);

@@ -69,7 +69,7 @@ export const useAuthStore = defineStore('auth', () => {
 
     // 2. Vérifier si le compte est bloqué
     if (userData.isBlocked) {
-      throw new AccountBlockedError('🔒 Ce compte est bloqué. Veuillez contacter l\'administrateur.')
+      throw new AccountBlockedError('Ce compte est bloqué. Veuillez contacter l\'administrateur.')
     }
 
     // 3. Récupérer la configuration max_attempts
@@ -116,12 +116,12 @@ export const useAuthStore = defineStore('auth', () => {
         if (newFailedAttempts >= maxAttempts) {
           await firebaseService.blockUserInFirestore(userData.postgresId)
           throw new AccountBlockedError(
-            `🔒 Compte bloqué après ${maxAttempts} tentatives échouées. Contactez l'administrateur.`
+            `Compte bloqué après ${maxAttempts} tentatives échouées. Contactez l'administrateur.`
           )
         } else {
           const remaining = maxAttempts - newFailedAttempts
           throw new Error(
-            `Mot de passe incorrect.\n⚠️ ${remaining} tentative(s) restante(s) avant blocage.`
+            `Mot de passe incorrect. ${remaining} tentative(s) restante(s) avant blocage.`
           )
         }
       }

@@ -79,9 +79,9 @@ const VisitorPage = () => {
 
   const getStatusLabel = (status: string) => {
     switch (status) {
-      case 'NOUVEAU': return '🔴 Nouveau';
-      case 'EN_COURS': return '🟠 En cours';
-      case 'TERMINE': return '🟢 Terminé';
+      case 'NOUVEAU': return 'Nouveau';
+      case 'EN_COURS': return 'En cours';
+      case 'TERMINE': return 'Terminé';
       default: return status;
     }
   };
@@ -143,19 +143,19 @@ const VisitorPage = () => {
                       <span>{getStatusLabel(sig.status)}</span>
                     </div>
                     <div className="tooltip-row">
-                      <span>📅 {formatDate(sig)}</span>
+                      <span>{formatDate(sig)}</span>
                     </div>
                     {getSurface(sig) && (
                       <div className="tooltip-row">
-                        <span>📐 {getSurface(sig)} m²</span>
+                        <span>{getSurface(sig)} m²</span>
                       </div>
                     )}
                     <div className="tooltip-row">
-                      <span>💰 {formatBudget(sig.budget)}</span>
+                      <span>{formatBudget(sig.budget)}</span>
                     </div>
                     {sig.entreprise && (
                       <div className="tooltip-row">
-                        <span>🏢 {sig.entreprise.nom}</span>
+                        <span>{sig.entreprise.nom}</span>
                       </div>
                     )}
                   </div>
@@ -168,7 +168,7 @@ const VisitorPage = () => {
 
       {/* Légende flottante */}
       <div className="legend-panel">
-        <h3>📊 Légende</h3>
+        <h3>Légende</h3>
         <div className="legend-items">
           <div className="legend-item">
             <span className="legend-dot" style={{ backgroundColor: '#e74c3c' }}></span>
@@ -187,7 +187,7 @@ const VisitorPage = () => {
           Total: <strong>{signalements.length}</strong> signalement(s)
         </div>
         <button className="btn-refresh" onClick={() => void fetchSignalements()}>
-          🔄 Actualiser
+          Actualiser
         </button>
       </div>
     </div>

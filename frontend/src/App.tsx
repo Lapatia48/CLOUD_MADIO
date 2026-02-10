@@ -5,6 +5,7 @@ import BlockedUsersPage from './pages/BlockedUsersPage'
 import RegisterPage from './pages/RegisterPage'
 import SignalementCreatePage from './pages/SignalementCreatePage'
 import SignalementDetailPage from './pages/SignalementDetailPage'
+import SignalementPhotosNiveauPage from './pages/SignalementPhotosNiveauPage'
 import MainDashboard from './pages/MainDashboard'
 import UserManagementPage from './pages/UserManagementPage'
 import LandingPage from './pages/LandingPage'
@@ -13,6 +14,7 @@ import VisitorPage from './pages/VisitorPage'
 import AccountManagementPage from './pages/AccountManagementPage'
 import ManageAccountsPage from './pages/ManageAccountsPage'
 import ConfigurationPage from './pages/ConfigurationPage'
+import PrixM2ConfigPage from './pages/PrixM2ConfigPage'
 
 function App() {
   return (
@@ -42,10 +44,14 @@ function App() {
       <Route path="/accounts/manage" element={<ManageAccountsPage />} />
       <Route path="/accounts/configuration" element={<ConfigurationPage />} />
 
+      {/* Config prix m2 */}
+      <Route path="/prix-m2" element={<PrixM2ConfigPage />} />
+
       {/* Routes Manager - signalements */}
       <Route element={<ProtectedRoute allowedRoles={['ADMIN', 'MANAGER']} />}>
         <Route path="/signalement/new" element={<SignalementCreatePage />} />
         <Route path="/signalement/:id" element={<SignalementDetailPage />} />
+        <Route path="/signalement/:id/photos-niveau" element={<SignalementPhotosNiveauPage />} />
       </Route>
 
       {/* Routes Admin */}

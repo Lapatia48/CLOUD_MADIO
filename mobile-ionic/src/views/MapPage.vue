@@ -6,9 +6,9 @@
         <ion-buttons slot="start">
           <ion-back-button default-href="/home" />
         </ion-buttons>
-        <ion-title>📋 Mes Signalements</ion-title>
+        <ion-title>Mes Signalements</ion-title>
         <ion-chip slot="end" :color="isOffline ? 'danger' : 'success'" class="status-chip">
-          {{ isOffline ? '🔴' : '🟢' }}
+          {{ isOffline ? 'Off' : 'On' }}
         </ion-chip>
       </ion-toolbar>
     </ion-header>
@@ -24,8 +24,12 @@
             <div class="avatar-text">{{ userInitial }}</div>
           </ion-avatar>
           <div class="user-info-mini">
-            <strong>{{ userName }}</strong>
-            <span class="badge">{{ signalements.length }} signalement(s)</span>
+            <strong>{{ userDisplayName }}</strong>
+            <span class="user-email">{{ userEmail }}</span>
+            <span class="badge">
+              <span class="role-tag">{{ userRole }}</span>
+              · {{ signalements.length }} signalement(s)
+            </span>
           </div>
           <ion-button fill="clear" color="danger" size="small" @click="handleLogout">
             <ion-icon :icon="logOutOutline" />
@@ -36,15 +40,15 @@
         <div class="stats-floating">
           <div class="stat-item nouveau">
             <span class="num">{{ statsNouveau }}</span>
-            <span class="label">🔴</span>
+            <span class="label dot-label nouveau-dot"></span>
           </div>
           <div class="stat-item en-cours">
             <span class="num">{{ statsEnCours }}</span>
-            <span class="label">🟠</span>
+            <span class="label dot-label encours-dot"></span>
           </div>
           <div class="stat-item termine">
             <span class="num">{{ statsTermine }}</span>
-            <span class="label">🟢</span>
+            <span class="label dot-label termine-dot"></span>
           </div>
         </div>
       </div>
@@ -52,7 +56,7 @@
       <!-- Liste des signalements (scrollable) -->
       <div class="list-section">
         <div class="list-header">
-          <h3>📋 Mes signalements ({{ signalements.length }})</h3>
+          <h3>Mes signalements ({{ signalements.length }})</h3>
           <ion-button fill="clear" size="small" @click="refreshSignalements" :disabled="isLoading">
             <ion-icon :icon="refreshOutline" :class="{ 'spin': isLoading }"></ion-icon>
           </ion-button>
@@ -69,7 +73,7 @@
                 • {{ formatDate(sig.dateSignalement) }}
               </p>
               <p v-if="sig.entrepriseNom" class="entreprise-info">
-                🏢 {{ sig.entrepriseNom }}
+                {{ sig.entrepriseNom }}
               </p>
             </ion-label>
             <!-- Barre d'avancement mini -->
@@ -123,13 +127,19 @@ const isOffline = ref(!navigator.onLine)
 const isLoading = ref(false)
 const signalements = ref<MySignalement[]>([])
 
-// User info
-const userName = computed(() => {
-  const email = localStorage.getItem('userEmail')
-  return email?.split('@')[0] || 'Utilisateur'
+// User info depuis authStore (Firebase)
+const userDisplayName = computed(() => {
+  const u = authStore.user
+  if (u && (u.nom || u.prenom)) {
+    return `${u.prenom} ${u.nom}`.trim()
+  }
+  return u?.email?.split('@')[0] || 'Utilisateur'
 })
 
-const userInitial = computed(() => userName.value.charAt(0).toUpperCase())
+const userEmail = computed(() => authStore.user?.email || localStorage.getItem('userEmail') || '')
+const userRole = computed(() => authStore.user?.role || localStorage.getItem('userRole') || 'USER')
+const userInitial = computed(() => userDisplayName.value.charAt(0).toUpperCase())
+const userFirebaseUid = computed(() => authStore.user?.firebaseUid || localStorage.getItem('firebaseUid') || '')
 
 // Stats
 const statsNouveau = computed(() => signalements.value.filter(s => s.status === 'NOUVEAU').length)
@@ -160,9 +170,9 @@ function getStatusColor(status: string) {
 
 function getStatusLabel(status: string) {
   switch (status) {
-    case 'NOUVEAU': return '🔴 Nouveau'
-    case 'EN_COURS': return '🟠 En cours'
-    case 'TERMINE': return '🟢 Terminé'
+    case 'NOUVEAU': return 'Nouveau'
+    case 'EN_COURS': return 'En cours'
+    case 'TERMINE': return 'Terminé'
     default: return status
   }
 }
@@ -196,22 +206,11 @@ async function refreshSignalements() {
 
 async function fetchMySignalements() {
   try {
-    // Récupérer uniquement MES signalements depuis Firebase
-    const mySignalements = await signalementFirebaseService.getMySignalements()
+    // Récupérer uniquement MES signalements depuis Firebase (filtrés par firebaseUid == utilisateur connecté)
+    const mySigs = await signalementFirebaseService.getMySignalementsWithIds()
+    signalements.value = mySigs as MySignalement[]
     
-    // Ajouter documentId (on doit récupérer avec IDs)
-    const firebaseUid = localStorage.getItem('firebaseUid')
-    if (!firebaseUid) {
-      console.warn('Pas de firebaseUid trouvé')
-      signalements.value = []
-      return
-    }
-    
-    // Utiliser getAllSignalements et filtrer par firebaseUid de l'utilisateur
-    const allSigs = await signalementFirebaseService.getAllSignalements()
-    signalements.value = allSigs.filter(s => s.firebaseUid === firebaseUid) as MySignalement[]
-    
-    console.log('Mes signalements Firebase:', signalements.value.length)
+    console.log(`Signalements Firebase pour uid=${userFirebaseUid.value}:`, signalements.value.length)
     addMarkersToMap()
   } catch (e) {
     console.error('Erreur chargement mes signalements:', e)
@@ -246,7 +245,7 @@ function addMarkersToMap() {
         : ''
       
       const entrepriseInfo = s.entrepriseNom 
-        ? `<br><small>🏢 ${s.entrepriseNom}</small>` 
+        ? `<br><small>${s.entrepriseNom}</small>` 
         : ''
       
       const tooltipContent = `
@@ -255,7 +254,7 @@ function addMarkersToMap() {
           <br><span style="color: ${getStatusColor(s.status)}">${getStatusLabel(s.status)}</span>
           ${avancementBar}
           ${entrepriseInfo}
-          <br><small>📅 ${formatDate(s.dateSignalement)}</small>
+          <br><small>${formatDate(s.dateSignalement)}</small>
         </div>
       `
       
@@ -308,6 +307,7 @@ onUnmounted(() => {
   --padding-end: 0;
   --padding-top: 0;
   --padding-bottom: 0;
+  --background: #f0f4f8;
 }
 
 .status-chip {
@@ -315,12 +315,14 @@ onUnmounted(() => {
   font-size: 0.7rem;
 }
 
-/* Section carte */
+/* ===== Layout principal : carte à gauche, liste à droite ===== */
 .map-section {
-  position: relative;
-  width: 100%;
-  height: 45vh;
-  min-height: 280px;
+  position: fixed;
+  top: 56px;
+  left: 0;
+  bottom: 0;
+  width: 50%;
+  z-index: 1;
 }
 
 .map-fullscreen {
@@ -328,26 +330,27 @@ onUnmounted(() => {
   height: 100%;
 }
 
-/* User info flottant */
+/* User info flottant - web style */
 .user-floating {
   position: absolute;
   top: 10px;
   left: 10px;
   right: 10px;
-  background: rgba(255, 255, 255, 0.95);
+  background: rgba(255, 255, 255, 0.96);
   border-radius: 12px;
   padding: 8px 12px;
   z-index: 999;
   display: flex;
   align-items: center;
   gap: 10px;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 4px 20px rgba(27, 58, 92, 0.12);
+  border: 1px solid rgba(74, 144, 217, 0.12);
 }
 
 .user-avatar-small {
   width: 35px;
   height: 35px;
-  background: linear-gradient(135deg, #3498db, #2980b9);
+  background: linear-gradient(135deg, #4A90D9, #2E5C8A);
   flex-shrink: 0;
 }
 
@@ -370,15 +373,33 @@ onUnmounted(() => {
 
 .user-info-mini strong {
   font-size: 0.9rem;
-  color: #2c3e50;
+  color: #1B3A5C;
 }
 
 .user-info-mini .badge {
   font-size: 0.7rem;
-  color: #7f8c8d;
+  color: #5A7A9A;
+  display: flex;
+  align-items: center;
+  gap: 4px;
 }
 
-/* Stats flottants */
+.user-info-mini .user-email {
+  font-size: 0.75rem;
+  color: #5A7A9A;
+}
+
+.role-tag {
+  background: linear-gradient(135deg, #1B3A5C, #2E5C8A);
+  color: white;
+  padding: 1px 6px;
+  border-radius: 8px;
+  font-size: 0.65rem;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+/* Stats flottants - web style */
 .stats-floating {
   position: absolute;
   bottom: 10px;
@@ -389,13 +410,14 @@ onUnmounted(() => {
 }
 
 .stat-item {
-  background: rgba(255, 255, 255, 0.95);
+  background: rgba(255, 255, 255, 0.96);
   border-radius: 8px;
   padding: 6px 12px;
   display: flex;
   align-items: center;
   gap: 4px;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 2px 10px rgba(27, 58, 92, 0.1);
+  border: 1px solid rgba(74, 144, 217, 0.12);
 }
 
 .stat-item .num {
@@ -407,28 +429,57 @@ onUnmounted(() => {
   font-size: 0.8rem;
 }
 
+/* Colored dots replacing emojis in stats */
+.dot-label::before {
+  content: '';
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  margin-right: 4px;
+  vertical-align: middle;
+}
+.nouveau-dot::before { background: #e74c3c; }
+.encours-dot::before { background: #f39c12; }
+.termine-dot::before { background: #27ae60; }
+
 .stat-item.nouveau .num { color: #e74c3c; }
 .stat-item.en-cours .num { color: #f39c12; }
 .stat-item.termine .num { color: #27ae60; }
 
-/* Section liste */
+/* ===== Section liste à droite ===== */
 .list-section {
-  background: #f5f6fa;
-  min-height: calc(55vh - 56px);
-  padding: 12px;
+  position: fixed;
+  top: 56px;
+  right: 0;
+  bottom: 0;
+  width: 50%;
+  background: #FFFFFF;
+  border-left: 1px solid rgba(74, 144, 217, 0.12);
+  overflow-y: auto;
+  padding: 16px;
+  padding-bottom: 80px;
+  z-index: 1;
 }
 
 .list-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 8px;
+  margin-bottom: 12px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid rgba(74, 144, 217, 0.12);
 }
 
 .list-header h3 {
   margin: 0;
   font-size: 1rem;
-  color: #2c3e50;
+  color: #1B3A5C;
+  font-weight: 600;
+}
+
+.list-header ion-button {
+  --color: #4A90D9;
 }
 
 .signalements-list {
@@ -438,10 +489,28 @@ onUnmounted(() => {
 }
 
 .signalements-list ion-item {
-  --background: white;
-  --border-radius: 8px;
+  --background: #F5EFE6;
+  --color: #1B3A5C;
+  --border-radius: 10px;
   margin-bottom: 8px;
   --padding-start: 12px;
+  --border-color: rgba(74, 144, 217, 0.08);
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 8px rgba(27, 58, 92, 0.05);
+}
+
+.signalements-list ion-item:hover {
+  --background: #EDE7DB;
+  box-shadow: 0 4px 12px rgba(27, 58, 92, 0.08);
+}
+
+.signalements-list ion-item ion-label h3 {
+  color: #1B3A5C;
+  font-weight: 600;
+}
+
+.signalements-list ion-item ion-label p {
+  color: #5A7A9A;
 }
 
 .status-dot {
@@ -449,30 +518,31 @@ onUnmounted(() => {
   height: 14px;
   border-radius: 50%;
   margin-right: 8px;
-  border: 2px solid white;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+  border: 2px solid #FFFFFF;
+  box-shadow: 0 1px 4px rgba(27, 58, 92, 0.2);
 }
 
 .empty-state {
   text-align: center;
   padding: 40px 20px;
-  color: #7f8c8d;
+  color: #5A7A9A;
 }
 
 .empty-icon {
   font-size: 60px;
   margin-bottom: 16px;
-  color: #bdc3c7;
+  color: #8DA4B8;
 }
 
 .empty-state p {
   margin-bottom: 16px;
+  color: #5A7A9A;
 }
 
 /* Info entreprise */
 .entreprise-info {
   font-size: 0.8rem !important;
-  color: #3498db !important;
+  color: #4A90D9 !important;
   margin-top: 4px !important;
 }
 
@@ -484,7 +554,7 @@ onUnmounted(() => {
 .progress-bar-mini {
   width: 100%;
   height: 6px;
-  background: #ecf0f1;
+  background: rgba(74, 144, 217, 0.1);
   border-radius: 3px;
   overflow: hidden;
 }
@@ -493,6 +563,21 @@ onUnmounted(() => {
   height: 100%;
   border-radius: 3px;
   transition: width 0.3s ease;
+}
+
+/* ===== FAB bouton Ajouter en bas au centre ===== */
+ion-fab {
+  left: 50% !important;
+  transform: translateX(-50%);
+  right: auto !important;
+  bottom: 16px !important;
+}
+
+ion-fab-button {
+  --background: linear-gradient(135deg, #1B3A5C, #2E5C8A);
+  --box-shadow: 0 4px 18px rgba(27, 58, 92, 0.3);
+  width: 56px;
+  height: 56px;
 }
 
 /* Animation spin */
@@ -505,21 +590,49 @@ onUnmounted(() => {
   to { transform: rotate(360deg); }
 }
 
-/* Responsive landscape */
-@media (orientation: landscape) {
+/* ===== Responsive ===== */
+
+/* Tablette paysage - plus d'espace pour la carte */
+@media (min-width: 900px) {
   .map-section {
-    height: 60vh;
+    width: 55%;
+  }
+  .list-section {
+    width: 45%;
+  }
+}
+
+/* Mobile portrait - empiler verticalement */
+@media (max-width: 600px) {
+  .map-section {
+    position: relative;
+    top: auto;
+    left: auto;
+    width: 100%;
+    height: 40vh;
+    min-height: 250px;
   }
   
   .list-section {
-    min-height: 40vh;
+    position: relative;
+    top: auto;
+    right: auto;
+    width: 100%;
+    min-height: calc(60vh - 56px);
+    padding-bottom: 90px;
+  }
+  
+  ion-fab {
+    left: auto !important;
+    right: 16px !important;
+    transform: none;
   }
 }
 
 /* Petit écran */
 @media (max-height: 600px) {
   .map-section {
-    height: 40vh;
+    height: 35vh;
     min-height: 200px;
   }
 }

@@ -3,9 +3,9 @@
   <ion-page>
     <ion-header>
       <ion-toolbar color="primary">
-        <ion-title>🛣️ MADIO</ion-title>
+        <ion-title>MADIO</ion-title>
         <ion-chip slot="end" :color="isOffline ? 'danger' : 'success'" class="status-chip">
-          {{ isOffline ? '🔴 Offline' : '🟢 Online' }}
+          {{ isOffline ? 'Offline' : 'Online' }}
         </ion-chip>
       </ion-toolbar>
     </ion-header>
@@ -15,13 +15,13 @@
       <div v-if="!isAuthenticated" class="guest-overlay">
         <ion-card class="welcome-card">
           <ion-card-header>
-            <ion-card-title>👋 Bienvenue sur MADIO !</ion-card-title>
+            <ion-card-title>Bienvenue sur MADIO</ion-card-title>
             <ion-card-subtitle>Gestion des routes d'Antananarivo</ion-card-subtitle>
           </ion-card-header>
           <ion-card-content>
             <p>Connectez-vous pour signaler et suivre les problèmes routiers.</p>
             <div v-if="!isOnline" class="offline-warning">
-              🔴 Connexion Internet requise pour se connecter
+              Connexion Internet requise pour se connecter
             </div>
             <div class="action-buttons">
               <ion-button expand="block" router-link="/login" :disabled="!isOnline">
@@ -29,7 +29,7 @@
                 Se connecter
               </ion-button>
             </div>
-            <p class="info-hint">💡 Les comptes sont créés par les managers via l'app web</p>
+            <p class="info-hint">Les comptes sont créés par les managers via l'app web</p>
           </ion-card-content>
         </ion-card>
       </div>
@@ -40,7 +40,7 @@
         
         <!-- Légende flottante -->
         <div class="legend-floating">
-          <div class="legend-title">📊 Signalements</div>
+          <div class="legend-title">Signalements</div>
           <div class="legend-item">
             <span class="dot" style="background: #e74c3c;"></span>
             <span>Nouveaux ({{ statsNouveau }})</span>
@@ -190,9 +190,9 @@ function getStatusColor(status: string) {
 
 function getStatusLabel(status: string) {
   switch (status) {
-    case 'NOUVEAU': return '🔴 Nouveau'
-    case 'EN_COURS': return '🟠 En cours'
-    case 'TERMINE': return '🟢 Terminé'
+    case 'NOUVEAU': return 'Nouveau'
+    case 'EN_COURS': return 'En cours'
+    case 'TERMINE': return 'Terminé'
     default: return status
   }
 }
@@ -248,8 +248,8 @@ function addMarkersToMap() {
         <div style="min-width: 150px;">
           <strong>${s.description?.slice(0, 30) || 'Signalement'}</strong>
           <br><span style="color: ${getStatusColor(s.status)}">${getStatusLabel(s.status)}</span>
-          <br><small>📅 ${s.dateSignalement ? new Date(s.dateSignalement).toLocaleDateString('fr-FR') : 'N/A'}</small>
-          ${s.userEmail ? `<br><small>👤 ${s.userEmail}</small>` : ''}
+          <br><small>${s.dateSignalement ? new Date(s.dateSignalement).toLocaleDateString('fr-FR') : 'N/A'}</small>
+          ${s.userEmail ? `<br><small>${s.userEmail}</small>` : ''}
         </div>
       `
       
@@ -309,11 +309,12 @@ onUnmounted(() => {
   font-size: 0.75rem;
 }
 
-/* Carte plein écran */
+/* Carte plein écran - ajustée pour sidebar gauche */
 .map-fullscreen {
   position: relative;
-  width: 100%;
-  height: calc(100vh - 56px - 70px); /* header + bottom actions */
+  width: calc(100% - 200px);
+  height: calc(100vh - 56px);
+  margin-left: 200px;
 }
 
 .map-container {
@@ -327,31 +328,37 @@ onUnmounted(() => {
   top: 0;
   left: 0;
   right: 0;
-  bottom: 70px;
+  bottom: 0;
   z-index: 1000;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: rgba(0, 0, 0, 0.6);
+  background: rgba(27, 58, 92, 0.7);
   backdrop-filter: blur(5px);
 }
 
 .welcome-card {
-  max-width: 350px;
+  max-width: 380px;
   margin: 16px;
-  background: linear-gradient(135deg, #2c3e50, #34495e);
-  color: white;
+  background: #FFFFFF;
+  color: #1B3A5C;
   border-radius: 16px;
+  border: 1px solid rgba(74, 144, 217, 0.12);
+  box-shadow: 0 8px 32px rgba(27, 58, 92, 0.15);
 }
 
-.welcome-card ion-card-title,
+.welcome-card ion-card-title {
+  color: #1B3A5C;
+  font-weight: 700;
+}
+
 .welcome-card ion-card-subtitle {
-  color: white;
+  color: #5A7A9A;
 }
 
 .welcome-card p {
   margin: 16px 0;
-  opacity: 0.9;
+  color: #5A7A9A;
 }
 
 .action-buttons {
@@ -369,19 +376,20 @@ onUnmounted(() => {
   position: absolute;
   top: 10px;
   left: 10px;
-  background: rgba(255, 255, 255, 0.95);
+  background: rgba(255, 255, 255, 0.96);
   border-radius: 12px;
-  padding: 12px;
+  padding: 12px 14px;
   z-index: 999;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
-  min-width: 140px;
+  box-shadow: 0 4px 20px rgba(27, 58, 92, 0.12);
+  min-width: 150px;
+  border: 1px solid rgba(74, 144, 217, 0.12);
 }
 
 .legend-title {
-  font-weight: bold;
+  font-weight: 600;
   margin-bottom: 8px;
   font-size: 0.9rem;
-  color: #2c3e50;
+  color: #1B3A5C;
 }
 
 .legend-item {
@@ -390,7 +398,7 @@ onUnmounted(() => {
   gap: 8px;
   font-size: 0.8rem;
   margin: 4px 0;
-  color: #34495e;
+  color: #5A7A9A;
 }
 
 .legend-item .dot {
@@ -404,10 +412,10 @@ onUnmounted(() => {
 .legend-total {
   margin-top: 8px;
   padding-top: 8px;
-  border-top: 1px solid #eee;
-  font-weight: bold;
+  border-top: 1px solid rgba(74, 144, 217, 0.12);
+  font-weight: 600;
   font-size: 0.85rem;
-  color: #2c3e50;
+  color: #1B3A5C;
 }
 
 /* User card flottante */
@@ -415,20 +423,21 @@ onUnmounted(() => {
   position: absolute;
   top: 10px;
   right: 10px;
-  background: rgba(255, 255, 255, 0.95);
+  background: rgba(255, 255, 255, 0.96);
   border-radius: 25px;
   padding: 8px 14px 8px 8px;
   z-index: 999;
   display: flex;
   align-items: center;
   gap: 10px;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 4px 20px rgba(27, 58, 92, 0.12);
+  border: 1px solid rgba(74, 144, 217, 0.12);
 }
 
 .user-avatar-small {
   width: 35px;
   height: 35px;
-  background: linear-gradient(135deg, #3498db, #2980b9);
+  background: linear-gradient(135deg, #4A90D9, #2E5C8A);
 }
 
 .avatar-text {
@@ -449,43 +458,58 @@ onUnmounted(() => {
 
 .user-info-mini strong {
   font-size: 0.85rem;
-  color: #2c3e50;
+  color: #1B3A5C;
 }
 
 .role-badge {
   font-size: 0.65rem;
-  color: #3498db;
+  color: #4A90D9;
   font-weight: 600;
 }
 
-/* Bottom actions bar */
+/* Sidebar actions gauche - style web */
 .bottom-actions {
   position: fixed;
-  bottom: 0;
+  top: 56px;
   left: 0;
-  right: 0;
+  bottom: 0;
+  width: 200px;
   display: flex;
-  gap: 8px;
-  padding: 10px;
-  background: linear-gradient(135deg, #2c3e50, #34495e);
+  flex-direction: column;
+  align-items: stretch;
+  gap: 6px;
+  padding: 20px 14px;
+  background: #FFFFFF;
+  border-right: 1px solid rgba(74, 144, 217, 0.12);
   z-index: 1000;
+  box-shadow: 4px 0 20px rgba(27, 58, 92, 0.08);
 }
 
 .action-btn {
-  flex: 1;
-  --border-radius: 8px;
-  font-size: 0.75rem;
+  width: 100%;
+  height: 48px;
+  --border-radius: 10px;
+  font-size: 0.85rem;
+  font-weight: 500;
   margin: 0;
+  --padding-start: 14px;
+  --padding-end: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  text-align: left;
+  letter-spacing: -0.01em;
 }
 
 .action-btn ion-icon {
-  font-size: 1rem;
+  font-size: 1.15rem;
+  margin-right: 8px;
 }
 
 /* FAB refresh */
 .refresh-fab {
-  margin-bottom: 80px;
-  margin-left: 10px;
+  margin-bottom: 20px;
+  margin-left: 210px;
 }
 
 .spin {
@@ -501,11 +525,6 @@ onUnmounted(() => {
 @media (orientation: landscape) {
   .map-fullscreen {
     height: calc(100vh - 56px);
-  }
-  
-  .bottom-actions {
-    flex-direction: row;
-    padding: 8px 16px;
   }
 }
 
@@ -527,13 +546,35 @@ onUnmounted(() => {
   }
 }
 
+/* Petit écran mobile - sidebar plus compacte */
+@media (max-width: 500px) {
+  .bottom-actions {
+    width: 160px;
+    padding: 16px 10px;
+  }
+  
+  .action-btn {
+    height: 44px;
+    font-size: 0.8rem;
+  }
+  
+  .map-fullscreen {
+    width: calc(100% - 160px);
+    margin-left: 160px;
+  }
+  
+  .refresh-fab {
+    margin-left: 168px;
+  }
+}
+
 /* Alerte offline et info */
 .offline-warning {
-  background: #fff3cd;
-  border: 1px solid #ffc107;
-  color: #856404;
+  background: #FFF8E1;
+  border: 1px solid #E6943A;
+  color: #8B6914;
   padding: 10px 14px;
-  border-radius: 8px;
+  border-radius: 10px;
   margin-bottom: 12px;
   text-align: center;
   font-size: 0.85rem;
@@ -541,7 +582,7 @@ onUnmounted(() => {
 
 .info-hint {
   text-align: center;
-  color: #6c757d;
+  color: #5A7A9A;
   font-size: 0.8rem;
   margin-top: 12px;
   font-style: italic;

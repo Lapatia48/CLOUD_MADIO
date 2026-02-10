@@ -50,7 +50,7 @@ const MapPage = () => {
         justifyContent: 'space-between',
         alignItems: 'center'
       }}>
-        <h1 style={{ margin: 0, fontSize: '1.5rem' }}>🗺️ Carte d'Antananarivo</h1>
+        <h1 style={{ margin: 0, fontSize: '1.5rem' }}>Carte d'Antananarivo</h1>
         <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
           {user && <span>Bonjour, {user.email}</span>}
           <button 
@@ -110,7 +110,7 @@ const MapPage = () => {
           Utiliser serveur de tuiles local (offline)
         </label>
         <span style={{ color: '#6c757d', fontSize: '0.9rem' }}>
-          📍 Centre: Antananarivo, Madagascar
+          Centre : Antananarivo, Madagascar
         </span>
       </div>
 
