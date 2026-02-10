@@ -5,6 +5,7 @@ import BlockedUsersPage from './pages/BlockedUsersPage'
 import RegisterPage from './pages/RegisterPage'
 import SignalementCreatePage from './pages/SignalementCreatePage'
 import SignalementDetailPage from './pages/SignalementDetailPage'
+import SignalementPhotosNiveauPage from './pages/SignalementPhotosNiveauPage'
 import MainDashboard from './pages/MainDashboard'
 import UserManagementPage from './pages/UserManagementPage'
 import LandingPage from './pages/LandingPage'
@@ -46,6 +47,7 @@ function App() {
       <Route element={<ProtectedRoute allowedRoles={['ADMIN', 'MANAGER']} />}>
         <Route path="/signalement/new" element={<SignalementCreatePage />} />
         <Route path="/signalement/:id" element={<SignalementDetailPage />} />
+        <Route path="/signalement/:id/photos-niveau" element={<SignalementPhotosNiveauPage />} />
       </Route>
 
       {/* Routes Admin */}
