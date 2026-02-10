@@ -711,6 +711,51 @@ tbody tr.blocked-row {
 
 .actions .btn-danger:hover { background: var(--rouge); color: var(--blanc); }
 
+/* Sidebar nav links - clean button list */
+.sidebar-nav-links {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  margin-bottom: 1.5rem;
+}
+
+.sidebar-nav-links .btn {
+  padding: 0.75rem 1rem;
+  border: none;
+  border-radius: var(--radius-sm);
+  font-weight: 600;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: var(--transition);
+  text-align: left;
+}
+
+.sidebar-nav-links .btn-firebase {
+  background: linear-gradient(135deg, var(--bleu-clair) 0%, var(--bleu-pale) 100%);
+  color: var(--blanc);
+}
+
+.sidebar-nav-links .btn-firebase:hover {
+  background: linear-gradient(135deg, var(--bleu-pale) 0%, #9BCBED 100%);
+  transform: translateY(-1px);
+}
+
+.sidebar-nav-links .btn-outline {
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--blanc);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.sidebar-nav-links .btn-outline:hover { background: rgba(255, 255, 255, 0.15); }
+
+.sidebar-nav-links .btn-admin {
+  background: rgba(255, 255, 255, 0.06);
+  color: rgba(255, 255, 255, 0.85);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+.sidebar-nav-links .btn-admin:hover { background: rgba(255, 255, 255, 0.12); color: var(--blanc); }
+
 .stats-section { margin-bottom: 1.5rem; }
 .stats-section h3 { font-size: 0.95rem; margin-bottom: 0.75rem; color: rgba(255, 255, 255, 0.75); }
 

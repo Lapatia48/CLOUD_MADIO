@@ -14,6 +14,7 @@ import VisitorPage from './pages/VisitorPage'
 import AccountManagementPage from './pages/AccountManagementPage'
 import ManageAccountsPage from './pages/ManageAccountsPage'
 import ConfigurationPage from './pages/ConfigurationPage'
+import PrixM2ConfigPage from './pages/PrixM2ConfigPage'
 
 function App() {
   return (
@@ -42,6 +43,9 @@ function App() {
       <Route path="/accounts/create" element={<RegisterPage />} />
       <Route path="/accounts/manage" element={<ManageAccountsPage />} />
       <Route path="/accounts/configuration" element={<ConfigurationPage />} />
+
+      {/* Config prix m2 */}
+      <Route path="/prix-m2" element={<PrixM2ConfigPage />} />
 
       {/* Routes Manager - signalements */}
       <Route element={<ProtectedRoute allowedRoles={['ADMIN', 'MANAGER']} />}>

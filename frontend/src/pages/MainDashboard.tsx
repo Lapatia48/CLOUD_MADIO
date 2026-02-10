@@ -231,11 +231,10 @@ const MainDashboard = () => {
 
       <div className="sidebar">
         <div className="sidebar-header">
-          <h1>🛣️ MADIO</h1>
+          <h1>MADIO</h1>
           <p>Gestion des routes</p>
         </div>
 
-        {/* Infos Manager connecté */}
         {manager && (
           <div className="manager-info">
             <div className="manager-avatar"></div>
@@ -243,52 +242,41 @@ const MainDashboard = () => {
               <strong>{manager.nom || manager.email}</strong>
               <small>Manager</small>
             </div>
-            <button className="btn-logout" onClick={handleLogout} title="Se déconnecter">
-              
+            <button className="btn-logout" onClick={handleLogout} title="Se deconnecter">
+              Quitter
             </button>
           </div>
         )}
 
-        {/* Message de synchronisation */}
         {syncMessage && (
-          <div className={`sync-message ${syncMessage.type}`}>
+          <div className={'sync-message ' + syncMessage.type}>
             {syncMessage.text}
-            <button className="close-btn" onClick={() => setSyncMessage(null)}>×</button>
+            <button className="close-btn" onClick={() => setSyncMessage(null)}>x</button>
           </div>
         )}
 
-        {/* Section principale - Gestionnaire */}
-        <div className="manager-card">
-          <div className="manager-icon"></div>
-          <p>Synchronisation Firebase</p>
-          <small>Importez les signalements depuis l'application mobile</small>
-        </div>
-
-        {/* Actions */}
-        <div className="actions">
-          {/* Bouton principal - Sync Firebase */}
+        <nav className="sidebar-nav-links">
           <button 
             className="btn btn-firebase" 
             onClick={() => void syncFromFirebase()}
             disabled={syncingFirebase}
           >
-            {syncingFirebase ? 'Synchronisation...' : 'Synchroniser Firebase → PostgreSQL'}
+            {syncingFirebase ? 'Synchronisation...' : 'Importer depuis Firebase'}
           </button>
 
-
-
-          {/* Gestion des comptes (menu complet) */}
           <button className="btn btn-outline" onClick={() => navigate('/accounts')}>
             Gestion des comptes
           </button>
 
-          {/* Accès Admin */}
+          <button className="btn btn-outline" onClick={() => navigate('/prix-m2')}>
+            Configurer prix m2
+          </button>
+
           <button className="btn btn-admin" onClick={() => navigate('/admin')}>
             Dashboard Admin
           </button>
-        </div>
+        </nav>
 
-        {/* Stats signalements */}
         <div className="stats-section">
           <h3>Statistiques</h3>
           <div className="stats-grid">
@@ -306,24 +294,23 @@ const MainDashboard = () => {
             </div>
             <div className="stat-item termine">
               <span className="stat-num">{signalements.filter(s => s.status === 'TERMINE').length}</span>
-              <span className="stat-label">Terminés</span>
+              <span className="stat-label">Termines</span>
             </div>
           </div>
         </div>
 
-        {/* Liste signalements */}
         <div className="signalements-list">
-          <h3>Signalements récents ({signalements.length})</h3>
+          <h3>Signalements recents ({signalements.length})</h3>
           {signalements.length === 0 ? (
-            <p className="empty">Aucun signalement. Cliquez sur "Synchroniser Firebase" pour importer.</p>
+            <p className="empty">Aucun signalement.</p>
           ) : (
             <ul>
               {signalements.slice(0, 10).map((sig) => (
-                <li key={sig.id} onClick={() => navigate(`/signalement/${sig.id}`)}>
+                <li key={sig.id} onClick={() => navigate('/signalement/' + sig.id)}>
                   <span className="status-dot" style={{ backgroundColor: getStatusColor(sig.status) }} />
                   <div>
                     <strong>{sig.description?.slice(0, 25) || 'Signalement'}...</strong>
-                    <small>{formatDate(sig)} {sig.entreprise ? `• ${sig.entreprise.nom}` : ''}</small>
+                    <small>{formatDate(sig)} {sig.entreprise ? '- ' + sig.entreprise.nom : ''}</small>
                   </div>
                 </li>
               ))}

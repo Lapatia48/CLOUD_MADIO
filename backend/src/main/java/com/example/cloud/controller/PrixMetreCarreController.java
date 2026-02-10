@@ -29,4 +29,11 @@ public class PrixMetreCarreController {
     public ResponseEntity<PrixMetreCarreResponse> getCurrent() {
         return ResponseEntity.ok(prixMetreCarreService.getFirst());
     }
+
+    @PutMapping("/current")
+    @Operation(summary = "Mettre à jour le prix au mètre carré")
+    public ResponseEntity<PrixMetreCarreResponse> updateCurrent(@RequestBody java.util.Map<String, Object> body) {
+        java.math.BigDecimal newPrix = new java.math.BigDecimal(body.get("prix").toString());
+        return ResponseEntity.ok(prixMetreCarreService.updateFirst(newPrix));
+    }
 }

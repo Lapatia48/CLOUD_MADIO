@@ -30,6 +30,17 @@ public class PrixMetreCarreService {
         return mapToResponse(all.get(0));
     }
 
+    public PrixMetreCarreResponse updateFirst(java.math.BigDecimal newPrix) {
+        List<PrixMetreCarre> all = prixMetreCarreRepository.findAll();
+        if (all.isEmpty()) {
+            throw new RuntimeException("Aucun prix au mètre carré configuré");
+        }
+        PrixMetreCarre entity = all.get(0);
+        entity.setPrix(newPrix);
+        prixMetreCarreRepository.save(entity);
+        return mapToResponse(entity);
+    }
+
     private PrixMetreCarreResponse mapToResponse(PrixMetreCarre prix) {
         return PrixMetreCarreResponse.builder()
                 .id(prix.getId())
