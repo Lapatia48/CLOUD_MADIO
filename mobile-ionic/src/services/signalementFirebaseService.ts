@@ -234,6 +234,8 @@ class SignalementFirebaseService {
       return []
     }
 
+    console.log('Fetching signalements for uid:', currentUser.uid)
+
     try {
       const response = await axios.post(
         `${FIRESTORE_URL}:runQuery`,
@@ -247,16 +249,16 @@ class SignalementFirebaseService {
                 value: { stringValue: currentUser.uid },
               },
             },
-            orderBy: [
-              { field: { fieldPath: 'dateSignalement' }, direction: 'DESCENDING' }
-            ],
           },
         }
       )
 
-      return this.parseSignalementsListWithIds(response.data)
-    } catch (error) {
-      console.error('Erreur récupération mes signalements avec IDs:', error)
+      const results = this.parseSignalementsListWithIds(response.data)
+      // Tri côté client (desc par date)
+      results.sort((a, b) => new Date(b.dateSignalement).getTime() - new Date(a.dateSignalement).getTime())
+      return results
+    } catch (error: any) {
+      console.error('Erreur récupération mes signalements avec IDs:', error?.response?.data || error)
       return []
     }
   }

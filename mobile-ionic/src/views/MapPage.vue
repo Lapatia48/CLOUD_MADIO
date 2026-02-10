@@ -24,8 +24,12 @@
             <div class="avatar-text">{{ userInitial }}</div>
           </ion-avatar>
           <div class="user-info-mini">
-            <strong>{{ userName }}</strong>
-            <span class="badge">{{ signalements.length }} signalement(s)</span>
+            <strong>{{ userDisplayName }}</strong>
+            <span class="user-email">{{ userEmail }}</span>
+            <span class="badge">
+              <span class="role-tag">{{ userRole }}</span>
+              · {{ signalements.length }} signalement(s)
+            </span>
           </div>
           <ion-button fill="clear" color="danger" size="small" @click="handleLogout">
             <ion-icon :icon="logOutOutline" />
@@ -123,13 +127,19 @@ const isOffline = ref(!navigator.onLine)
 const isLoading = ref(false)
 const signalements = ref<MySignalement[]>([])
 
-// User info
-const userName = computed(() => {
-  const email = localStorage.getItem('userEmail')
-  return email?.split('@')[0] || 'Utilisateur'
+// User info depuis authStore (Firebase)
+const userDisplayName = computed(() => {
+  const u = authStore.user
+  if (u && (u.nom || u.prenom)) {
+    return `${u.prenom} ${u.nom}`.trim()
+  }
+  return u?.email?.split('@')[0] || 'Utilisateur'
 })
 
-const userInitial = computed(() => userName.value.charAt(0).toUpperCase())
+const userEmail = computed(() => authStore.user?.email || localStorage.getItem('userEmail') || '')
+const userRole = computed(() => authStore.user?.role || localStorage.getItem('userRole') || 'USER')
+const userInitial = computed(() => userDisplayName.value.charAt(0).toUpperCase())
+const userFirebaseUid = computed(() => authStore.user?.firebaseUid || localStorage.getItem('firebaseUid') || '')
 
 // Stats
 const statsNouveau = computed(() => signalements.value.filter(s => s.status === 'NOUVEAU').length)
@@ -196,11 +206,11 @@ async function refreshSignalements() {
 
 async function fetchMySignalements() {
   try {
-    // Récupérer uniquement MES signalements depuis Firebase (filtrés côté serveur par firebaseUid)
+    // Récupérer uniquement MES signalements depuis Firebase (filtrés par firebaseUid == utilisateur connecté)
     const mySigs = await signalementFirebaseService.getMySignalementsWithIds()
     signalements.value = mySigs as MySignalement[]
     
-    console.log('Mes signalements Firebase:', signalements.value.length)
+    console.log(`Signalements Firebase pour uid=${userFirebaseUid.value}:`, signalements.value.length)
     addMarkersToMap()
   } catch (e) {
     console.error('Erreur chargement mes signalements:', e)
@@ -369,6 +379,24 @@ onUnmounted(() => {
 .user-info-mini .badge {
   font-size: 0.7rem;
   color: #5A7A9A;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.user-info-mini .user-email {
+  font-size: 0.75rem;
+  color: #5A7A9A;
+}
+
+.role-tag {
+  background: linear-gradient(135deg, #1B3A5C, #2E5C8A);
+  color: white;
+  padding: 1px 6px;
+  border-radius: 8px;
+  font-size: 0.65rem;
+  font-weight: 600;
+  text-transform: uppercase;
 }
 
 /* Stats flottants - web style */
