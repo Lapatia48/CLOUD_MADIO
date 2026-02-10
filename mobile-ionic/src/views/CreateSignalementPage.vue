@@ -312,7 +312,7 @@ ion-content {
   box-shadow:
     0 8px 32px rgba(27, 58, 92, 0.3),
     0 2px 8px rgba(0, 0, 0, 0.1);
-  margin: 50px 406px 86px;
+  margin: 12px 8px 24px;
   padding: 2px 0 10px;
   animation: fadeInUp 0.5s ease forwards;
   position: relative;
@@ -684,9 +684,19 @@ ion-card-subtitle {
    RESPONSIVE
    ============================================ */
 
+/* Mobile first - petits écrans */
 @media (max-width: 400px) {
+  .form-wrapper {
+    margin: 8px 4px 16px;
+    border-radius: 12px;
+  }
+
+  .form-wrapper-header h2 {
+    font-size: 1rem;
+  }
+
   ion-card {
-    margin: 10px 10px;
+    margin: 6px 4px;
   }
 
   .photo-actions {
@@ -701,9 +711,19 @@ ion-card-subtitle {
     height: 50px;
     font-size: 0.9rem;
   }
+
+  .submit-section {
+    margin: 16px 8px 24px;
+  }
 }
 
+/* Tablettes */
 @media (min-width: 768px) {
+  .form-wrapper {
+    margin: 24px auto;
+    max-width: 600px;
+  }
+
   ion-card {
     margin: 16px auto;
     max-width: 600px;
@@ -717,6 +737,13 @@ ion-card-subtitle {
 
   .mini-map {
     height: 300px;
+  }
+}
+
+/* Desktop large */
+@media (min-width: 1200px) {
+  .form-wrapper {
+    max-width: 700px;
   }
 }
 </style>
