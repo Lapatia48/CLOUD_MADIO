@@ -78,9 +78,16 @@
           <ion-card-title>
             <ion-icon :icon="locationOutline"></ion-icon> Emplacement *
           </ion-card-title>
-          <ion-card-subtitle>Cliquez sur la carte pour sélectionner la position</ion-card-subtitle>
+          <ion-card-subtitle>Cliquez sur la carte ou utilisez votre position GPS</ion-card-subtitle>
         </ion-card-header>
         <ion-card-content class="map-card-content">
+          <div class="map-actions">
+            <ion-button expand="block" fill="outline" color="tertiary" @click="useMyPosition" :disabled="locating" class="gps-btn">
+              <ion-icon :icon="navigateOutline" slot="start"></ion-icon>
+              <ion-spinner v-if="locating" name="dots" class="gps-spinner"></ion-spinner>
+              {{ locating ? 'Localisation...' : 'Ma position' }}
+            </ion-button>
+          </div>
           <div id="create-map" class="mini-map"></div>
         </ion-card-content>
       </ion-card>
@@ -131,7 +138,7 @@ import {
   IonCard, IonCardHeader, IonCardTitle, IonCardSubtitle, IonCardContent,
   IonIcon, IonSpinner, toastController
 } from '@ionic/vue'
-import { createOutline, locationOutline, checkmarkCircleOutline, alertCircleOutline, cloudUploadOutline, cameraOutline, imageOutline, trashOutline } from 'ionicons/icons'
+import { createOutline, locationOutline, checkmarkCircleOutline, alertCircleOutline, cloudUploadOutline, cameraOutline, imageOutline, trashOutline, navigateOutline } from 'ionicons/icons'
 import { Camera, CameraResultType, CameraSource } from '@capacitor/camera'
 import L from 'leaflet'
 import signalementFirebaseService from '../services/signalementFirebaseService'
@@ -143,8 +150,10 @@ const position = ref<{ lat: number; lng: number } | null>(null)
 const photoBase64 = ref<string | null>(null)
 const loading = ref(false)
 const error = ref<string | null>(null)
+const locating = ref(false)
 
 let marker: L.Marker | null = null
+let mapInstance: L.Map | null = null
 
 // Prendre une photo avec la caméra
 async function takePhoto() {
@@ -203,21 +212,82 @@ function removePhoto() {
   photoBase64.value = null
 }
 
+// Utiliser la position GPS du téléphone/PC
+async function useMyPosition() {
+  if (!('geolocation' in navigator)) {
+    const toast = await toastController.create({
+      message: 'Géolocalisation non disponible sur cet appareil',
+      duration: 3000,
+      color: 'warning'
+    })
+    toast.present()
+    return
+  }
+
+  locating.value = true
+  error.value = null
+
+  try {
+    const pos = await new Promise<GeolocationPosition>((resolve, reject) => {
+      navigator.geolocation.getCurrentPosition(resolve, reject, {
+        enableHighAccuracy: true,
+        timeout: 15000,
+        maximumAge: 0
+      })
+    })
+
+    const lat = pos.coords.latitude
+    const lng = pos.coords.longitude
+    position.value = { lat, lng }
+
+    if (mapInstance) {
+      const latlng = L.latLng(lat, lng)
+      mapInstance.setView(latlng, 16)
+      if (marker) {
+        marker.setLatLng(latlng)
+      } else {
+        marker = L.marker(latlng).addTo(mapInstance)
+      }
+    }
+
+    const toast = await toastController.create({
+      message: 'Position GPS récupérée !',
+      duration: 2000,
+      color: 'success'
+    })
+    toast.present()
+  } catch (e: any) {
+    console.warn('Geolocation error:', e)
+    let msg = 'Impossible de récupérer votre position'
+    if (e.code === 1) msg = 'Accès à la localisation refusé. Activez le GPS dans les paramètres.'
+    else if (e.code === 3) msg = 'Délai de localisation dépassé. Réessayez.'
+    
+    const toast = await toastController.create({
+      message: msg,
+      duration: 4000,
+      color: 'danger'
+    })
+    toast.present()
+  } finally {
+    locating.value = false
+  }
+}
+
 onMounted(async () => {
   setTimeout(() => {
-    const map = L.map('create-map').setView([-18.8792, 47.5079], 13)
+    mapInstance = L.map('create-map').setView([-18.8792, 47.5079], 13)
 
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
       attribution: '&copy; OpenStreetMap'
-    }).addTo(map)
+    }).addTo(mapInstance)
 
-    map.on('click', (e: L.LeafletMouseEvent) => {
+    mapInstance.on('click', (e: L.LeafletMouseEvent) => {
       position.value = { lat: e.latlng.lat, lng: e.latlng.lng }
       error.value = null
       if (marker) {
         marker.setLatLng(e.latlng)
       } else {
-        marker = L.marker(e.latlng).addTo(map)
+        marker = L.marker(e.latlng).addTo(mapInstance!)
       }
     })
   }, 100)
@@ -520,6 +590,30 @@ ion-card-subtitle {
 
 .map-card-content {
   padding: 0;
+}
+
+.map-actions {
+  padding: 10px 12px 6px;
+}
+
+.gps-btn {
+  --border-radius: 10px;
+  --border-color: #4A90D9;
+  --color: #1B3A5C;
+  --border-width: 2px;
+  font-weight: 600;
+  height: 44px;
+  font-size: 0.85rem;
+}
+
+.gps-btn:hover {
+  --background: rgba(74, 144, 217, 0.1);
+}
+
+.gps-spinner {
+  margin-right: 8px;
+  width: 18px;
+  height: 18px;
 }
 
 .mini-map {

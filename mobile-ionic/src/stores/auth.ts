@@ -1,6 +1,7 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 import firebaseService, { type FirebaseUser, type FirestoreUserData } from '../services/firebaseService'
+import notificationService from '../services/notificationService'
 
 interface User { 
   email: string
@@ -48,6 +49,17 @@ export const useAuthStore = defineStore('auth', () => {
         isBlocked: false,
         failedAttempts: 0
       }
+      
+      // Démarrer les notifications si déjà authentifié
+      setTimeout(async () => {
+        try {
+          await notificationService.createNotificationChannel()
+          await notificationService.initialize()
+          console.log('NotificationService démarré (session restaurée)')
+        } catch (e) {
+          console.warn('Erreur démarrage notifications auto:', e)
+        }
+      }, 3000)
     }
   }
 
@@ -105,6 +117,15 @@ export const useAuthStore = defineStore('auth', () => {
       localStorage.setItem('firebaseUid', firebaseUser.uid)
       localStorage.setItem('postgresId', String(user.value.postgresId))
 
+      // Démarrer les notifications après login
+      try {
+        await notificationService.createNotificationChannel()
+        await notificationService.initialize()
+        console.log('NotificationService démarré après login')
+      } catch (notifError) {
+        console.warn('Erreur démarrage notifications:', notifError)
+      }
+
       return user.value
 
     } catch (error: any) {
@@ -133,6 +154,9 @@ export const useAuthStore = defineStore('auth', () => {
    * Déconnexion
    */
   function logout() {
+    // Arrêter les notifications
+    notificationService.stop()
+    
     firebaseService.signOut()
     token.value = null
     user.value = null
